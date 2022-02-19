@@ -1,7 +1,10 @@
+""" Batch index collection of documents """
+
 from datetime import datetime
 import lucene
 from pandas import read_csv
 
+# pylint: disable=import-error
 from java.nio.file import Paths
 from org.apache.lucene.analysis.standard import StandardAnalyzer
 from org.apache.lucene.index import IndexWriter, IndexWriterConfig
