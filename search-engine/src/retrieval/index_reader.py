@@ -1,26 +1,18 @@
 """ Search the indexes """
 from datetime import datetime
-from dataclasses import dataclass
 from typing import List
 
 import lucene
 # pylint: disable=import-error
 from java.nio.file import Paths
 from org.apache.lucene.analysis.standard import StandardAnalyzer
-from org.apache.lucene.document import LongPoint, StringField
+from org.apache.lucene.document import LongPoint
 from org.apache.lucene.index import DirectoryReader
 from org.apache.lucene.search import IndexSearcher, BooleanClause, BooleanQuery
 from org.apache.lucene.store import SimpleFSDirectory
 from org.apache.lucene.queryparser.classic import QueryParser
 
-
-@dataclass
-class SearchResult:
-    """ keep track of results from index """
-    title: str
-    abstract: str
-    publish_date: str
-    modalities: List[str]
+from .search_results import SearchResult
 
 
 def strdate2long(date: str) -> int:

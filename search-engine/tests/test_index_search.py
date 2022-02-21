@@ -8,8 +8,8 @@ import pytest
 import lucene
 import pandas as pd
 
-from src.index_writer import Indexer
-from src.index_reader import Reader, strdate2long
+from src.retrieval.index_writer import Indexer
+from src.retrieval.index_reader import Reader, strdate2long
 
 
 @pytest.fixture
@@ -236,7 +236,7 @@ class TestSearch:
 
     def test_search_results_have_complete_fields_without_modalities(
             self, temp_index_path):
-        """ check that results have fields properly filled when the results 
+        """ check that results have fields properly filled when the results
             does NOT contain modalities"""
         reader = Reader(temp_index_path)
         term = "surfactant"

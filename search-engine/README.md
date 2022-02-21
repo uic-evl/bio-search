@@ -1,5 +1,14 @@
 # Search Engine for CORD-19 Collection
 
+## Web server
+
+```bash
+cd src/
+export FLASK_APP=app
+flask run
+
+```
+
 ## Tests
 
 `test_data.csv` contains 5 entries from the CORD-19 metadata file. For these

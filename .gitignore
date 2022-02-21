@@ -1,5 +1,17 @@
+# Byte-compiled / optimized / DLL files
 __pycache__/
+*.py[cod]
+
 *.parquet
 *.csv
+
+# Unit test / coverage reports
 .pytest_cache
+.tox/
 .coverage
+.cache
+nosetests.xml
+coverage.xml
+
+.env
+.flaskenv
