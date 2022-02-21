@@ -1,0 +1,5 @@
+__pycache__/
+*.parquet
+*.csv
+.pytest_cache
+.coverage

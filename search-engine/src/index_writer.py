@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import Text
 import lucene
-from pandas import read_parquet
+from pandas import read_parquet, isnull
 
 # pylint: disable=import-error
 from java.nio.file import Paths
@@ -68,7 +68,10 @@ class Indexer():
                             Field("publish", row[key],
                                   StringField.TYPE_STORED))
                     elif key == 'modalities':
-                        modalities = row['modalities'].split(' ')
+                        if isnull(row['modalities']):
+                            modalities = []
+                        else:
+                            modalities = row['modalities'].split(' ')
                         for mod in modalities:
                             document.add(
                                 Field('modality', mod,

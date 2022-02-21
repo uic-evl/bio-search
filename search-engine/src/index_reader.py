@@ -1,12 +1,13 @@
 """ Search the indexes """
 from datetime import datetime
 from dataclasses import dataclass
+from typing import List
 
 import lucene
 # pylint: disable=import-error
 from java.nio.file import Paths
 from org.apache.lucene.analysis.standard import StandardAnalyzer
-from org.apache.lucene.document import LongPoint
+from org.apache.lucene.document import LongPoint, StringField
 from org.apache.lucene.index import DirectoryReader
 from org.apache.lucene.search import IndexSearcher, BooleanClause, BooleanQuery
 from org.apache.lucene.store import SimpleFSDirectory
@@ -19,9 +20,10 @@ class SearchResult:
     title: str
     abstract: str
     publish_date: str
+    modalities: List[str]
 
 
-def strdate2long(date: str):
+def strdate2long(date: str) -> int:
     """ concatenate year month day to int to search index by long representation """
     return int(datetime.strptime(date, '%Y-%m-%d').strftime('%Y%m%d'))
 
@@ -35,8 +37,9 @@ class Reader():
                terms: str,
                start_date: str,
                end_date: str,
-               modalities: str,
-               max_docs=10):
+               modalities: List[str],
+               only_with_images=False,
+               max_docs=10) -> List[SearchResult]:
         """ search index by fields"""
         index_dir = SimpleFSDirectory(Paths.get(self.store_path))
         dir_reader = DirectoryReader.open(index_dir)
@@ -57,8 +60,8 @@ class Reader():
                 range_query = None
 
             query_builder = BooleanQuery.Builder()
+            parser = QueryParser("default", StandardAnalyzer())
             if terms:
-                parser = QueryParser("default", StandardAnalyzer())
                 text_query = parser.parse(
                     f"title: {terms} OR abstract:{terms}")
                 query_builder.add(text_query, BooleanClause.Occur.MUST)
@@ -66,14 +69,33 @@ class Reader():
             if range_query:
                 query_builder.add(range_query, BooleanClause.Occur.MUST)
 
+            if modalities:
+                mod_query = None
+                for modality in modalities:
+                    if not mod_query:
+                        mod_query = f"modality:{modality}"
+                    else:
+                        mod_query = f"{mod_query} OR {modality}"
+                query_builder.add(parser.parse(mod_query),
+                                  BooleanClause.Occur.MUST)
+
+            if only_with_images:
+                query_builder.add(parser.parse("modality:[a* TO z*]"),
+                                  BooleanClause.Occur.MUST)
+
             boolean_query = query_builder.build()
             hits = searcher.search(boolean_query, max_docs).scoreDocs
             results = []
             for hit in hits:
                 hit_doc = searcher.doc(hit.doc)
+
+                modalities = [
+                    x.stringValue() for x in hit_doc.getFields("modality")
+                ]
                 result = SearchResult(title=hit_doc.get("title"),
                                       abstract=hit_doc.get("abstract"),
-                                      publish_date=hit_doc.get("publish"))
+                                      publish_date=hit_doc.get("publish"),
+                                      modalities=modalities)
                 results.append(result)
             return results
         finally:
