@@ -1,8 +1,9 @@
 """ Batch index collection of documents """
 
 from datetime import datetime
+from typing import Text
 import lucene
-from pandas import read_csv
+from pandas import read_parquet
 
 # pylint: disable=import-error
 from java.nio.file import Paths
@@ -42,13 +43,15 @@ class Indexer():
         """ index elements in dataframe"""
         fields = {
             'cord_uid': StringField.TYPE_NOT_STORED,
-            'source_x': TextField.TYPE_STORED,
+            'source_x': StringField.TYPE_STORED,
             'title': TextField.TYPE_STORED,
             'abstract': TextField.TYPE_STORED,
             'publish_time': LongPoint,
-            'journal': TextField.TYPE_STORED,
+            'journal': StringField.TYPE_STORED,
             'authors': TextField.TYPE_STORED,
-            'url': TextField.TYPE_STORED
+            'url': StringField.TYPE_STORED,
+            'pmcid': StringField.TYPE_STORED,
+            'modalities': StringField.TYPE_STORED,
         }
 
         store = SimpleFSDirectory(Paths.get(self.store_path))
@@ -58,12 +61,18 @@ class Indexer():
             for _, row, in dataframe.iterrows():
                 document = Document()
                 for key, val in fields.items():
-                    if val == LongPoint:
+                    if key == 'publish_time':
                         date_millis = date2long(row[key])
                         document.add(LongPoint(key, date_millis))
                         document.add(
                             Field("publish", row[key],
                                   StringField.TYPE_STORED))
+                    elif key == 'modalities':
+                        modalities = row['modalities'].split(' ')
+                        for mod in modalities:
+                            document.add(
+                                Field('modality', mod,
+                                      StringField.TYPE_STORED))
                     else:
                         document.add(Field(key, row[key], val))
                 writer.addDocument(document)
@@ -77,11 +86,11 @@ if __name__ == "__main__":
     lucene.initVM(vmargs=['-Djava.awt.headless=true'])
 
     INDEXPATH = '/home/jtt/Documents/indexes/cord19'
-    CSVPATH = '/home/jtt/repos/bio-search/2022-02-07-cord19.csv'
+    PARQUETPATH = '/home/jtt/repos/bio-search/2022-02-07-cord19-wmodalities.parquet'
 
-    df = read_csv(CSVPATH)
+    df = read_parquet(PARQUETPATH)
     df = df.reset_index()
-    df = df.dropna()
+    # df = df.dropna()
     print(df.shape)
 
     indexer = Indexer(INDEXPATH, create_mode=True)
