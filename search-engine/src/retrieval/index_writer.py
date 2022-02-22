@@ -37,7 +37,7 @@ class Indexer():
         index_writer = IndexWriter(store, config)
         return index_writer
 
-    def index_from_dataframe(self, dataframe):
+    def index_from_dataframe(self, dataframe, split_term=" "):
         """ index elements in dataframe"""
         fields = {
             'cord_uid': StringField.TYPE_NOT_STORED,
@@ -69,7 +69,7 @@ class Indexer():
                         if isnull(row['modalities']):
                             modalities = []
                         else:
-                            modalities = row['modalities'].split(' ')
+                            modalities = row['modalities'].split(split_term)
                         for mod in modalities:
                             document.add(
                                 Field('modality', mod,
