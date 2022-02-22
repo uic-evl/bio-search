@@ -1,15 +1,14 @@
 """ Flask back-end to query the Lucene indexes from a web front-end """
 from os import getenv
-from flask import Flask, request
 from json import dumps
+from flask import Flask, request
 import lucene
 
-from retrieval.index_reader import Reader
-from retrieval.search_results import SearchResultEncoder
+from .retrieval.index_reader import Reader
+from .retrieval.search_results import SearchResultEncoder
 
 app = Flask(__name__)
 INDEXDIR = getenv('INDEX_PATH')
-lucene.initVM(vmargs=['-Djava.awt.headless=true'])
 
 
 @app.route('/hello')
@@ -21,6 +20,10 @@ def hello():
 @app.route('/search/', methods=['GET'])
 def search():
     """ retrieve documents based on query strings """
+    vm_env = lucene.getVMEnv() or lucene.initVM(
+        vmargs=['-Djava.awt.headless=true'])
+    vm_env.attachCurrentThread()
+
     # parse query strings
     args = request.args
     term = args['q'] if 'q' in args else None
