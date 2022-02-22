@@ -35,6 +35,7 @@ def search():
     else:
         modalities = None
     image_only = args['image_only'] if 'image_only' in args else False
+    highlight = True if 'highlight' in args else False
 
     # required at least one filter
     if not term and not start_date and not end_date and not modalities:
@@ -46,7 +47,9 @@ def search():
                             end_date=end_date,
                             modalities=modalities,
                             max_docs=max_docs,
-                            only_with_images=image_only)
+                            only_with_images=image_only,
+                            highlight=highlight)
+    print(results[0])
     encoded = dumps(results, cls=SearchResultEncoder, indent=2)
     return encoded
 
