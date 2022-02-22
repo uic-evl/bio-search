@@ -1,9 +1,7 @@
 """ Batch index collection of documents """
 
 from datetime import datetime
-from typing import Text
-import lucene
-from pandas import read_parquet, isnull
+from pandas import isnull
 
 # pylint: disable=import-error
 from java.nio.file import Paths

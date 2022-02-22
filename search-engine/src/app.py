@@ -20,7 +20,7 @@ def hello():
 @app.route('/search/', methods=['GET'])
 def search():
     """ retrieve documents based on query strings """
-    vm_env = lucene.getVMEnv() or lucene.initVM(
+    vm_env = lucene.getVMEnv() or lucene.initVM(  # pylint: disable=no-member
         vmargs=['-Djava.awt.headless=true'])
     vm_env.attachCurrentThread()
 
