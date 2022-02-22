@@ -79,22 +79,7 @@ class Indexer():
                     else:
                         document.add(Field(key, row[key], val))
                 writer.addDocument(document)
+                #TODO: do i need to raise an exception here?
         finally:
             writer.close()
             store.close()
-            print("finish")
-
-
-if __name__ == "__main__":
-    lucene.initVM(vmargs=['-Djava.awt.headless=true'])
-
-    INDEXPATH = '/home/jtt/Documents/indexes/cord19'
-    PARQUETPATH = '/home/jtt/repos/bio-search/2022-02-07-cord19-wmodalities.parquet'
-
-    df = read_parquet(PARQUETPATH)
-    df = df.reset_index()
-    # df = df.dropna()
-    print(df.shape)
-
-    indexer = Indexer(INDEXPATH, create_mode=True)
-    indexer.index_from_dataframe(dataframe=df)
