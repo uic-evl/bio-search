@@ -102,7 +102,8 @@ class Reader():
                     title = hl_title or title
                     abstract = hl_abstract or abstract
 
-                result = SearchResult(title=title,
+                result = SearchResult(id=hit_doc.get("cord_uid"),
+                                      title=title,
                                       abstract=abstract,
                                       publish_date=hit_doc.get("publish"),
                                       modalities=modalities)

@@ -1,22 +1,29 @@
 """ Flask back-end to query the Lucene indexes from a web front-end """
 from os import getenv
-from json import dumps
+from json import dumps, load
 from flask import Flask, request
+from flask_cors import CORS, cross_origin
 import lucene
 
 from .retrieval.index_reader import Reader
 from .retrieval.search_results import SearchResultEncoder
 
 app = Flask(__name__)
+CORS(app)
 INDEXDIR = getenv('INDEX_PATH')
+DATADIR = getenv('DATA_PATH')
 
+GXD_DATA = None
+with open(DATADIR, 'r') as f:
+  GXD_DATA = load(f)
 
+@cross_origin()
 @app.route('/hello')
 def hello():
     """ just to check if server is up """
     return "Hello world!"
 
-
+@cross_origin()
 @app.route('/search/', methods=['GET'])
 def search():
     """ retrieve documents based on query strings """
@@ -26,10 +33,11 @@ def search():
 
     # parse query strings
     args = request.args
+    print(args)
     term = args['q'] if 'q' in args else None
     start_date = args['from'] if 'from' in args else None
     end_date = args['to'] if 'to' in args else None
-    max_docs = args['max_docs'] if 'max_docs' in args else 20
+    max_docs = int(args['max_docs']) if 'max_docs' in args else 20
     if 'modalities' in args:
         modalities = args['modalities'].split(' ')
     else:
@@ -49,7 +57,10 @@ def search():
                             max_docs=max_docs,
                             only_with_images=image_only,
                             highlight=highlight)
-    print(results[0])
+
+    for result in results:
+        result.modalities_count = GXD_DATA[result.id]['modalities']
+
     encoded = dumps(results, cls=SearchResultEncoder, indent=2)
     return encoded
 

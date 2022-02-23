@@ -40,7 +40,7 @@ class Indexer():
     def index_from_dataframe(self, dataframe, split_term=" "):
         """ index elements in dataframe"""
         fields = {
-            'cord_uid': StringField.TYPE_NOT_STORED,
+            'cord_uid': StringField.TYPE_STORED,
             'source_x': StringField.TYPE_STORED,
             'title': TextField.TYPE_STORED,
             'abstract': TextField.TYPE_STORED,
