@@ -8,7 +8,7 @@ import {
   chakra,
 } from '@chakra-ui/react'
 import {ViewIcon} from '@chakra-ui/icons'
-import {Long2Short} from '../../utils/modalityMap'
+import {Long2Short, Long2Color} from '../../utils/modalityMap'
 
 export const ResultsContainer = ({results, onClickOpen}) => {
   return (
@@ -59,7 +59,7 @@ const SearchResultCard = ({result, onClickOpen}) => {
       ></Text>
       <Box>
         {Object.keys(result.modalities_count).map(key => (
-          <Badge key={key} mr={1} colorScheme="blue">
+          <Badge key={key} mr={1} background={Long2Color[key]} color="black">
             {Long2Short[key]}:{result.modalities_count[key]}
           </Badge>
         ))}

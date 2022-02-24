@@ -11,10 +11,17 @@ function App() {
   const [detailsTop, setDetailsTop] = useState(null)
   const [detailsBottom, setDetailsBottom] = useState(null)
 
-  const handleSearch = async (terms, startDate, endDate) => {
-    const maxDocs = 50
+  const handleSearch = async (terms, startDate, endDate, modalities) => {
+    const maxDocs = 500
     const collection = 'gxd'
-    const results = await search(terms, collection, startDate, endDate, maxDocs)
+    const results = await search(
+      terms,
+      collection,
+      startDate,
+      endDate,
+      maxDocs,
+      modalities,
+    )
     console.log(results)
     setDocuments(results)
   }
@@ -26,9 +33,16 @@ function App() {
     }
 
     const details = await getDetails(documentId)
-    console.log(details)
     if (!detailsTop) setDetailsTop(details)
     else setDetailsBottom(details)
+  }
+
+  const handleCloseDetails = position => {
+    if (position === 'top') {
+      setDetailsTop(null)
+    } else {
+      setDetailsBottom(null)
+    }
   }
 
   return (
@@ -42,8 +56,20 @@ function App() {
           />
         </Box>
         <Box w="75%">
-          {detailsTop && <DetailsContainer document={detailsTop} />}
-          {detailsBottom && <DetailsContainer document={detailsBottom} />}
+          {detailsTop && (
+            <DetailsContainer
+              document={detailsTop}
+              position="top"
+              onClickClose={handleCloseDetails}
+            />
+          )}
+          {detailsBottom && (
+            <DetailsContainer
+              document={detailsBottom}
+              position="bottom"
+              onClickClose={handleCloseDetails}
+            />
+          )}
         </Box>
       </Flex>
     </Box>

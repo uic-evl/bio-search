@@ -6,6 +6,7 @@ export const search = async (
   startDate,
   endDate,
   maxDocs,
+  modalities,
 ) => {
   const termsQuery = terms || '*'
   let queryString = `?highlight=true&q=${termsQuery}&max_docs=${maxDocs}`
@@ -14,6 +15,12 @@ export const search = async (
     if (endDate) {
       queryString += `&to=${endDate}`
     }
+  }
+  if (modalities.length > 0) {
+    const queryModalities = modalities.map(el => el.value)
+    const joinedMods = queryModalities.join(';')
+    console.log('joined', joinedMods)
+    queryString += `&modalities=${joinedMods}`
   }
 
   const url = `search/${queryString}`

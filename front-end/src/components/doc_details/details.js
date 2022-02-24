@@ -1,16 +1,38 @@
 import {useEffect, useState} from 'react'
-import {Box, Flex, Image, Text, Center, Button} from '@chakra-ui/react'
+import {
+  Box,
+  Flex,
+  Grid,
+  Text,
+  Center,
+  Button,
+  GridItem,
+  IconButton,
+  Spacer,
+} from '@chakra-ui/react'
 import {ImageViewer} from '../image_viewer'
 import useDimensions from 'react-cool-dimensions'
 import {ResizeObserver} from '@juggle/resize-observer'
+import {Code2Color, Code2Long} from '../../utils/modalityMap'
+import {CloseIcon} from '@chakra-ui/icons'
 
 const API_ENDPOINT = process.env.REACT_APP_IMAGES_ENDPOINT
+const SUBFIGURES_ENDPOINT = process.env.REACT_APP_SUBIMAGES_ENDPOINT
 
-export const DetailsContainer = ({document}) => {
+export const DetailsContainer = ({document, position, onClickClose}) => {
   return (
     <Box w="full" h="calc((100vh - 150px)/2)" p={1}>
       <Box w="full" h="full" bgColor="gray.400" p={4}>
-        <Text h="20px">{document.title}</Text>
+        <Flex w="full">
+          <Text h="20px">{document.title}</Text>
+          <Spacer />
+          <IconButton
+            size="xs"
+            icon={<CloseIcon />}
+            onClick={() => onClickClose(position)}
+          ></IconButton>
+        </Flex>
+
         <Flex w="full" h="calc(100% - 24px)" mt={1}>
           <Box h="full" w="30%">
             {document && (
@@ -22,7 +44,10 @@ export const DetailsContainer = ({document}) => {
           </Box>
           <Box h="full" w="70%" ml={1}>
             {document && document.pages && (
-              <FigureCarrousel pages={document.pages} />
+              <FigureCarrousel
+                documentId={document.cord_uid}
+                pages={document.pages}
+              />
             )}
           </Box>
         </Flex>
@@ -31,7 +56,7 @@ export const DetailsContainer = ({document}) => {
   )
 }
 
-const FirstPage = ({url, title}) => {
+const FirstPage = ({url}) => {
   return (
     <ImageViewer src={url} />
     // <Box h="100%" p={3}>
@@ -40,7 +65,7 @@ const FirstPage = ({url, title}) => {
   )
 }
 
-const FigureCarrousel = ({pages}) => {
+const FigureCarrousel = ({documentId, pages}) => {
   const [positions, setPositions] = useState(null)
   const [cardDimensions, setCardDimensions] = useState(null)
   const [gap, setGap] = useState(null)
@@ -115,6 +140,7 @@ const FigureCarrousel = ({pages}) => {
               container={{w: width, h: height}}
               gap={gap}
               totalPages={pages.length}
+              documentId={documentId}
             />
           ))}
       </Box>
@@ -137,7 +163,9 @@ const FigureCard = ({
   gap,
   container,
   totalPages,
+  documentId,
 }) => {
+  // eslint-disable-next-line
   const [current, setCurrent] = useState(page.figures[0])
   const top = container.h - dimensions.h - position * gap.h
   const left = container.w - dimensions.w - position * gap.w
@@ -151,18 +179,25 @@ const FigureCard = ({
       h={dimensions.h}
       top={top}
       left={left}
-      bgColor="gold"
+      bgColor="white"
       border="1px solid black"
       zIndex={zIndex}
     >
       <Flex w="full" h="full">
         <Box h="full" w="20%" bgColor={'blackAlpha.700'}>
-          {/* {page.page} */}
           <ImageViewer src={`${API_ENDPOINT}/${page.page_url}`} />
         </Box>
         <Box w="80%" h="full">
           <Flex w="full" minH="calc(100% - 20px)">
-            <Box w={`${subfigsWidth}%`} minH="calc(100% - 20px)"></Box>
+            <Box w={`${subfigsWidth}%`} minH="calc(100% - 20px)">
+              <SubfiguresGrid
+                pageNumber={current.page}
+                noFigure={current.no_subfig}
+                subfigures={current.subfigures}
+                documentId={documentId}
+                maxH={dimensions.h}
+              />
+            </Box>
             <Box
               w={`${100 - subfigsWidth}%`}
               minH="calc(100% - 20px)"
@@ -174,9 +209,49 @@ const FigureCard = ({
               </Text>
             </Box>
           </Flex>
-          <Box w="full" h="20px" bgColor={'blackAlpha.900'}></Box>
+          <Box w="full" h="20px" bgColor={'blackAlpha.900'}>
+            <Text fontSize={'small'} color={'white'}>
+              page: {page.page} | figure in page: {current.no_subfig}/
+              {page.figures.length}
+            </Text>
+          </Box>
         </Box>
       </Flex>
+    </Box>
+  )
+}
+
+const SubfiguresGrid = ({
+  documentId,
+  pageNumber,
+  noFigure,
+  subfigures,
+  maxH,
+}) => {
+  console.log(Code2Color[subfigures[0].type])
+  return (
+    <Box maxH={`${maxH - 30}px`} h="full" w="full" overflowY="scroll" p={1}>
+      <Grid
+        w="full"
+        h={`${maxH - 35}px`}
+        gap="1px"
+        gridTemplateColumns={`repeat(auto-fill, minmax(100px, 1fr))`}
+      >
+        {subfigures &&
+          subfigures.map(sf => {
+            const url = `${SUBFIGURES_ENDPOINT}/${documentId}/panels/${pageNumber}_${noFigure}/${sf.name}.jpg`
+            return (
+              <GridItem key={`${pageNumber}-${noFigure}-${sf.name}`}>
+                <ImageViewer
+                  src={url}
+                  borderColor={Code2Color[sf.type]}
+                  bgColor="white"
+                  label={Code2Long[sf.type]}
+                />
+              </GridItem>
+            )
+          })}
+      </Grid>
     </Box>
   )
 }
