@@ -39,9 +39,9 @@ def search():
     term = args['q'] if 'q' in args else None
     start_date = args['from'] if 'from' in args else None
     end_date = args['to'] if 'to' in args else None
-    max_docs = int(args['max_docs']) if 'max_docs' in args else 20
+    max_docs = int(args['max_docs']) if 'max_docs' in args else 20    
     if 'modalities' in args:
-        modalities = args['modalities'].split(' ')
+        modalities = args['modalities'].split(';')
     else:
         modalities = None
     image_only = args['image_only'] if 'image_only' in args else False
