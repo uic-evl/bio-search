@@ -1,5 +1,6 @@
 import {useEffect, useState} from 'react'
 import {Box, Flex, Image, Text, Center, Button} from '@chakra-ui/react'
+import {ImageViewer} from '../image_viewer'
 import useDimensions from 'react-cool-dimensions'
 import {ResizeObserver} from '@juggle/resize-observer'
 
@@ -10,7 +11,7 @@ export const DetailsContainer = ({document}) => {
     <Box w="full" h="calc((100vh - 150px)/2)" p={1}>
       <Box w="full" h="full" bgColor="gray.400" p={4}>
         <Text h="20px">{document.title}</Text>
-        <Flex w="full" h="calc(100% - 20px)">
+        <Flex w="full" h="calc(100% - 24px)" mt={1}>
           <Box h="full" w="30%">
             {document && (
               <FirstPage
@@ -19,9 +20,9 @@ export const DetailsContainer = ({document}) => {
               />
             )}
           </Box>
-          <Box h="full" w="70%" pt={3}>
-            {document && document.figures && (
-              <FigureCarrousel figures={document.figures} />
+          <Box h="full" w="70%" ml={1}>
+            {document && document.pages && (
+              <FigureCarrousel pages={document.pages} />
             )}
           </Box>
         </Flex>
@@ -32,13 +33,14 @@ export const DetailsContainer = ({document}) => {
 
 const FirstPage = ({url, title}) => {
   return (
-    <Box h="100%" p={3}>
-      <Image src={url} alt={`first page from ${title}`} objectFit="cover" />
-    </Box>
+    <ImageViewer src={url} />
+    // <Box h="100%" p={3}>
+    //   <Image src={url} alt={`first page from ${title}`} objectFit="cover" />
+    // </Box>
   )
 }
 
-const FigureCarrousel = ({figures}) => {
+const FigureCarrousel = ({pages}) => {
   const [positions, setPositions] = useState(null)
   const [cardDimensions, setCardDimensions] = useState(null)
   const [gap, setGap] = useState(null)
@@ -80,15 +82,16 @@ const FigureCarrousel = ({figures}) => {
       const newCardHeight = height * proportion
       const newGapW = width - newCardWidth
       const newGapH = height - newCardHeight
+      const numberPages = Object.keys(pages).length
 
       setCardDimensions({w: newCardWidth, h: newCardHeight})
       setGap({
-        w: newGapW / (figures.length - 1),
-        h: newGapH / (figures.length - 1),
+        w: newGapW / (numberPages - 1),
+        h: newGapH / (numberPages - 1),
       })
-      setPositions(Array.from(Array(figures.length).keys()))
+      setPositions(Array.from(Array(numberPages).keys()))
     }
-  }, [width, height, figures.length])
+  }, [width, height, pages])
 
   return (
     <Box w="full" h="full">
@@ -99,18 +102,19 @@ const FigureCarrousel = ({figures}) => {
         bgColor="blackAlpha.300"
         position="relative"
       >
-        {figures &&
+        {pages &&
           cardDimensions &&
           gap &&
           positions &&
-          figures.map((fig, idx) => (
+          pages.map((page, idx) => (
             <FigureCard
-              figure={fig}
+              key={idx}
+              page={page}
               position={positions[idx]}
               dimensions={cardDimensions}
               container={{w: width, h: height}}
               gap={gap}
-              totalFigures={figures.length}
+              totalPages={pages.length}
             />
           ))}
       </Box>
@@ -127,16 +131,18 @@ const FigureCarrousel = ({figures}) => {
 }
 
 const FigureCard = ({
-  figure,
+  page,
   position,
   dimensions,
   gap,
   container,
-  totalFigures,
+  totalPages,
 }) => {
+  const [current, setCurrent] = useState(page.figures[0])
   const top = container.h - dimensions.h - position * gap.h
   const left = container.w - dimensions.w - position * gap.w
-  const zIndex = totalFigures - position
+  const zIndex = totalPages - position
+  const subfigsWidth = current.caption.length > 0 ? 50 : 100
 
   return (
     <Box
@@ -151,12 +157,22 @@ const FigureCard = ({
     >
       <Flex w="full" h="full">
         <Box h="full" w="20%" bgColor={'blackAlpha.700'}>
-          {position} - {figure}
+          {/* {page.page} */}
+          <ImageViewer src={`${API_ENDPOINT}/${page.page_url}`} />
         </Box>
         <Box w="80%" h="full">
           <Flex w="full" minH="calc(100% - 20px)">
-            <Box w="50%" minH="calc(100% - 20px)"></Box>
-            <Box w="50%" minH="calc(100% - 20px)" bgColor={'green'}></Box>
+            <Box w={`${subfigsWidth}%`} minH="calc(100% - 20px)"></Box>
+            <Box
+              w={`${100 - subfigsWidth}%`}
+              minH="calc(100% - 20px)"
+              bgColor="gray.100"
+              p={2}
+            >
+              <Text fontSize={'small'} noOfLines={13}>
+                {current.caption}
+              </Text>
+            </Box>
           </Flex>
           <Box w="full" h="20px" bgColor={'blackAlpha.900'}></Box>
         </Box>

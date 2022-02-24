@@ -20,3 +20,9 @@ export const search = async (
   const payload = await run(url, 'get', {})
   return payload
 }
+
+export const getDetails = async documentId => {
+  const url = `document/${documentId}`
+  const payload = await run(url, 'get', {})
+  return payload
+}
