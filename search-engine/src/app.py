@@ -3,6 +3,7 @@ from os import getenv
 from json import dumps, load
 from flask import Flask, request
 from flask_cors import CORS, cross_origin
+from markupsafe import escape
 import lucene
 
 from .retrieval.index_reader import Reader
@@ -12,6 +13,7 @@ app = Flask(__name__)
 CORS(app)
 INDEXDIR = getenv('INDEX_PATH')
 DATADIR = getenv('DATA_PATH')
+PDFSDIR = getenv('PDFS_PATH')
 
 GXD_DATA = None
 with open(DATADIR, 'r') as f:
@@ -63,6 +65,20 @@ def search():
 
     encoded = dumps(results, cls=SearchResultEncoder, indent=2)
     return encoded
+
+
+@cross_origin
+@app.route('/document/<id>', methods=['GET'])
+def get_document(id):
+    document_id = escape(id)
+    document = GXD_DATA[document_id].copy()
+    document['pages'] = [ {"page": page, "figures": figures} for (page, figures) in document['pages'].items()]
+    for page in document['pages']:
+        page['page_url'] = f"{document_id}/{document_id}-{str(page['figures'][0]['page']).zfill(6)}.png"
+
+    document['first_page'] = f"{document_id}/{document_id}-000001.png"
+    return document
+
 
 
 if __name__ == "__main__":
