@@ -13,20 +13,20 @@ app = Flask(__name__)
 CORS(app)
 INDEXDIR = getenv('INDEX_PATH')
 DATADIR = getenv('DATA_PATH')
-PDFSDIR = getenv('PDFS_PATH')
+ROOT = getenv('FLASK_ROOT')
 
 GXD_DATA = None
 with open(DATADIR, 'r') as f:
   GXD_DATA = load(f)
 
 @cross_origin()
-@app.route('/hello')
+@app.route(ROOT + '/hello')
 def hello():
     """ just to check if server is up """
     return "Hello world!"
 
 @cross_origin()
-@app.route('/search/', methods=['GET'])
+@app.route(ROOT + '/search/', methods=['GET'])
 def search():
     """ retrieve documents based on query strings """
     vm_env = lucene.getVMEnv() or lucene.initVM(  # pylint: disable=no-member
@@ -68,7 +68,7 @@ def search():
 
 
 @cross_origin
-@app.route('/document/<id>', methods=['GET'])
+@app.route(ROOT + '/document/<id>', methods=['GET'])
 def get_document(id):
     document_id = escape(id)
     document = GXD_DATA[document_id].copy()
