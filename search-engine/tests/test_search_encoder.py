@@ -10,7 +10,8 @@ def test_encoder():
     publication_date = "2020-02-01"
     modalities = ['mod1', 'mod1.mod3']
     results = [
-        SearchResult(title=title,
+        SearchResult(id='test',
+                     title=title,
                      abstract=abstract,
                      publish_date=publication_date,
                      modalities=modalities)

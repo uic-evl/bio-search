@@ -27,7 +27,7 @@ def main():
 
     start_time = time.time()
     indexer = Indexer(args.output_path, create_mode=True)
-    indexer.index_from_dataframe(dataframe=dataframe)
+    indexer.index_from_dataframe(dataframe=dataframe, split_term=";")
     end_time = time.time()
     print(f"Finished after {end_time - start_time}")
 

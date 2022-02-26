@@ -3,6 +3,7 @@
   test_data.csv. All fields in the CSV except for the modalities come from
   some samples of the CORD-19 metadata file.
 """
+from re import S
 from shutil import rmtree
 import pytest
 import lucene
@@ -30,7 +31,7 @@ def temp_index_path():
     data_filepath = './tests/test_data.csv'
     dataframe = pd.read_csv(data_filepath)
     indexer = Indexer(index_path, create_mode=True)
-    indexer.index_from_dataframe(dataframe)
+    indexer.index_from_dataframe(dataframe, split_term=";")
     yield index_path
     rmtree(index_path)
 
@@ -164,6 +165,20 @@ class TestSearch:
         title2 = "Role of endothelin-1 in lung disease"
         assert title1 in titles
         assert title2 in titles
+
+    def test_search_by_one_modality_with_spaces(self, temp_index_path):
+        """ search by modality key terms """
+        reader = Reader(temp_index_path)
+        modalities = ["with space"]
+        results = reader.search(terms=None,
+                                start_date=None,
+                                end_date=None,
+                                modalities=modalities,
+                                max_docs=10)
+        assert len(results) == 1
+        titles = [x.title for x in results]
+        title1 = "Gene expression in epithelial cells in response to pneumovirus infection"
+        assert title1 in titles
 
     def test_search_by_two_modalities(self, temp_index_path):
         """ search by modality key terms """
