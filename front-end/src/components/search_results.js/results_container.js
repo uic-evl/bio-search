@@ -10,7 +10,7 @@ import {
 import {ViewIcon} from '@chakra-ui/icons'
 import {Long2Short, Long2Color} from '../../utils/modalityMap'
 
-export const ResultsContainer = ({results, onClickOpen}) => {
+export const ResultsContainer = ({results, onClickOpen, selectedIds}) => {
   return (
     <Box bg="gray.100" h="calc(100vh - 150px)" p={4} overflowY="scroll">
       {results && <NumberResults numberResults={results.length} />}
@@ -20,6 +20,9 @@ export const ResultsContainer = ({results, onClickOpen}) => {
             key={document.id}
             result={document}
             onClickOpen={onClickOpen}
+            selected={
+              selectedIds.length > 0 && selectedIds.includes(document.id)
+            }
           />
         ))}
     </Box>
@@ -30,17 +33,29 @@ const NumberResults = ({numberResults}) => {
   return <Box mb={2}>{numberResults} documents found</Box>
 }
 
-const SearchResultCard = ({result, onClickOpen}) => {
+const SearchResultCard = ({result, onClickOpen, selected}) => {
   const year = publishDate => publishDate.substring(0, 4)
 
+  const boxShadow = selected ? '0 4px 8px 0 rgba(0,0,0,0.2)' : null
+
   return (
-    <Box pl={4} w="full" pt={1} mb={4}>
+    <Box
+      pl={4}
+      w="full"
+      pt={1}
+      mb={4}
+      style={{
+        boxShadow,
+      }}
+      background={selected ? 'white' : null}
+    >
       <Flex>
         <Tooltip label="display details ">
           <IconButton
             aria-label="Open details"
             icon={<ViewIcon />}
             onClick={() => onClickOpen(result.id)}
+            disabled={selected}
           ></IconButton>
         </Tooltip>
         <chakra.p

@@ -10,6 +10,7 @@ function App() {
   const [documents, setDocuments] = useState(null)
   const [detailsTop, setDetailsTop] = useState(null)
   const [detailsBottom, setDetailsBottom] = useState(null)
+  const [selectedIds, setSelectedIds] = useState([])
 
   const handleSearch = async (terms, startDate, endDate, modalities) => {
     const maxDocs = 2000
@@ -22,7 +23,6 @@ function App() {
       maxDocs,
       modalities,
     )
-    console.log(results)
     setDocuments(results)
   }
 
@@ -35,14 +35,19 @@ function App() {
     const details = await getDetails(documentId)
     if (!detailsTop) setDetailsTop(details)
     else setDetailsBottom(details)
+    setSelectedIds([...selectedIds, documentId])
   }
 
   const handleCloseDetails = position => {
+    let idToRemove
     if (position === 'top') {
       setDetailsTop(null)
+      idToRemove = detailsTop.cord_uid
     } else {
       setDetailsBottom(null)
+      idToRemove = detailsBottom.cord_uid
     }
+    setSelectedIds(selectedIds.filter(id => id !== idToRemove))
   }
 
   return (
@@ -53,6 +58,7 @@ function App() {
           <ResultsContainer
             results={documents}
             onClickOpen={handleOpenDetails}
+            selectedIds={selectedIds}
           />
         </Box>
         <Box w="75%">
