@@ -12,7 +12,7 @@ function App() {
   const [detailsBottom, setDetailsBottom] = useState(null)
 
   const handleSearch = async (terms, startDate, endDate, modalities) => {
-    const maxDocs = 500
+    const maxDocs = 2000
     const collection = 'gxd'
     const results = await search(
       terms,
