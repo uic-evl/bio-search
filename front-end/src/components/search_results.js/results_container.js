@@ -8,7 +8,7 @@ import {
   Link,
   chakra,
 } from '@chakra-ui/react'
-import {DownloadIcon, ViewIcon, ExternalLinkIcon} from '@chakra-ui/icons'
+import {DownloadIcon, ViewIcon} from '@chakra-ui/icons'
 import {Long2Short, Long2Color} from '../../utils/modalityMap'
 
 const PDFS_ENDPOINT = process.env.REACT_APP_PDFS_ENDPOINT
