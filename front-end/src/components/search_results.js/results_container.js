@@ -5,10 +5,13 @@ import {
   Flex,
   IconButton,
   Tooltip,
+  Link,
   chakra,
 } from '@chakra-ui/react'
-import {ViewIcon} from '@chakra-ui/icons'
+import {DownloadIcon, ViewIcon, ExternalLinkIcon} from '@chakra-ui/icons'
 import {Long2Short, Long2Color} from '../../utils/modalityMap'
+
+const PDFS_ENDPOINT = process.env.REACT_APP_PDFS_ENDPOINT
 
 export const ResultsContainer = ({results, onClickOpen, selectedIds}) => {
   return (
@@ -34,6 +37,7 @@ const NumberResults = ({numberResults}) => {
 }
 
 const SearchResultCard = ({result, onClickOpen, selected}) => {
+  console.log(result)
   const year = publishDate => publishDate.substring(0, 4)
 
   const boxShadow = selected ? '0 4px 8px 0 rgba(0,0,0,0.2)' : null
@@ -56,6 +60,7 @@ const SearchResultCard = ({result, onClickOpen, selected}) => {
             icon={<ViewIcon />}
             onClick={() => onClickOpen(result.id)}
             disabled={selected}
+            variant="link"
           ></IconButton>
         </Tooltip>
         <chakra.p
@@ -73,10 +78,20 @@ const SearchResultCard = ({result, onClickOpen, selected}) => {
         }}
       ></Text>
       <Box>
+        <Tooltip label="download article">
+          <Link href={`${PDFS_ENDPOINT}/${result.id}.pdf`} isExternal mr={1}>
+            <DownloadIcon mx="2px" />
+          </Link>
+        </Tooltip>
+
         {Object.keys(result.modalities_count).map(key => (
-          <Badge key={key} mr={1} background={Long2Color[key]} color="black">
-            {Long2Short[key]}:{result.modalities_count[key]}
-          </Badge>
+          <Tooltip
+            label={`# ${key} subfigures: ${result.modalities_count[key]}`}
+          >
+            <Badge key={key} mr={1} background={Long2Color[key]} color="black">
+              {Long2Short[key]}:{result.modalities_count[key]}
+            </Badge>
+          </Tooltip>
         ))}
       </Box>
     </Box>
