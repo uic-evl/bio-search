@@ -146,10 +146,12 @@ const FigureCarrousel = ({documentId, pages}) => {
       </Box>
       <Box w="full" h="10%">
         <Center p={2}>
-          <Button onClick={decrement} mr={2}>
+          <Button size="sm" onClick={decrement} mr={2}>
             Prev
           </Button>
-          <Button onClick={increment}>Next</Button>
+          <Button size="sm" onClick={increment}>
+            Next
+          </Button>
         </Center>
       </Box>
     </Box>
@@ -188,7 +190,7 @@ const FigureCard = ({
           <ImageViewer src={`${API_ENDPOINT}/${page.page_url}`} />
         </Box>
         <Box w="80%" h="full">
-          <Flex w="full" minH="calc(100% - 20px)">
+          <Flex w="full" h="calc(100% - 20px)">
             <Box w={`${subfigsWidth}%`} minH="calc(100% - 20px)">
               <SubfiguresGrid
                 pageNumber={current.page}
@@ -200,13 +202,12 @@ const FigureCard = ({
             </Box>
             <Box
               w={`${100 - subfigsWidth}%`}
-              minH="calc(100% - 20px)"
               bgColor="gray.100"
               p={2}
+              pb={0}
+              overflowY="auto"
             >
-              <Text fontSize={'small'} noOfLines={13}>
-                {current.caption}
-              </Text>
+              <Text fontSize={'sm'}>{current.caption}</Text>
             </Box>
           </Flex>
           <Box w="full" h="20px" bgColor={'blackAlpha.900'}>
