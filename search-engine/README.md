@@ -1,5 +1,9 @@
 # Search Engine for CORD-19 Collection
 
+
+http.server 6000 on /mnt
+
+
 ## Web server
 
 ```bash
