@@ -24,13 +24,13 @@ class Cord19Document:
 
   def to_tuple(self):
     """ Return data as tuple to insert in database """
-    return (self.title[:200], 
+    return (self.title[:200] if self.title is not None else None, 
             [x[:100] for x in self.authors] if self.authors is not None else None,
-            self.abstract[:2000], 
+            self.abstract[:2000] if self.abstract is not None else None, 
             self.publication_date,
             self.pmcid,
             self.pubmed_id,
-            self.journal[:100],
+            self.journal[:100] if self.journal is not None else None,
             self.repository,
             self.project,
             self.license,
