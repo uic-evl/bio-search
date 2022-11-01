@@ -4,6 +4,7 @@ from json import dumps, load
 from flask import Flask, request
 from flask_cors import CORS, cross_origin
 from markupsafe import escape
+from pathlib import Path
 import lucene
 
 from .retrieval.index_reader import Reader
@@ -13,6 +14,7 @@ app = Flask(__name__)
 CORS(app)
 INDEXDIR = getenv('INDEX_PATH')
 DATADIR = getenv('DATA_PATH')
+BBOXESDIR = getenv('BBOXES_PATH')
 ROOT = getenv('FLASK_ROOT')
 
 GXD_DATA = None
@@ -71,12 +73,18 @@ def search():
 @app.route(ROOT + '/document/<id>', methods=['GET'])
 def get_document(id):
     document_id = escape(id)
+    bboxes_root = Path(BBOXESDIR)
+
+    with open(bboxes_root / f"{document_id}.json", 'r') as handler:
+        bboxes_json = load(handler)
+
     document = GXD_DATA[document_id].copy()
     document['pages'] = [ {"page": page, "figures": figures} for (page, figures) in document['pages'].items()]
     for page in document['pages']:
         page['page_url'] = f"{document_id}/{document_id}-{str(page['figures'][0]['page']).zfill(6)}.png"
 
     document['first_page'] = f"{document_id}/{document_id}-000001.png"
+    document['bboxes'] = bboxes_json
     return document
 
 
