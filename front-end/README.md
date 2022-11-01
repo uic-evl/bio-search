@@ -12,3 +12,7 @@ REACT_APP_IMAGES_ENDPOINT=<python server with PDF pages as images>
 REACT_APP_SUBIMAGES_ENDPOINT=<python server to subfigures>
 REACT_APP_PDFS_ENDPOINT=<path to original PDF source>
 ```
+
+## Storyboard
+
+Needs a python server for displaying the image data in sample_data
