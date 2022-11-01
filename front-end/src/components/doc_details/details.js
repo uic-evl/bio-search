@@ -11,6 +11,7 @@ import {
   Spacer,
 } from '@chakra-ui/react'
 import {ImageViewer} from '../image_viewer'
+import ImageBoundingBoxViewer from '../image/image_bbox_viewer'
 import useDimensions from 'react-cool-dimensions'
 import {ResizeObserver} from '@juggle/resize-observer'
 import {Code2Color, Code2Long} from '../../utils/modalityMap'
@@ -19,7 +20,12 @@ import {CloseIcon} from '@chakra-ui/icons'
 const API_ENDPOINT = process.env.REACT_APP_IMAGES_ENDPOINT
 const SUBFIGURES_ENDPOINT = process.env.REACT_APP_SUBIMAGES_ENDPOINT
 
-export const DetailsContainer = ({document, position, onClickClose}) => {
+export const DetailsContainer = ({
+  document,
+  position,
+  onClickClose,
+  displayMode,
+}) => {
   return (
     <Box w="full" h="calc((100vh - 150px)/2)" p={1}>
       <Box w="full" h="full" bgColor="gray.400" p={4}>
@@ -47,6 +53,8 @@ export const DetailsContainer = ({document, position, onClickClose}) => {
               <FigureCarrousel
                 documentId={document.cord_uid}
                 pages={document.pages}
+                bboxes={document.bboxes}
+                displayMode={displayMode}
               />
             )}
           </Box>
@@ -65,7 +73,8 @@ const FirstPage = ({url}) => {
   )
 }
 
-const FigureCarrousel = ({documentId, pages}) => {
+const FigureCarrousel = ({documentId, pages, bboxes, displayMode}) => {
+  console.log(documentId)
   const [positions, setPositions] = useState(null)
   const [cardDimensions, setCardDimensions] = useState(null)
   const [gap, setGap] = useState(null)
@@ -141,6 +150,8 @@ const FigureCarrousel = ({documentId, pages}) => {
               gap={gap}
               totalPages={pages.length}
               documentId={documentId}
+              bboxes={bboxes}
+              displayMode={displayMode}
             />
           ))}
       </Box>
@@ -166,6 +177,8 @@ const FigureCard = ({
   container,
   totalPages,
   documentId,
+  bboxes,
+  displayMode,
 }) => {
   // eslint-disable-next-line
   const [current, setCurrent] = useState(page.figures[0])
@@ -192,13 +205,26 @@ const FigureCard = ({
         <Box w="80%" h="full">
           <Flex w="full" h="calc(100% - 20px)">
             <Box w={`${subfigsWidth}%`} minH="calc(100% - 20px)">
-              <SubfiguresGrid
-                pageNumber={current.page}
-                noFigure={current.no_subfig}
-                subfigures={current.subfigures}
-                documentId={documentId}
-                maxH={dimensions.h}
-              />
+              {displayMode === 'BBOX' && (
+                <FigureWBboxes
+                  pageNumber={current.page}
+                  noFigure={current.no_subfig}
+                  subfigures={current.subfigures}
+                  documentId={documentId}
+                  maxH={dimensions.h}
+                  bboxes={bboxes}
+                />
+              )}
+              {displayMode === 'SUBFIGURES' && (
+                <SubfiguresGrid
+                  pageNumber={current.page}
+                  noFigure={current.no_subfig}
+                  subfigures={current.subfigures}
+                  documentId={documentId}
+                  maxH={dimensions.h}
+                  bboxes={bboxes}
+                />
+              )}
             </Box>
             <Box
               w={`${100 - subfigsWidth}%`}
@@ -222,14 +248,39 @@ const FigureCard = ({
   )
 }
 
+const FigureWBboxes = ({
+  documentId,
+  pageNumber,
+  noFigure,
+  subfigures,
+  maxH,
+  bboxes,
+}) => {
+  const figureURL = `${SUBFIGURES_ENDPOINT}/${documentId}/${pageNumber}_${noFigure}.jpg`
+  const sfBboxes = subfigures.map(sf => ({
+    name: sf.name,
+    bbox: bboxes[`${pageNumber}_${noFigure}`][sf.name],
+    type: sf.type,
+    color: Code2Color[sf.type],
+  }))
+  console.log(figureURL)
+  console.log(sfBboxes)
+
+  return (
+    <Box maxH={`${maxH - 30}px`} h="full" w="full">
+      <ImageBoundingBoxViewer img_src={figureURL} bboxes={sfBboxes} />
+    </Box>
+  )
+}
+
 const SubfiguresGrid = ({
   documentId,
   pageNumber,
   noFigure,
   subfigures,
   maxH,
+  bboxes,
 }) => {
-  console.log(Code2Color[subfigures[0].type])
   return (
     <Box maxH={`${maxH - 30}px`} h="full" w="full" overflowY="scroll" p={1}>
       <Grid

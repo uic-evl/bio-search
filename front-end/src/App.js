@@ -2,15 +2,21 @@ import {useState} from 'react'
 import {SearchBar} from './components/search_bar/search_bar'
 import {ResultsContainer} from './components/search_results.js/results_container'
 import {DetailsContainer} from './components/doc_details/details'
-import {Box, Flex} from '@chakra-ui/react'
+import {Box, Flex, Select as ChakraSelect} from '@chakra-ui/react'
 
 import {search, getDetails} from './api/index'
+
+const displayModes = [
+  {value: 'BBOX', label: 'Bounding Boxes'},
+  {value: 'SUBFIGURES', label: 'Subfigures'},
+]
 
 function App() {
   const [documents, setDocuments] = useState(null)
   const [detailsTop, setDetailsTop] = useState(null)
   const [detailsBottom, setDetailsBottom] = useState(null)
   const [selectedIds, setSelectedIds] = useState([])
+  const [displayMode, setDisplayMode] = useState('SUBFIGURES')
 
   const handleSearch = async (terms, startDate, endDate, modalities) => {
     const maxDocs = 2000
@@ -62,11 +68,22 @@ function App() {
           />
         </Box>
         <Box w="75%">
+          <ChakraSelect
+            size={'sm'}
+            onChange={e => setDisplayMode(e.target.value)}
+          >
+            {displayModes.map(el => (
+              <option key={el.value} value={el.value}>
+                {el.label}
+              </option>
+            ))}
+          </ChakraSelect>
           {detailsTop && (
             <DetailsContainer
               document={detailsTop}
               position="top"
               onClickClose={handleCloseDetails}
+              displayMode={displayMode}
             />
           )}
           {detailsBottom && (
@@ -74,6 +91,7 @@ function App() {
               document={detailsBottom}
               position="bottom"
               onClickClose={handleCloseDetails}
+              displayMode={displayMode}
             />
           )}
         </Box>
