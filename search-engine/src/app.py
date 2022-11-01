@@ -62,6 +62,7 @@ def search():
                             only_with_images=image_only,
                             highlight=highlight)
 
+    print(results)
     for result in results:
         result.modalities_count = GXD_DATA[result.id]['modalities']
 
