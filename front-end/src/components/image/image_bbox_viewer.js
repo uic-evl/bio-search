@@ -8,11 +8,13 @@ const ImageBoundingBoxViewer = ({img_src, bboxes}) => {
   const [height, setHeight] = useState(0)
   const [width, setWidth] = useState(0)
 
+  console.log('bbox', height)
+
   useLayoutEffect(() => {
     // get size based on parent's size
     const containerDiv = containerRef.current.parentElement
-    setWidth(containerDiv.offsetWidth)
     setHeight(containerDiv.offsetHeight)
+    setWidth(containerDiv.offsetWidth)
   }, [bboxes, img_src])
 
   useEffect(() => {
@@ -37,16 +39,18 @@ const ImageBoundingBoxViewer = ({img_src, bboxes}) => {
 
         // draw bounding boxes
         bboxes.forEach(el => {
-          ctx.save()
-          ctx.strokeStyle = el.color
-          ctx.lineWidth = 5
-          ctx.strokeRect(
-            el.bbox[0] * scale + x,
-            el.bbox[1] * scale + y,
-            el.bbox[2] * scale,
-            el.bbox[3] * scale,
-          )
-          ctx.restore()
+          if (el.bbox) {
+            ctx.save()
+            ctx.strokeStyle = el.color
+            ctx.lineWidth = 5
+            ctx.strokeRect(
+              el.bbox[0] * scale + x,
+              el.bbox[1] * scale + y,
+              el.bbox[2] * scale,
+              el.bbox[3] * scale,
+            )
+            ctx.restore()
+          }
         })
       }
     }
