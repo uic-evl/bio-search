@@ -29,6 +29,7 @@ const EnhancedSurrogate = ({document, position, onClickClose}) => {
     position,
     onClickClose,
   }
+  console.log('height flex', height)
 
   return (
     <HalfScreenContainer>
@@ -101,7 +102,7 @@ const FigureWBboxes = ({
   }))
 
   return (
-    <Box minH={`${maxH}px`} w="full">
+    <Box minH={`${maxH}px`} maxH={`${maxH}px`} w="full">
       <ImageBoundingBoxViewer img_src={figureURL} bboxes={sfBboxes} />
     </Box>
   )
@@ -114,7 +115,7 @@ const SurrogateFigure = ({document, page, bboxes, maxHeight}) => {
 
   return (
     <Flex h="full" w="full">
-      <Box w={`${figureWidth}%`} minH="calc(100% - 20px)">
+      <Box w={`${figureWidth}%`} minH="calc(100% - 30px)">
         <FigureWBboxes
           pageNumber={figure.page}
           noFigure={figure.no_subfig}
