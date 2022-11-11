@@ -91,13 +91,17 @@ def get_document(id):
         for (page, figures) in document["pages"].items()
     ]
     document["pages"] = sorted(document["pages"], key=lambda x: x["page"])
+
+    number_figures = 0
     for page in document["pages"]:
         page[
             "page_url"
         ] = f"{document_id}/{document_id}-{str(page['figures'][0]['page']).zfill(6)}.png"
+        number_figures += len(page["figures"])
 
     document["first_page"] = f"{document_id}/{document_id}-000001.png"
     document["bboxes"] = bboxes_json
+    document["number_figures"] = number_figures
     return document
 
 
