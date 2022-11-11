@@ -7,6 +7,7 @@ import {
   IconButton,
   Center,
   Button,
+  Badge,
 } from '@chakra-ui/react'
 import {CloseIcon} from '@chakra-ui/icons'
 import {ImageViewer} from '../image_viewer'
@@ -25,6 +26,7 @@ const EnhancedSurrogate = ({document, position, onClickClose}) => {
 
   const headerProps = {
     title: document.title,
+    numberFigures: document.number_figures,
     position,
     onClickClose,
   }
@@ -72,8 +74,11 @@ const HalfScreenContainer = props => (
   </Box>
 )
 
-const SurrogateHeader = ({title, onClickClose, position}) => (
+const SurrogateHeader = ({title, numberFigures, onClickClose, position}) => (
   <Flex w="full">
+    <Badge mr={1} background="black" color="white">
+      #Figs: {numberFigures}
+    </Badge>
     <Text h="20px">{title}</Text>
     <Spacer />
     <IconButton

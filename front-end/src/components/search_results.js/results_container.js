@@ -82,7 +82,6 @@ const SearchResultCard = ({result, onClickOpen, selected}) => {
             <DownloadIcon mx="2px" />
           </Link>
         </Tooltip>
-
         {Object.keys(result.modalities_count).map(key => (
           <Tooltip
             label={`# ${key} subfigures: ${result.modalities_count[key]}`}
