@@ -8,8 +8,6 @@ const ImageBoundingBoxViewer = ({img_src, bboxes}) => {
   const [height, setHeight] = useState(0)
   const [width, setWidth] = useState(0)
 
-  console.log('bbox', height)
-
   useLayoutEffect(() => {
     // get size based on parent's size
     const containerDiv = containerRef.current.parentElement

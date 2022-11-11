@@ -10,7 +10,7 @@ import {
 } from '@chakra-ui/react'
 import {CloseIcon} from '@chakra-ui/icons'
 import {ImageViewer} from '../image_viewer'
-import {Code2Color, Code2Long} from '../../utils/modalityMap'
+import {Code2Color} from '../../utils/modalityMap'
 import ImageBoundingBoxViewer from '../image/image_bbox_viewer'
 import useDimensions from 'react-cool-dimensions'
 
@@ -18,9 +18,8 @@ const API_ENDPOINT = process.env.REACT_APP_IMAGES_ENDPOINT
 const SUBFIGURES_ENDPOINT = process.env.REACT_APP_SUBIMAGES_ENDPOINT
 
 const EnhancedSurrogate = ({document, position, onClickClose}) => {
-  console.log(document.pages)
-  const [pageNumber, setPageNumber] = useState(0)
-  const {observe, width, height} = useDimensions({
+  const [pagePosition, setPagePosition] = useState(0)
+  const {observe, height} = useDimensions({
     polyfill: ResizeObserver,
   })
 
@@ -29,18 +28,34 @@ const EnhancedSurrogate = ({document, position, onClickClose}) => {
     position,
     onClickClose,
   }
-  console.log('height flex', height)
+
+  const handleClickPrevious = pageIdx => {
+    const idx = pageIdx === 0 ? document.pages.length - 1 : pageIdx - 1
+    setPagePosition(idx)
+  }
+
+  const handleClickNext = pageIdx => {
+    const idx = pageIdx === document.pages.length - 1 ? 0 : pageIdx + 1
+    setPagePosition(idx)
+  }
 
   return (
     <HalfScreenContainer>
       <Box w="full" h="full" bgColor="gray.400" p={4}>
         <SurrogateHeader {...headerProps} />
         <Flex w="full" h="calc(100% - 24px)" mt={1} ref={observe}>
-          {document && <SurrogatePage page={document.pages[pageNumber]} />}
+          {document && (
+            <SurrogatePage
+              page={document.pages[pagePosition]}
+              pageIdx={pagePosition}
+              onClickPrevious={handleClickPrevious}
+              onClickNext={handleClickNext}
+            />
+          )}
           {document && height > 0 && (
             <SurrogateFigure
               document={document}
-              page={document.pages[pageNumber]}
+              page={document.pages[pagePosition]}
               maxHeight={height}
               bboxes={document.bboxes}
             />
@@ -52,7 +67,7 @@ const EnhancedSurrogate = ({document, position, onClickClose}) => {
 }
 
 const HalfScreenContainer = props => (
-  <Box w="full" h="calc((100vh)/2)" p={1}>
+  <Box w="full" h="calc((100vh)/2 - 80px)" p={1}>
     {props.children}
   </Box>
 )
@@ -69,17 +84,20 @@ const SurrogateHeader = ({title, onClickClose, position}) => (
   </Flex>
 )
 
-const SurrogatePage = ({page}) => (
+const SurrogatePage = ({page, pageIdx, onClickPrevious, onClickNext}) => (
   <Box h="full" w="30%">
     <Box h="calc(100% - 35px)">
       {document && <ImageViewer src={`${API_ENDPOINT}/${page.page_url}`} />}
     </Box>
     <Box w="full" h="35px">
       <Center p={2}>
-        <Button size="sm" mr={2}>
+        <Button size="sm" mr={1} onClick={() => onClickPrevious(pageIdx)}>
           Prev
         </Button>
-        <Button size="sm">Next</Button>
+        <span>pg.&nbsp;{page.page}</span>
+        <Button size="sm" ml={1} onClick={() => onClickNext(pageIdx)}>
+          Next
+        </Button>
       </Center>
     </Box>
   </Box>
@@ -111,7 +129,6 @@ const FigureWBboxes = ({
 const SurrogateFigure = ({document, page, bboxes, maxHeight}) => {
   const figure = page.figures[0]
   const figureWidth = figure.caption.length > 0 ? 50 : 100
-  console.log(figureWidth)
 
   return (
     <Flex h="full" w="full">

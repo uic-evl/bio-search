@@ -37,7 +37,6 @@ const NumberResults = ({numberResults}) => {
 }
 
 const SearchResultCard = ({result, onClickOpen, selected}) => {
-  console.log(result)
   const year = publishDate => publishDate.substring(0, 4)
 
   const boxShadow = selected ? '0 4px 8px 0 rgba(0,0,0,0.2)' : null
