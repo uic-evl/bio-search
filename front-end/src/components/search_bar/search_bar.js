@@ -17,10 +17,19 @@ const options = [
   // {value: 'CORD-19', label: 'CORD-19'},
 ]
 
+const selectControlStyles = {
+  control: styles => ({
+    ...styles,
+    borderRadius: '0.375rem',
+    borderColor: '#E2E8F0',
+    minHeight: '40px',
+  }),
+}
+
 export const SearchBar = ({onSearch}) => {
   const [query, setQuery] = useState('')
-  const [startYear, setStartYear] = useState('')
-  const [endYear, setEndYear] = useState('')
+  const [startYear, setStartYear] = useState(2012)
+  const [endYear, setEndYear] = useState(2016)
   const [modalities, setModalities] = useState([])
 
   const onClick = () => {
@@ -35,9 +44,9 @@ export const SearchBar = ({onSearch}) => {
   }
 
   return (
-    <Box w="full" h="150px" p={4} pb={0} zIndex={400}>
+    <Box w="full" h="100px" p={4} pb={0} zIndex={400}>
       <Flex w="full">
-        <Box w="50%">
+        <Box w="25%">
           <FormControl id="search">
             <FormLabel mb={0} fontSize={10}>
               SEARCH
@@ -46,17 +55,18 @@ export const SearchBar = ({onSearch}) => {
               type="text"
               value={query}
               onChange={e => setQuery(e.target.value)}
-              size={'sm'}
+              size={'md'}
+              placeholder="e.g. disease"
             />
           </FormControl>
         </Box>
-        <Box w="50%">
+        <Box w="75%">
           <Flex ml={2}>
             <FormControl id="domain" w="150px">
               <FormLabel mb={0} fontSize={10}>
                 COLLECTION
               </FormLabel>
-              <ChakraSelect size={'sm'}>
+              <ChakraSelect size={'md'}>
                 {options.map(el => (
                   <option key={el.value} value={el.value}>
                     {el.label}
@@ -65,33 +75,52 @@ export const SearchBar = ({onSearch}) => {
               </ChakraSelect>
             </FormControl>
 
-            <FormControl id="start-date" ml={2} w="100px">
+            <FormControl id="start-date" ml={2} w="110px">
               <FormLabel mb={0} fontSize={10}>
                 FROM
               </FormLabel>
               <Input
-                type="text"
+                type="number"
                 value={startYear}
                 onChange={e => setStartYear(e.target.value)}
-                size={'sm'}
+                size={'md'}
               />
             </FormControl>
 
-            <FormControl id="end-date" ml={2} w="100px">
+            <FormControl id="end-date" ml={2} w="110px">
               <FormLabel mb={0} fontSize={10}>
                 TO
               </FormLabel>
               <Input
-                type="text"
+                type="number"
                 value={endYear}
                 onChange={e => setEndYear(e.target.value)}
-                size={'sm'}
+                size={'md'}
               />
             </FormControl>
+            <FormControl id="modalities" ml={2}>
+              <FormLabel mb={0} fontSize={10}>
+                WITH MODALITIES:
+              </FormLabel>
+              <Select
+                name="modalities"
+                options={modalityOptions}
+                value={modalities}
+                isMulti
+                className="basic-multi-select"
+                classNamePrefix="select"
+                onChange={opts => setModalities(opts)}
+                styles={selectControlStyles}
+              />
+            </FormControl>
+            <Spacer />
+            <Button w="200px" size="md" ml={2} mt={4} onClick={onClick}>
+              Search
+            </Button>
           </Flex>
         </Box>
       </Flex>
-      <Flex mt={1} w="75%">
+      {/* <Flex mt={1} w="75%">
         <FormControl id="modalities" ml={2}>
           <FormLabel mb={0} fontSize={10}>
             WITH MODALITIES:
@@ -110,7 +139,7 @@ export const SearchBar = ({onSearch}) => {
         <Button w="200px" size="sm" ml={2} mt={4} onClick={onClick}>
           Search
         </Button>
-      </Flex>
+      </Flex> */}
     </Box>
   )
 }

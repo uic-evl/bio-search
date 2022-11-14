@@ -13,9 +13,15 @@ import {Long2Short, Long2Color} from '../../utils/modalityMap'
 
 const PDFS_ENDPOINT = process.env.REACT_APP_PDFS_ENDPOINT
 
-export const ResultsContainer = ({results, onClickOpen, selectedIds}) => {
+export const ResultsContainer = ({
+  results,
+  onClickOpen,
+  selectedIds,
+  isLoading,
+}) => {
   return (
     <Box bg="gray.100" h="calc(100vh - 150px)" p={4} overflowY="scroll">
+      {isLoading && <SearchingFeedback />}
       {results && <NumberResults numberResults={results.length} />}
       {results &&
         results.map(document => (
@@ -31,6 +37,8 @@ export const ResultsContainer = ({results, onClickOpen, selectedIds}) => {
     </Box>
   )
 }
+
+const SearchingFeedback = () => <Box mb={2}>Searching...</Box>
 
 const NumberResults = ({numberResults}) => {
   return <Box mb={2}>{numberResults} documents found</Box>
@@ -53,7 +61,7 @@ const SearchResultCard = ({result, onClickOpen, selected}) => {
       background={selected ? 'white' : null}
     >
       <Flex>
-        <Tooltip label="display details ">
+        {/* <Tooltip label="display details ">
           <IconButton
             aria-label="Open details"
             icon={<ViewIcon />}
@@ -61,12 +69,21 @@ const SearchResultCard = ({result, onClickOpen, selected}) => {
             disabled={selected}
             variant="link"
           ></IconButton>
-        </Tooltip>
+        </Tooltip> */}
         <chakra.p
           dangerouslySetInnerHTML={{
             __html: result.title,
           }}
           color="blue.600"
+          _hover={{
+            textDecoration: !selected ? 'underline' : 'none',
+            cursor: !selected ? 'pointer' : 'auto',
+          }}
+          onClick={() => {
+            if (!selected) {
+              onClickOpen(result.id)
+            }
+          }}
         ></chakra.p>
       </Flex>
       <Text
@@ -85,6 +102,7 @@ const SearchResultCard = ({result, onClickOpen, selected}) => {
         {Object.keys(result.modalities_count).map(key => (
           <Tooltip
             label={`# ${key} subfigures: ${result.modalities_count[key]}`}
+            key={`tooltip-${key}`}
           >
             <Badge key={key} mr={1} background={Long2Color[key]} color="black">
               {Long2Short[key]}:{result.modalities_count[key]}
