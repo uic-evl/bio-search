@@ -1,14 +1,5 @@
-import {
-  Box,
-  Text,
-  Badge,
-  Flex,
-  IconButton,
-  Tooltip,
-  Link,
-  chakra,
-} from '@chakra-ui/react'
-import {DownloadIcon, ViewIcon} from '@chakra-ui/icons'
+import {Box, Text, Badge, Flex, Tooltip, Link, chakra} from '@chakra-ui/react'
+import {DownloadIcon} from '@chakra-ui/icons'
 import {Long2Short, Long2Color} from '../../utils/modalityMap'
 
 const PDFS_ENDPOINT = process.env.REACT_APP_PDFS_ENDPOINT
@@ -61,15 +52,6 @@ const SearchResultCard = ({result, onClickOpen, selected}) => {
       background={selected ? 'white' : null}
     >
       <Flex>
-        {/* <Tooltip label="display details ">
-          <IconButton
-            aria-label="Open details"
-            icon={<ViewIcon />}
-            onClick={() => onClickOpen(result.id)}
-            disabled={selected}
-            variant="link"
-          ></IconButton>
-        </Tooltip> */}
         <chakra.p
           dangerouslySetInnerHTML={{
             __html: result.title,

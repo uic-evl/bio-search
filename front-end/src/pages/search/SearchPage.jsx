@@ -1,22 +1,17 @@
-import {useState} from 'react'
+import {useReducer} from 'react'
 import {SearchBar} from '../../components/search_bar/search_bar'
 import {ResultsContainer} from '../../components/search_results.js/results_container'
 import EnhancedSurrogate from '../../components/doc_details/enhanced_surrogate'
 import {Box, Flex, useToast} from '@chakra-ui/react'
 
 import {search, getDetails} from '../../api/index'
+import {initState, searchReducer} from './searchReducer'
 
 function SearchPage() {
-  const [isLoading, setIsLoading] = useState(false)
-  const [documents, setDocuments] = useState(null)
-  const [detailsTop, setDetailsTop] = useState(null)
-  const [detailsBottom, setDetailsBottom] = useState(null)
-  const [selectedIds, setSelectedIds] = useState([])
+  const [state, dispatch] = useReducer(searchReducer, initState)
   const toast = useToast()
 
   const handleSearch = async (terms, startDate, endDate, modalities) => {
-    console.log(terms)
-
     if (terms == null) {
       toast({
         position: 'top',
@@ -30,11 +25,7 @@ function SearchPage() {
 
     const maxDocs = 2000
     const collection = 'gxd'
-    setDocuments(null)
-    setSelectedIds([])
-    setDetailsTop(null)
-    setDetailsBottom(null)
-    setIsLoading(true)
+    dispatch({type: 'START_SEARCH'})
     const sleep = ms => new Promise(r => setTimeout(r, ms))
     const results = await search(
       terms,
@@ -45,12 +36,11 @@ function SearchPage() {
       modalities,
     )
     await sleep(1000)
-
-    setIsLoading(false)
-    setDocuments(results)
+    dispatch({type: 'END_SEARCH', payload: results})
   }
 
   const handleOpenDetails = async documentId => {
+    const {detailsTop, detailsBottom} = state
     if (detailsTop && detailsBottom) {
       toast({
         title: 'Details panel full',
@@ -64,22 +54,17 @@ function SearchPage() {
     }
 
     const details = await getDetails(documentId)
-    if (!detailsTop) setDetailsTop(details)
-    else setDetailsBottom(details)
-    setSelectedIds([...selectedIds, documentId])
+    let payload = {details, documentId}
+    if (!detailsTop) payload = {...payload, position: 'top'}
+    else payload = {...payload, position: 'bottom'}
+    dispatch({type: 'OPEN_DETAILS', payload})
   }
 
   const handleCloseDetails = position => {
-    console.log('closing')
-    let idToRemove
-    if (position === 'top') {
-      setDetailsTop(null)
-      idToRemove = detailsTop.cord_uid
-    } else {
-      setDetailsBottom(null)
-      idToRemove = detailsBottom.cord_uid
-    }
-    setSelectedIds(selectedIds.filter(id => id !== idToRemove))
+    const {detailsTop, detailsBottom} = state
+    const documentId =
+      position === 'top' ? detailsTop.cord_uid : detailsBottom.cord_uid
+    dispatch({type: 'CLOSE_DETAILS', payload: {documentId}})
   }
 
   return (
@@ -88,25 +73,25 @@ function SearchPage() {
       <Flex pl={4} h="calc(100vh - 150px)" maxH="calc(100vh - 150px)">
         <Box w="25%">
           <ResultsContainer
-            results={documents}
+            results={state.documents}
             onClickOpen={handleOpenDetails}
-            selectedIds={selectedIds}
-            isLoading={isLoading}
+            selectedIds={state.selectedIds}
+            isLoading={state.isLoading}
           />
         </Box>
         <Box w="75%" h="100%" maxH="calc(100vh - 150px)">
-          {detailsTop && (
+          {state.detailsTop && (
             <EnhancedSurrogate
               key={'surrogate-top'}
-              document={detailsTop}
+              document={state.detailsTop}
               position="top"
               onClickClose={handleCloseDetails}
             />
           )}
-          {detailsBottom && (
+          {state.detailsBottom && (
             <EnhancedSurrogate
               key={'surrogate-bottom'}
-              document={detailsBottom}
+              document={state.detailsBottom}
               position="bottom"
               onClickClose={handleCloseDetails}
             />
