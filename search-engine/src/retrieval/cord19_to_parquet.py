@@ -6,8 +6,8 @@ structure described in retrieval/index.
 
 from dataclasses import asdict
 import pandas as pd
-from .utils import simple_select
-from .models import LuceneDocument
+from utils import simple_select
+from models import LuceneDocument
 from datetime import datetime
 from dotenv import dotenv_values
 from argparse import ArgumentParser
@@ -54,8 +54,8 @@ def get_documents_modality_info(db_params: dict) -> list[tuple]:
 
 
 def get_documents_to_index(db_params: dict) -> list[LuceneDocument]:
-    """ Retrieve the cord19 metadata and the modality information. Merge the
-        resulting collection on documents supported by the indexing engine.
+    """Retrieve the cord19 metadata and the modality information. Merge the
+    resulting collection on documents supported by the indexing engine.
     """
     lucene_docs = []
     document_tuples = get_documents(db_params)
@@ -91,8 +91,8 @@ if __name__ == "__main__":
         prog="cord2parquet",
         description="Save cord19 data from db to parquet for indexing",
     )
-    parser.add_argument("-c", "--config", type="str")
-    parser.add_argument("-o", "--output", type="str")
+    parser.add_argument("-c", "--config", type=str)
+    parser.add_argument("-o", "--output", type=str)
 
     args = parser.parse_args()
     config = dotenv_values(args.config)
