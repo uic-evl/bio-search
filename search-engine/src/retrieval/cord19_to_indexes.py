@@ -11,15 +11,15 @@ arguments:
 from argparse import ArgumentParser
 import lucene
 from pandas import read_parquet
-from retrieval.index_writer import Indexer
+from index_writer import Indexer
 
 if __name__ == "__main__":
     parser = ArgumentParser(
         prog="cordParquet2Indexes",
         description="Read a parquet file and output lucene indexes",
     )
-    parser.add_argument("-p", "--parquet", type="str")
-    parser.add_argument("-i", "--indexes", type="str")
+    parser.add_argument("-p", "--parquet", type=str)
+    parser.add_argument("-i", "--indexes", type=str)
     args = parser.parse_args()
 
     vm_env = lucene.getVMEnv() or lucene.initVM(  # pylint: disable=no-member
