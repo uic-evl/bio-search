@@ -4,34 +4,24 @@ documents that have image data associated. The extracted records follow the
 structure described in retrieval/index.
 """
 
-from utils import connect
+from .utils import connect, simple_select
 
 
 def get_documents(db_params: dict):
-    try:
-        conn = connect(**db_params)
-        with conn.cursor() as cur:
-            query = """
+    """Get all CORD19 documents with figures extracted"""
+    query = """
               SELECT d.id, d.repository as source_x, d.title, d.abstract, d.publication_date as publish_time, d.journal, d.authors, d.uri as url, d.pmcid, COUNT(f.name) as number_figures
               FROM dev.documents d, dev.figures f
               WHERE d.project='cord19' and d.uri is not NULL and f.doc_id=d.id and f.fig_type=0
               GROUP BY d.id
-            """
-            cur.execute(query)
-            rows = cur.fetchall()
-            return rows
-    except Exception as e:
-        print(e)
-    finally:
-        conn.close()
+          """
+    return simple_select(db_params, query)
 
 
 def get_documents_modality_info(db_params: dict):
-    """ Get the modalities as an array for each document id """
-    try:
-        conn = connect(**db_params)
-        with conn.cursor() as cur:
-            query = """
+    """Get the modalities as an array for each document id"""
+
+    query = """
               SELECT d.id, array_agg(l.prediction)
               FROM dev.figures as f, dev.labels_cord19 l, dev.documents d
               WHERE 
@@ -54,10 +44,4 @@ def get_documents_modality_info(db_params: dict):
                   )
               GROUP BY d.id
             """
-            cur.execute(query)
-            rows = cur.fetchall()
-            return rows
-    except Exception as e:
-        print(e)
-    finally:
-        conn.close()
+    return simple_select(db_params, query)
