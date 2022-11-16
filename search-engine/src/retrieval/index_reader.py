@@ -50,7 +50,7 @@ class Reader():
                 elif start_date and not end_date:
                     query_date_from = strdate2long(start_date)
                     query_date_to = strdate2long(start_date)
-                range_query = LongPoint.newRangeQuery("publish_time",
+                range_query = LongPoint.newRangeQuery("pub_date",
                                                       query_date_from,
                                                       query_date_to)
             else:
@@ -97,15 +97,17 @@ class Reader():
 
                 title = hit_doc.get("title")
                 abstract = hit_doc.get("abstract")
+                num_figures = int(hit_doc.get("num_figures"))
                 if highlight:
                     hl_title, hl_abstract = self.get_highlight(hit_doc)
                     title = hl_title or title
                     abstract = hl_abstract or abstract
 
-                result = SearchResult(id=hit_doc.get("cord_uid"),
+                result = SearchResult(id=hit_doc.get("docId"),
                                       title=title,
                                       abstract=abstract,
                                       publish_date=hit_doc.get("publish"),
+                                      num_figures=num_figures,
                                       modalities=modalities)
                 results.append(result)
             return results

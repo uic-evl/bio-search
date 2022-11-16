@@ -12,6 +12,7 @@ class SearchResult:
     abstract: str
     publish_date: str
     modalities: List[str]
+    num_figures: int
     modalities_count: dict = field(init=False, default_factory=dict)
 
 

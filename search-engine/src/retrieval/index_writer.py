@@ -60,6 +60,7 @@ class Indexer:
             "url": StringField.TYPE_STORED,
             "pmcid": StringField.TYPE_STORED,
             "modalities": StringField.TYPE_STORED,
+            "num_figures": StringField.TYPE_STORED
         }
 
         store = SimpleFSDirectory(Paths.get(self.store_path))
@@ -72,7 +73,7 @@ class Indexer:
             ) in dataframe.iterrows():
                 document = Document()
                 for key, val in fields.items():
-                    if key == "publish_time":
+                    if key == "pub_date":
                         date_millis = date2long(row[key])
                         document.add(LongPoint(key, date_millis))
                         document.add(
