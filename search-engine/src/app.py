@@ -5,10 +5,12 @@ from pathlib import Path
 from flask import Flask, request
 from flask_cors import CORS, cross_origin
 from markupsafe import escape
+from collections import Counter
 import lucene
 
 from .retrieval.index_reader import Reader
 from .retrieval.search_results import SearchResultEncoder
+from .retrieval.utils import simple_select
 
 app = Flask(__name__)
 CORS(app)
@@ -67,9 +69,8 @@ def search():
         highlight=highlight,
     )
 
-    print(results)
     for result in results:
-        result.modalities_count = GXD_DATA[result.id]["modalities"]
+        result.modalities_count = Counter(result.modalities)
 
     encoded = dumps(results, cls=SearchResultEncoder, indent=2)
     return encoded
@@ -103,6 +104,23 @@ def get_document(id):
     document["bboxes"] = bboxes_json
     document["number_figures"] = number_figures
     return document
+
+
+@cross_origin
+@app.route(ROOT + "/document2/<id>", methods=["GET"])
+def get_document_db(id):
+    """test function"""
+    document_id = escape(id)
+    config = {
+        "dbname": getenv("dbname"),
+        "user": getenv("user"),
+        "password": getenv("password"),
+        "port": getenv("port"),
+        "host": getenv("host"),
+    }
+    query = f"select id, title from dev.documents where id={document_id}"
+    rows = simple_select(config, query)
+    return rows[0][1]
 
 
 if __name__ == "__main__":
