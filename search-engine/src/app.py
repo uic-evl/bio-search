@@ -11,6 +11,7 @@ import lucene
 from .retrieval.index_reader import Reader
 from .retrieval.search_results import SearchResultEncoder
 from .retrieval.utils import simple_select
+from .retrieval.document_details import fetch_doc_by_id
 
 app = Flask(__name__)
 CORS(app)
@@ -118,9 +119,8 @@ def get_document_db(id):
         "port": getenv("port"),
         "host": getenv("host"),
     }
-    query = f"select id, title from dev.documents where id={document_id}"
-    rows = simple_select(config, query)
-    return rows[0][1]
+    document = fetch_doc_by_id(config, document_id)
+    return document
 
 
 if __name__ == "__main__":
