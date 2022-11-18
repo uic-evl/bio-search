@@ -6,18 +6,21 @@ from dataclasses import dataclass, field
 
 @dataclass
 class SearchResult:
-    """ keep track of results from index """
+    """keep track of results from index"""
+
     id: str
     title: str
     abstract: str
     publish_date: str
     modalities: List[str]
     num_figures: int
+    url: str
     modalities_count: dict = field(init=False, default_factory=dict)
 
 
 class SearchResultEncoder(json.JSONEncoder):
-    """ Encode search result to json """
+    """Encode search result to json"""
+
     def default(self, o):
         if isinstance(o, SearchResult):
             return o.__dict__

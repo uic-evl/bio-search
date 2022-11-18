@@ -7,6 +7,7 @@ import {
   Flex,
   Button,
   Spacer,
+  chakra,
 } from '@chakra-ui/react'
 import Select from 'react-select'
 import {modalityOptions} from '../../utils/modalityMap'
@@ -18,6 +19,66 @@ const selectControlStyles = {
     borderColor: '#E2E8F0',
     minHeight: '40px',
   }),
+}
+
+const SampleQuery = ({
+  text,
+  onSearch,
+  setQuery,
+  setStartYear,
+  setEndYear,
+  setModalities,
+}) => {
+  const startDate = null
+  const endDate = null
+  const handleOnClick = () => {
+    setQuery(text)
+    setStartYear(2012)
+    setEndYear(2016)
+    setModalities([])
+    onSearch(text, startDate, endDate, [])
+  }
+
+  return (
+    <chakra.p
+      mr={2}
+      color="blue.500"
+      _hover={{textDecoration: 'underline', cursor: 'pointer'}}
+      onClick={handleOnClick}
+    >
+      {text}
+    </chakra.p>
+  )
+}
+
+const SampleQueries = ({
+  onSearch,
+  setQuery,
+  setStartYear,
+  setEndYear,
+  setModalities,
+}) => {
+  return (
+    <Flex dir="row" w="full" ml={4}>
+      <chakra.p mr={2}>Try these queries:</chakra.p>
+      <SampleQuery
+        text="disease"
+        onSearch={onSearch}
+        setQuery={setQuery}
+        setStartYear={setStartYear}
+        setEndYear={setEndYear}
+        setModalities={setModalities}
+      />
+      <SampleQuery
+        text="kinase"
+        onSearch={onSearch}
+        setQuery={setQuery}
+        setStartYear={setStartYear}
+        setEndYear={setEndYear}
+        setModalities={setModalities}
+      />
+    </Flex>
+  )
 }
 
 export const SearchBar = ({onSearch}) => {
@@ -101,26 +162,13 @@ export const SearchBar = ({onSearch}) => {
           </Flex>
         </Box>
       </Flex>
-      {/* <Flex mt={1} w="75%">
-        <FormControl id="modalities" ml={2}>
-          <FormLabel mb={0} fontSize={10}>
-            WITH MODALITIES:
-          </FormLabel>
-          <Select
-            name="modalities"
-            options={modalityOptions}
-            value={modalities}
-            isMulti
-            className="basic-multi-select"
-            classNamePrefix="select"
-            onChange={opts => setModalities(opts)}
-          />
-        </FormControl>
-        <Spacer />
-        <Button w="200px" size="sm" ml={2} mt={4} onClick={onClick}>
-          Search
-        </Button>
-      </Flex> */}
+      <SampleQueries
+        onSearch={onSearch}
+        setQuery={setQuery}
+        setStartYear={setStartYear}
+        setEndYear={setEndYear}
+        setModalities={setModalities}
+      />
     </Box>
   )
 }

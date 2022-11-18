@@ -42,11 +42,7 @@ export const SearchPageWide = () => {
     <Box className="container" minH="100vh" w="full">
       <SearchBar onSearch={handleSearch} />
       <Box w="full">
-        <Results
-          results={state.documents}
-          isLoading={state.isLoading}
-          onClickOpen={() => {}}
-        />
+        <Results results={state.documents} isLoading={state.isLoading} />
       </Box>
     </Box>
   )

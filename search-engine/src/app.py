@@ -10,7 +10,6 @@ import lucene
 
 from .retrieval.index_reader import Reader
 from .retrieval.search_results import SearchResultEncoder
-from .retrieval.utils import simple_select
 from .retrieval.document_details import fetch_doc_by_id
 
 app = Flask(__name__)

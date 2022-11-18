@@ -1,5 +1,5 @@
-import {Box, Text, Badge, Flex, Tooltip, Link, chakra} from '@chakra-ui/react'
-import {DownloadIcon} from '@chakra-ui/icons'
+import {Box, Text, Badge, Flex, Tooltip, chakra, Link} from '@chakra-ui/react'
+// import {DownloadIcon} from '@chakra-ui/icons'
 import {Long2Short, Long2Color} from '../../utils/modalityMap'
 
 const ModalityBadges = ({modalityCount}) =>
@@ -14,22 +14,24 @@ const ModalityBadges = ({modalityCount}) =>
     </Tooltip>
   ))
 
-const ResultTitle = ({id, title, selected, onClickOpen}) => (
-  <chakra.p
-    dangerouslySetInnerHTML={{
-      __html: title,
-    }}
-    color="blue.600"
-    _hover={{
-      textDecoration: !selected ? 'underline' : 'none',
-      cursor: !selected ? 'pointer' : 'auto',
-    }}
-    onClick={() => {
-      if (!selected) {
-        onClickOpen(id)
-      }
-    }}
-  ></chakra.p>
+const ResultTitle = ({id, title, url, selected, onClickOpen}) => (
+  <Link href={`${url}`} isExternal mr={1}>
+    <chakra.p
+      dangerouslySetInnerHTML={{
+        __html: title,
+      }}
+      color="blue.600"
+      _hover={{
+        textDecoration: !selected ? 'underline' : 'none',
+        cursor: !selected ? 'pointer' : 'auto',
+      }}
+      onClick={() => {
+        if (!selected) {
+          onClickOpen(id)
+        }
+      }}
+    ></chakra.p>
+  </Link>
 )
 
 const SearchResultCard = ({result, onClickOpen, selected, pdfEndpoint}) => {
@@ -51,6 +53,7 @@ const SearchResultCard = ({result, onClickOpen, selected, pdfEndpoint}) => {
           title={result.title}
           selected={selected}
           id={result.id}
+          url={`https://www.google.com/search?q=${result.url}`}
           onClickOpen={onClickOpen}
         />
       </Flex>
@@ -62,11 +65,14 @@ const SearchResultCard = ({result, onClickOpen, selected, pdfEndpoint}) => {
         }}
       ></Text>
       <Box>
-        <Tooltip label="download article">
+        {/* <Tooltip label="download article">
           <Link href={`${pdfEndpoint}/${result.id}.pdf`} isExternal mr={1}>
             <DownloadIcon mx="2px" />
           </Link>
-        </Tooltip>
+        </Tooltip> */}
+        <Badge mr={1} background="black" color="white">
+          {`#FIGS: ${result.num_figures}`}
+        </Badge>
         <ModalityBadges modalityCount={result.modalities_count} />
       </Box>
     </Box>
