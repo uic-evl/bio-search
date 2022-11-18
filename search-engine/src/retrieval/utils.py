@@ -22,4 +22,5 @@ def simple_select(db_params: dict, query: str) -> list[tuple]:
     except Exception as e:
         print(e)
     finally:
-        conn.close()
+        if conn:
+            conn.close()
