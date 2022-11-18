@@ -11,14 +11,10 @@ from retrieval.index_writer import Indexer
 
 
 def main():
-    """ Parse args and index """
+    """Parse args and index"""
     parser = argparse.ArgumentParser(description="Get indexing params")
-    parser.add_argument('--input_path',
-                        type=str,
-                        help="path to parquet file to index")
-    parser.add_argument('--output_path',
-                        type=str,
-                        help="path to index storage")
+    parser.add_argument("--input_path", type=str, help="path to parquet file to index")
+    parser.add_argument("--output_path", type=str, help="path to index storage")
     args = parser.parse_args()
 
     dataframe = read_parquet(args.input_path)
@@ -33,5 +29,5 @@ def main():
 
 
 if __name__ == "__main__":
-    lucene.initVM(vmargs=['-Djava.awt.headless=true'])
+    lucene.initVM(vmargs=["-Djava.awt.headless=true"])
     main()
