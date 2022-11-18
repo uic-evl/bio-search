@@ -2,10 +2,10 @@
 from os import getenv
 from json import dumps, load
 from pathlib import Path
+from collections import Counter
 from flask import Flask, request
 from flask_cors import CORS, cross_origin
 from markupsafe import escape
-from collections import Counter
 import lucene
 
 from .retrieval.index_reader import Reader

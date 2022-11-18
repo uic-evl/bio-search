@@ -5,17 +5,11 @@ import {
   FormLabel,
   Input,
   Flex,
-  Select as ChakraSelect,
   Button,
   Spacer,
 } from '@chakra-ui/react'
 import Select from 'react-select'
 import {modalityOptions} from '../../utils/modalityMap'
-
-const options = [
-  {value: 'GXD', label: 'GXD'},
-  // {value: 'CORD-19', label: 'CORD-19'},
-]
 
 const selectControlStyles = {
   control: styles => ({
@@ -37,7 +31,7 @@ export const SearchBar = ({onSearch}) => {
     if (startYear) startDate = `${startYear}-01-01`
 
     let endDate = null
-    if (endYear) endDate = `${endYear}-01-01`
+    if (endYear) endDate = `${endYear}-12-31`
 
     const terms = query || null
     onSearch(terms, startDate, endDate, modalities)
@@ -62,19 +56,6 @@ export const SearchBar = ({onSearch}) => {
         </Box>
         <Box w="75%">
           <Flex ml={2}>
-            <FormControl id="domain" w="150px">
-              <FormLabel mb={0} fontSize={10}>
-                COLLECTION
-              </FormLabel>
-              <ChakraSelect size={'md'}>
-                {options.map(el => (
-                  <option key={el.value} value={el.value}>
-                    {el.label}
-                  </option>
-                ))}
-              </ChakraSelect>
-            </FormControl>
-
             <FormControl id="start-date" ml={2} w="110px">
               <FormLabel mb={0} fontSize={10}>
                 FROM

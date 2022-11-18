@@ -60,7 +60,7 @@ class Indexer:
             "url": StringField.TYPE_STORED,
             "pmcid": StringField.TYPE_STORED,
             "modalities": StringField.TYPE_STORED,
-            "num_figures": StringField.TYPE_STORED
+            "num_figures": StringField.TYPE_STORED,
         }
 
         store = SimpleFSDirectory(Paths.get(self.store_path))
@@ -89,7 +89,7 @@ class Indexer:
                                 Field("modality", mod, StringField.TYPE_STORED)
                             )
                     else:
-                        document.add(Field(key, row[key], val))
+                        document.add(Field(key, row[key] if row[key] else "", val))
                 writer.addDocument(document)
                 # TODO: do i need to raise an exception here?
         finally:
