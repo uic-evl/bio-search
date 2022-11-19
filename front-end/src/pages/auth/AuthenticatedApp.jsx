@@ -6,7 +6,7 @@ import {SearchPageWide} from '../search/SearchPageWide'
 
 const AuthenticatedApp = ({user, logout}) => {
   return (
-    <Router>
+    <Router basename="/gxd">
       <Fragment>
         <Routes>
           <Route
