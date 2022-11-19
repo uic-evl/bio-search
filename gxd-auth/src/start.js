@@ -25,6 +25,17 @@ const startServer = ({port = process.env.PORT} = {}) => {
   app.use('/api', router)
   app.use(errorMiddleware)
 
+  let credentials = null
+  if (process.env.HTTPS === 'true') {
+    console.log('setting https')
+    const privateKey = fs.readFileSync(process.env.PK, 'utf8')
+    const certificate = fs.readFileSync(process.env.CRT, 'utf8')
+    // const ca = fs.readFileSync(process.env.CA).toString()
+    credentials = {key: privateKey, cert: certificate} // ,ca }
+
+    app = https.createServer(credentials, app)
+  }
+
   return new Promise(resolve => {
     const server = app.listen(port, () => {
       console.log(`starting server on port ${port}`)
