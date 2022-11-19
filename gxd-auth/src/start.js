@@ -9,10 +9,12 @@ import {
 } from './utils/auth.js'
 import getRouter from './routes/index.js'
 import errorMiddleware from './utils/error-middleware.js'
+import bodyParser from 'body-parser'
 
 const startServer = ({port = process.env.PORT} = {}) => {
   let app = express()
   app.use(cors())
+  app.use(bodyParser.json())
 
   app.use(passport.initialize())
   passport.use('register', registerLocalStrategy)
