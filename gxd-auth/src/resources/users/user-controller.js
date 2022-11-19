@@ -18,8 +18,12 @@ export const registerUser = (req, res, next) => {
 export const login = (req, res, next) => {
   passport.authenticate('login', (err, user, info) => {
     if (err) res.status(500).send(err)
-    else if (info) res.status(400).send(info)
-    else {
+    else if (info) {
+      res.status(200).send({
+        username: null,
+        message: info.message,
+      })
+    } else {
       const token = jwt.sign(
         {
           sub: user.username,

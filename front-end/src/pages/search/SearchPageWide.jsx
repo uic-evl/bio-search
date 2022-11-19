@@ -1,12 +1,12 @@
 import {useReducer} from 'react'
 import {SearchBar} from '../../components/search_bar/search_bar'
 import {Results} from '../../components/search_results.js/results'
-import {Box, useToast} from '@chakra-ui/react'
+import {Flex, Box, useToast, Button} from '@chakra-ui/react'
 import {initState, searchReducer} from './searchReducer'
 
 import {search} from '../../api/index'
 
-export const SearchPageWide = () => {
+export const SearchPageWide = ({logout}) => {
   const [state, dispatch] = useReducer(searchReducer, initState)
   const toast = useToast()
 
@@ -40,6 +40,23 @@ export const SearchPageWide = () => {
 
   return (
     <Box className="container" minH="100vh" w="full">
+      <Flex
+        w="full"
+        direction={'row'}
+        justifyContent="end"
+        pl={4}
+        pr={4}
+        pt={1}
+      >
+        <Button
+          backgroundColor={null}
+          size={'xs'}
+          variant="outline"
+          onClick={logout}
+        >
+          logout
+        </Button>
+      </Flex>
       <SearchBar onSearch={handleSearch} />
       <Box w="full">
         <Results results={state.documents} isLoading={state.isLoading} />

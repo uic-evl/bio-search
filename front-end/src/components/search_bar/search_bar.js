@@ -99,7 +99,7 @@ export const SearchBar = ({onSearch}) => {
   }
 
   return (
-    <Box w="full" h="100px" p={4} pb={0} zIndex={400}>
+    <Box w="full" h="100px" p={4} pt={0} pb={0} zIndex={400}>
       <Flex w="full">
         <Box w="25%">
           <FormControl id="search">
@@ -156,7 +156,14 @@ export const SearchBar = ({onSearch}) => {
               />
             </FormControl>
             <Spacer />
-            <Button w="200px" size="md" ml={2} mt={4} onClick={onClick}>
+            <Button
+              colorScheme={'blue'}
+              w="200px"
+              size="md"
+              ml={2}
+              mt={4}
+              onClick={onClick}
+            >
               Search
             </Button>
           </Flex>

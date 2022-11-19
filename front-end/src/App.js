@@ -1,26 +1,53 @@
-import {Fragment} from 'react'
-import {BrowserRouter as Router, Routes, Route} from 'react-router-dom'
-import SearchOldPage from './pages/search/SearchOldPage'
-import SearchPage from './pages/search/SearchPage'
-import {SearchPageWide} from './pages/search/SearchPageWide'
+import {useState, useEffect} from 'react'
+import AuthenticatedApp from './pages/auth/AuthenticatedApp'
+import {login, logout, getToken, me} from './api/index'
+import UnauthenticatedApp from './pages/auth/UnauthenticatedApp'
+
+const GXD = ({user, login, logout, message}) => {
+  if (user) {
+    return <AuthenticatedApp user={user} logout={logout} />
+  } else {
+    return <UnauthenticatedApp login={login} message={message} />
+  }
+}
 
 function App() {
+  const [user, setUser] = useState(null)
+  const [authenticated, setAuthenticated] = useState(false)
+  const [authMessage, setAuthMessage] = useState('')
+
+  const loginUser = async (username, password) => {
+    const {user, message} = await login(username, password)
+    if (user) setAuthenticated(true)
+    else setAuthMessage(message)
+  }
+
+  const logoutUser = async () => {
+    logout()
+    setUser(null)
+    setAuthenticated(false)
+  }
+
+  useEffect(() => {
+    const getUser = async () => {
+      const token = await getToken()
+      if (token) {
+        const response = await me(token)
+        if (response) {
+          setUser(response.user)
+        }
+      }
+    }
+    getUser()
+  }, [authenticated])
+
   return (
-    <Router>
-      <Fragment>
-        <Routes>
-          <Route path="/biosearch" element={<SearchPageWide />}></Route>
-          <Route
-            path="/biosearch/oldsearch"
-            element={<SearchOldPage />}
-          ></Route>
-          <Route
-            path="/biosearch/searchpanels"
-            element={<SearchPage />}
-          ></Route>
-        </Routes>
-      </Fragment>
-    </Router>
+    <GXD
+      user={user}
+      login={loginUser}
+      logout={logoutUser}
+      message={authMessage}
+    />
   )
 }
 

@@ -52,7 +52,7 @@ const loginLocalStrategy = new LocalStrategy(
       if (isUsernameCorrect && isPasswordCorrect) {
         return done(null, {username, password})
       } else {
-        return done(null, false, {message: 'authentication error'})
+        return done(null, null, {message: 'wrong credentials'})
       }
     } catch (err) {
       return done(err)
