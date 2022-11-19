@@ -1,14 +1,15 @@
 import axios from 'axios'
 
-const API_ENDPOINT = process.env.REACT_APP_API
-
-async function client(endpoint, method, {data, params} = {}) {
-  const headers = {}
+async function client(endpoint, method, {data, params, token} = {}) {
+  const headers = {
+    Authorization: token ? `Bearer ${token}` : undefined,
+    'Content-Type': 'application/json',
+  }
 
   try {
     const response = await axios({
       method,
-      url: `${API_ENDPOINT}/${endpoint}`,
+      url: endpoint,
       data,
       headers,
       params,
@@ -42,6 +43,7 @@ async function run(endpoint, method, {data, token, params} = {}) {
   const {error, payload, message} = await client(endpoint, method, {
     data,
     params,
+    token,
   })
   if (error) throw new Error(message)
   else return payload
