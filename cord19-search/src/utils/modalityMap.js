@@ -129,7 +129,7 @@ const modalityOptions = Object.keys(Long2Color).map(x => ({value: x, label: x}))
 
 const cordModalityOptions = Object.keys(CordToName).map(x => ({
   value: x,
-  label: x,
+  label: CordToName[x],
 }))
 
 export {

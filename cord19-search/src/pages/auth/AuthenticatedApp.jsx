@@ -6,7 +6,7 @@ import {SearchPageWide} from '../search/SearchPageWide'
 
 const AuthenticatedApp = ({user, logout}) => {
   return (
-    <Router basename="/cord19-search">
+    <Router basename="/scholar">
       <Fragment>
         <Routes>
           <Route path="/" element={<SearchPageWide logout={logout} />}></Route>

@@ -34,6 +34,7 @@ const EnhancedSurrogate = ({document}) => {
             onClickPrevious={handleClickPrevious}
             onClickNext={handleClickNext}
             pmcid={document.pmcid}
+            numberPages={document.pages.length}
           />
         )}
         {document && height > 0 && (
@@ -54,6 +55,7 @@ const SurrogatePage = ({
   onClickPrevious,
   onClickNext,
   pmcid,
+  numberPages,
 }) => {
   const paddedPage = page.page.toString().padStart(6, 0)
   const pageUrl = `${pmcid}/${pmcid}-${paddedPage}.png`
@@ -65,23 +67,27 @@ const SurrogatePage = ({
       </Box>
       <Box w="full" h="35px">
         <Center p={2}>
-          <Button
-            colorScheme="blue"
-            size="sm"
-            mr={1}
-            onClick={() => onClickPrevious(pageIdx)}
-          >
-            Prev
-          </Button>
+          {numberPages > 1 && (
+            <Button
+              colorScheme="blue"
+              size="sm"
+              mr={1}
+              onClick={() => onClickPrevious(pageIdx)}
+            >
+              Prev
+            </Button>
+          )}
           <span>pg.&nbsp;{page.page}</span>
-          <Button
-            colorScheme="blue"
-            size="sm"
-            ml={1}
-            onClick={() => onClickNext(pageIdx)}
-          >
-            Next
-          </Button>
+          {numberPages > 1 && (
+            <Button
+              colorScheme="blue"
+              size="sm"
+              ml={1}
+              onClick={() => onClickNext(pageIdx)}
+            >
+              Next
+            </Button>
+          )}
         </Center>
       </Box>
     </Box>
@@ -143,7 +149,6 @@ const SurrogateFigure = ({document, page, maxHeight}) => {
       {figureWidth < 100 && (
         <Flex direction={'column'} w={`${100 - figureWidth}%`}>
           <Box
-            w="full"
             h={numberFigures > 1 ? '90%' : 'full'}
             bgColor="gray.100"
             p={2}

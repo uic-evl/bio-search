@@ -9,8 +9,9 @@ import {
   Spacer,
   chakra,
 } from '@chakra-ui/react'
+import chroma from 'chroma-js'
 import Select from 'react-select'
-import {cordModalityOptions} from '../../utils/modalityMap'
+import {cordModalityOptions, Long2ColorCord} from '../../utils/modalityMap'
 
 const selectControlStyles = {
   control: styles => ({
@@ -19,6 +20,21 @@ const selectControlStyles = {
     borderColor: '#E2E8F0',
     minHeight: '40px',
   }),
+  option: (styles, {data, isSelected, isFocused}) => {
+    const color = chroma(Long2ColorCord[data.value])
+    return {
+      ...styles,
+      backgroundColor: isFocused ? color.alpha(0.3).css() : undefined,
+      color: color.darken().css(),
+    }
+  },
+  multiValue: (styles, {data}) => {
+    const color = chroma(Long2ColorCord[data.value])
+    return {
+      ...styles,
+      backgroundColor: color.alpha(1.0).css(),
+    }
+  },
 }
 
 const SampleQuery = ({
@@ -33,8 +49,8 @@ const SampleQuery = ({
   const endDate = null
   const handleOnClick = () => {
     setQuery(text)
-    setStartYear(2012)
-    setEndYear(2016)
+    setStartYear(2000)
+    setEndYear(2020)
     setModalities([])
     onSearch(text, startDate, endDate, [])
   }
@@ -83,8 +99,8 @@ const SampleQueries = ({
 
 export const SearchBar = ({onSearch}) => {
   const [query, setQuery] = useState('')
-  const [startYear, setStartYear] = useState(2012)
-  const [endYear, setEndYear] = useState(2016)
+  const [startYear, setStartYear] = useState(2000)
+  const [endYear, setEndYear] = useState(2020)
   const [modalities, setModalities] = useState([])
 
   const onClick = () => {

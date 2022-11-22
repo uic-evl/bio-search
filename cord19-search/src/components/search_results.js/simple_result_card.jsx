@@ -1,6 +1,6 @@
 import {Box, Text, Badge, Flex, Tooltip, chakra, Link} from '@chakra-ui/react'
 // import {DownloadIcon} from '@chakra-ui/icons'
-import {Long2ColorCord, Long2Color} from '../../utils/modalityMap'
+import {Long2ColorCord} from '../../utils/modalityMap'
 
 const ModalityBadges = ({modalityCount}) =>
   Object.keys(modalityCount).map(key => (
