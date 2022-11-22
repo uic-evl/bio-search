@@ -25,6 +25,7 @@ export const search = async (
     const joinedMods = queryModalities.join(';')
     queryString += `&modalities=${joinedMods}`
   }
+  queryString += `&ds=${collection}`
 
   const url = `${API_ENDPOINT}/search/${queryString}`
   const payload = await run(url, 'get', {})

@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 def query_document_details(id):
     """simple query to documents table by id"""
     return (
-        f"SELECT d.id, d.title, d.authors, d.journal, COUNT(f.id) "
+        f"SELECT d.id, d.title, d.authors, d.journal, COUNT(f.id), d.pmcid "
         f"FROM dev.documents d, dev.figures f "
         f"WHERE d.id = {id} and f.doc_id = d.id and f.fig_type=0 "
         f"GROUP BY d.id"
@@ -17,8 +17,8 @@ def query_document_details(id):
 def query_fig_subfigs(id):
     """get the figures and subfigures data for a document"""
     return (
-        f"SELECT f.id as figId, sf.id as subfigId, f.caption, f.uri, sf.uri, "
-        f"       sf.coordinates, l.prediction "
+        f"SELECT f.id as figId, sf.id as subfigId, f.caption, f.uri, sf.uri,"
+        f"       sf.coordinates, l.prediction, f.width, f.height "
         f"FROM dev.figures f, dev.figures sf, dev.labels_cord19 l "
         f"WHERE f.doc_id = {id} AND f.fig_type=0 AND sf.parent_id = f.id "
         f"      AND sf.id = l.figure_id "
@@ -44,6 +44,8 @@ class Subfigure:
     subfigure_url: str
     coordinates: list[float]
     prediction: str
+    figure_width: float
+    figure_height: float
     page_number: int = field(init=False)
 
     def __post_init__(self):
@@ -62,6 +64,7 @@ class QueriedDocument:
     title: str
     authors: str
     number_figures: int
+    pmcid: str
 
 
 def fetch_subfigures(db_params: dict, id: int) -> list[Subfigure]:
@@ -78,6 +81,8 @@ def fetch_subfigures(db_params: dict, id: int) -> list[Subfigure]:
                 subfigure_url=record[4],
                 coordinates=record[5],
                 prediction=record[6],
+                figure_width=record[7],
+                figure_height=record[8],
             )
         )
     return subfigures
@@ -91,7 +96,8 @@ def fetch_doc_by_id(db_params, id):
             doc_id=rows[0][0],
             title=rows[0][1],
             authors=rows[0][2],
-            number_figures=rows[0][3],
+            number_figures=rows[0][4],
+            pmcid=rows[0][5],
         )
     else:
         raise Exception(f"data not found for document {id}")
@@ -120,6 +126,8 @@ def fetch_doc_by_id(db_params, id):
                 "caption": subfigs_by_fig[figure_id][0].caption,
                 "page": subfigs_by_fig[figure_id][0].page_number,
                 "url": subfigs_by_fig[figure_id][0].figure_url,
+                "width": int(subfigs_by_fig[figure_id][0].figure_width),
+                "height": int(subfigs_by_fig[figure_id][0].figure_height),
             }
             subfigures = []
             for subfigure in subfigs_by_fig[figure_id]:
@@ -138,4 +146,5 @@ def fetch_doc_by_id(db_params, id):
         "title": document.title,
         "number_figures": document.number_figures,
         "pages": pages,
+        "pmcid": document.pmcid,
     }

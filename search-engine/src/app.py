@@ -15,6 +15,7 @@ from .retrieval.document_details import fetch_doc_by_id
 app = Flask(__name__)
 CORS(app)
 INDEXDIR = getenv("INDEX_PATH")
+CORD19_INDEX_DIR = getenv("CORD_INDEX_PATH")
 DATADIR = getenv("DATA_PATH")
 BBOXESDIR = getenv("BBOXES_PATH")
 ROOT = getenv("FLASK_ROOT")
@@ -42,7 +43,12 @@ def search():
 
     # parse query strings
     args = request.args
-    print(args)
+    ds = args["ds"]
+    if ds is None:
+        raise Exception("parameter dataset cannot be null")
+    if ds not in ["gxd", "cord19"]:
+        raise Exception(f"parameter dataset {ds} is invalid")
+
     term = args["q"] if "q" in args else None
     start_date = args["from"] if "from" in args else None
     end_date = args["to"] if "to" in args else None
@@ -58,7 +64,7 @@ def search():
     if not term and not start_date and not end_date and not modalities:
         return "query missing "
 
-    reader = Reader(INDEXDIR)
+    reader = Reader(INDEXDIR) if ds == "gxd" else Reader(CORD19_INDEX_DIR)
     results = reader.search(
         terms=term,
         start_date=start_date,
