@@ -141,4 +141,5 @@ export {
   modalityOptions,
   Long2ColorCord,
   cordModalityOptions,
+  CordToName,
 }

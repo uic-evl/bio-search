@@ -3,8 +3,8 @@ import {SearchBar} from '../../components/search_bar/search_bar'
 import {Results} from '../../components/search_results.js/results'
 import {Box, useToast} from '@chakra-ui/react'
 import {initState, searchReducer} from './searchReducer'
-
 import {search} from '../../api/index'
+import {ModalityLegend} from '../../components/legend/modalityLegend'
 
 export const SearchPageWide = ({logout}) => {
   const [state, dispatch] = useReducer(searchReducer, initState)
@@ -40,6 +40,7 @@ export const SearchPageWide = ({logout}) => {
 
   return (
     <Box className="container" minH="100vh" w="full">
+      <ModalityLegend />
       <SearchBar onSearch={handleSearch} />
       <Box w="full">
         <Results results={state.documents} isLoading={state.isLoading} />
