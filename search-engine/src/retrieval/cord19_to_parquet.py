@@ -16,7 +16,7 @@ from argparse import ArgumentParser
 def get_documents(db_params: dict) -> list[tuple]:
     """Get all CORD19 documents with figures extracted"""
     query = """
-              SELECT d.id, d.repository as source_x, d.title, d.abstract, d.publication_date as publish_time, d.journal, d.authors, d.uri as url, d.pmcid, COUNT(f.name) as number_figures
+              SELECT d.id, d.repository as source_x, d.title, d.abstract, d.publication_date as publish_time, d.journal, d.authors, d.doi, d.pmcid, COUNT(f.name) as number_figures
               FROM dev.documents d, dev.figures f
               WHERE d.project='cord19' and d.uri is not NULL and f.doc_id=d.id and f.fig_type=0
               GROUP BY d.id
@@ -69,7 +69,7 @@ def get_documents_to_index(db_params: dict) -> list[LuceneDocument]:
                 abstract=document[3],
                 pub_date=datetime.strftime(document[4], "%Y-%m-%d"),
                 journal=document[5],
-                authors=" ".join(document[6]) if document[6] else "",
+                authors=";".join(document[6]) if document[6] else "",
                 url=document[7],
                 pmcid=document[8],
                 num_figures=document[9],
@@ -82,7 +82,7 @@ def get_documents_to_index(db_params: dict) -> list[LuceneDocument]:
     for document in lucene_docs:
         modalities = id_2_modalities.get(document.docId, None)
         if modalities:
-            document.modalities = " ".join(modalities)
+            document.modalities = ";".join(modalities)
     return lucene_docs
 
 
