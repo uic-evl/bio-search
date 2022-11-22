@@ -1,5 +1,5 @@
 import {useState} from 'react'
-import {Box, Flex, Text, Center, Button} from '@chakra-ui/react'
+import {Box, Flex, Text, Center, Button, chakra, Spacer} from '@chakra-ui/react'
 import {ImageViewer} from '../image_viewer'
 import {Long2ColorCord} from '../../utils/modalityMap'
 import ImageBoundingBoxViewer from '../image/image_bbox_viewer'
@@ -10,23 +10,43 @@ const SUBFIGURES_ENDPOINT = process.env.REACT_APP_SUBIMAGES_ENDPOINT
 
 const EnhancedSurrogate = ({document}) => {
   const [pagePosition, setPagePosition] = useState(0)
+  const [figNumber, setFigNumber] = useState(0)
   const {observe, height} = useDimensions({
     polyfill: ResizeObserver,
   })
 
-  const handleClickPrevious = pageIdx => {
-    const idx = pageIdx === 0 ? document.pages.length - 1 : pageIdx - 1
-    setPagePosition(idx)
+  const handleClickPrevious = (pageIdx, figIdx) => {
+    const shouldChangePage = figIdx === 0
+
+    let newPageIdx = pageIdx
+    let newFigIdx = figIdx - 1
+    if (shouldChangePage) {
+      newPageIdx = pageIdx === 0 ? document.pages.length - 1 : pageIdx - 1
+      newFigIdx = document.pages[newPageIdx].figures.length - 1
+    }
+
+    setPagePosition(newPageIdx)
+    setFigNumber(newFigIdx)
   }
 
-  const handleClickNext = pageIdx => {
-    const idx = pageIdx === document.pages.length - 1 ? 0 : pageIdx + 1
-    setPagePosition(idx)
+  const handleClickNext = (pageIdx, figIdx) => {
+    const shouldChangePage =
+      figIdx === document.pages[pageIdx].figures.length - 1
+
+    let newPageIdx = pageIdx
+    let newFigIdx = figIdx + 1
+    if (shouldChangePage) {
+      newPageIdx = pageIdx === document.pages.length - 1 ? 0 : pageIdx + 1
+      newFigIdx = 0
+    }
+
+    setPagePosition(newPageIdx)
+    setFigNumber(newFigIdx)
   }
 
   return (
     <Box w="full" h="full" bgColor="gray.100" p={2}>
-      <Flex w="full" h="calc(100% - 24px)" mt={1} ref={observe}>
+      <Flex w="full" h="calc(100%)" mt={1} ref={observe}>
         {document && (
           <SurrogatePage
             page={document.pages[pagePosition]}
@@ -35,12 +55,15 @@ const EnhancedSurrogate = ({document}) => {
             onClickNext={handleClickNext}
             pmcid={document.pmcid}
             numberPages={document.pages.length}
+            figureNumber={figNumber}
+            numberFiguresInPage={document.pages[pagePosition].figures.length}
           />
         )}
         {document && height > 0 && (
           <SurrogateFigure
             document={document}
             page={document.pages[pagePosition]}
+            figureNumber={figNumber}
             maxHeight={height}
           />
         )}
@@ -56,6 +79,8 @@ const SurrogatePage = ({
   onClickNext,
   pmcid,
   numberPages,
+  figureNumber,
+  numberFiguresInPage,
 }) => {
   const paddedPage = page.page.toString().padStart(6, 0)
   const pageUrl = `${pmcid}/${pmcid}-${paddedPage}.png`
@@ -65,31 +90,31 @@ const SurrogatePage = ({
       <Box h="calc(100% - 35px)">
         {document && <ImageViewer src={`${API_ENDPOINT}/${pageUrl}`} />}
       </Box>
-      <Box w="full" h="35px">
-        <Center p={2}>
-          {numberPages > 1 && (
-            <Button
-              colorScheme="blue"
-              size="sm"
-              mr={1}
-              onClick={() => onClickPrevious(pageIdx)}
-            >
-              Prev
-            </Button>
-          )}
-          <span>pg.&nbsp;{page.page}</span>
-          {numberPages > 1 && (
-            <Button
-              colorScheme="blue"
-              size="sm"
-              ml={1}
-              onClick={() => onClickNext(pageIdx)}
-            >
-              Next
-            </Button>
-          )}
-        </Center>
-      </Box>
+      <Flex w="full" h="35px" mt={1}>
+        <Button
+          colorScheme="blue"
+          size="xs"
+          ml={1}
+          onClick={() => onClickPrevious(pageIdx, figureNumber)}
+        >
+          &#60;
+        </Button>
+
+        <Spacer />
+        <chakra.span fontSize="sm">
+          pg.&nbsp;{page.page} - fig. {figureNumber + 1}/{numberFiguresInPage}
+        </chakra.span>
+        <Spacer />
+
+        <Button
+          colorScheme="blue"
+          size="xs"
+          mr={1}
+          onClick={() => onClickNext(pageIdx, figureNumber)}
+        >
+          &#62;
+        </Button>
+      </Flex>
     </Box>
   )
 }
@@ -118,21 +143,9 @@ const FigureWBboxes = ({
   )
 }
 
-const SurrogateFigure = ({document, page, maxHeight}) => {
-  const [figureNumber, setFigureNumber] = useState(0)
+const SurrogateFigure = ({document, page, maxHeight, figureNumber}) => {
   const figure = page.figures[figureNumber]
-  const numberFigures = page.figures.length
-  const figureWidth = figure.caption.length > 0 ? 50 : 100
-
-  const handlePrevFigure = () => {
-    const idx = figureNumber === 0 ? numberFigures - 1 : figureNumber - 1
-    setFigureNumber(idx)
-  }
-
-  const handleNextFigure = () => {
-    const idx = figureNumber === numberFigures - 1 ? 0 : figureNumber + 1
-    setFigureNumber(idx)
-  }
+  const figureWidth = figure.caption.length > 1 ? 50 : 100
 
   return (
     <Flex h="full" w="full">
@@ -147,38 +160,15 @@ const SurrogateFigure = ({document, page, maxHeight}) => {
         />
       </Box>
       {figureWidth < 100 && (
-        <Flex direction={'column'} w={`${100 - figureWidth}%`}>
-          <Box
-            h={numberFigures > 1 ? '90%' : 'full'}
-            bgColor="gray.100"
-            p={2}
-            pb={0}
-            overflowY="auto"
-          >
-            <Text fontSize={'sm'}>{figure.caption}</Text>
-          </Box>
-          {numberFigures > 1 && (
-            <Center>
-              <Button
-                colorScheme={'blue'}
-                variant={'outline'}
-                size="xs"
-                mr={2}
-                onClick={handlePrevFigure}
-              >
-                Prev Figure
-              </Button>
-              <Button
-                colorScheme={'blue'}
-                variant={'outline'}
-                size="xs"
-                onClick={handleNextFigure}
-              >
-                Next Figure
-              </Button>
-            </Center>
-          )}
-        </Flex>
+        <Box
+          w={`${100 - figureWidth}%`}
+          bgColor="gray.100"
+          p={2}
+          pb={0}
+          overflowY="auto"
+        >
+          <Text fontSize={'sm'}>{figure.caption}</Text>
+        </Box>
       )}
     </Flex>
   )
