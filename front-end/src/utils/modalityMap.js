@@ -10,7 +10,7 @@ const Long2Short = {
   'light microscopy': 'lig',
   other: 'oth',
   residual: 'res',
-  compound: 'cmp',
+  compound: 'com',
 }
 
 const Code2Short = {
@@ -25,7 +25,7 @@ const Code2Short = {
   8: 'light',
   9: 'other',
   10: 'res',
-  11: 'cmp',
+  11: 'com',
 }
 
 const Code2Color = {

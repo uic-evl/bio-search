@@ -1,8 +1,9 @@
 import {useReducer} from 'react'
 import {SearchBar} from '../../components/search_bar/search_bar'
 import {Results} from '../../components/search_results.js/results'
-import {Flex, Box, useToast, Button} from '@chakra-ui/react'
+import {Flex, Box, useToast, Button, Spacer} from '@chakra-ui/react'
 import {initState, searchReducer} from './searchReducer'
+import {ModalityLegend} from '../../components/legend/modalityLegend'
 
 import {search} from '../../api/index'
 
@@ -48,6 +49,8 @@ export const SearchPageWide = ({logout}) => {
         pr={4}
         pt={1}
       >
+        <ModalityLegend />
+        <Spacer />
         <Button
           backgroundColor={null}
           size={'xs'}
