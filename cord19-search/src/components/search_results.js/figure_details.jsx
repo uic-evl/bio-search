@@ -1,5 +1,5 @@
 import {useState} from 'react'
-import {Box, Flex, Text, Center, Button, chakra, Spacer} from '@chakra-ui/react'
+import {Box, Flex, Text, Button, chakra, Spacer} from '@chakra-ui/react'
 import {ImageViewer} from '../image_viewer'
 import {Long2ColorCord} from '../../utils/modalityMap'
 import ImageBoundingBoxViewer from '../image/image_bbox_viewer'
