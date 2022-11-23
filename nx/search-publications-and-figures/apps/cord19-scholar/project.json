@@ -1,0 +1,84 @@
+{
+  "name": "cord19-scholar",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/cord19-scholar/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/webpack:webpack",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "compiler": "babel",
+        "outputPath": "dist/apps/cord19-scholar",
+        "index": "apps/cord19-scholar/src/index.html",
+        "baseHref": "/",
+        "main": "apps/cord19-scholar/src/main.tsx",
+        "polyfills": "apps/cord19-scholar/src/polyfills.ts",
+        "tsConfig": "apps/cord19-scholar/tsconfig.app.json",
+        "assets": [
+          "apps/cord19-scholar/src/favicon.ico",
+          "apps/cord19-scholar/src/assets"
+        ],
+        "styles": ["apps/cord19-scholar/src/styles.css"],
+        "scripts": [],
+        "webpackConfig": "@nrwl/react/plugins/webpack"
+      },
+      "configurations": {
+        "development": {
+          "extractLicenses": false,
+          "optimization": false,
+          "sourceMap": true,
+          "vendorChunk": true
+        },
+        "production": {
+          "fileReplacements": [
+            {
+              "replace": "apps/cord19-scholar/src/environments/environment.ts",
+              "with": "apps/cord19-scholar/src/environments/environment.prod.ts"
+            }
+          ],
+          "optimization": true,
+          "outputHashing": "all",
+          "sourceMap": false,
+          "namedChunks": false,
+          "extractLicenses": true,
+          "vendorChunk": false
+        }
+      }
+    },
+    "serve": {
+      "executor": "@nrwl/webpack:dev-server",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "cord19-scholar:build",
+        "hmr": true
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "cord19-scholar:build:development"
+        },
+        "production": {
+          "buildTarget": "cord19-scholar:build:production",
+          "hmr": false
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["apps/cord19-scholar/**/*.{ts,tsx,js,jsx}"]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "apps/cord19-scholar/jest.config.ts",
+        "passWithNoTests": true
+      }
+    }
+  },
+  "tags": []
+}
