@@ -9,6 +9,7 @@ const AuthenticatedApp = ({user, logout}) => {
     <Router basename="/gxd">
       <Fragment>
         <Routes>
+          <Route path="/" element={<SearchPageWide logout={logout} />}></Route>
           <Route
             path="/biosearch"
             element={<SearchPageWide logout={logout} />}
