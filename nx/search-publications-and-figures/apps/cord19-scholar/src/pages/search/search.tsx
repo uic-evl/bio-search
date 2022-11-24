@@ -23,20 +23,23 @@ const Search = ({}: SearchProps) => {
 
   return (
     <Box className="container" minH="100vh" w="full">
-      <RowModalityLegend
-        modalities={baseModalities}
-        colorsMapper={colorsMapper}
-        namesMapper={namesMapper}
-        taxonomyImage={<Taxonomy />}
-      />
-      <SearchBar
-        defaultStartYear={2000}
-        defaultEndYear={2020}
-        options={ddlSearchOptions}
-        colorsMapper={colorsMapper}
-        onSearch={handleSearch}
-        keywordPlaceholderValue="e.g. disease"
-      />
+      <Box w="full" h="100px" p={4} pt={0} pb={0} zIndex={400}>
+        <RowModalityLegend
+          modalities={baseModalities}
+          colorsMapper={colorsMapper}
+          namesMapper={namesMapper}
+          taxonomyImage={<Taxonomy />}
+        />
+        <SearchBar
+          defaultStartYear={2000}
+          defaultEndYear={2020}
+          options={ddlSearchOptions}
+          colorsMapper={colorsMapper}
+          onSearch={handleSearch}
+          keywordPlaceholderValue="e.g. disease"
+          sampleKeywords={['disease', 'kinase']}
+        />
+      </Box>
     </Box>
   )
 }

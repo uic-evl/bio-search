@@ -1,3 +1,5 @@
+export * from './lib/image-viewer/image-viewer'
+export * from './lib/simple-result-card/simple-result-card'
 export * from './lib/color-multi-select/color-multi-select'
 export * from './lib/search-bar/search-bar'
 export * from './lib/row-modality-legend/row-modality-legend'
