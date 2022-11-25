@@ -4,8 +4,8 @@ import ImageViewer from '../image-viewer/image-viewer'
 /* eslint-disable-next-line */
 export interface PageThumbnailViewerProps {
   currPageIdx: number
-  onClickPrevious: (arg1: number, arg2: number) => null
-  onClickNext: (arg1: number, arg2: number) => null
+  onClickPrevious: (arg1: number, arg2: number) => void
+  onClickNext: (arg1: number, arg2: number) => void
   numberFiguresInPage: number
   currFigureIdx: number
   pageUrl: string
