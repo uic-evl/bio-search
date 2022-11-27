@@ -1,12 +1,12 @@
 import {Link, chakra, Badge, Box, Flex, Text} from '@chakra-ui/react'
-import { LuceneDocument } from '../types/lucene-document'
+import {LuceneDocument} from '../types/lucene-document'
 import ModalityCountBadges from '../modality-count-badges/modality-count-badges'
 
 /* eslint-disable-next-line */
 export interface SimpleResultCardProps {
-  document: LuceneDocument,
-  onClick: (arg1: number) => void,
-  selected: boolean,
+  document: LuceneDocument
+  onClick: (arg1: number) => void
+  selected: boolean
   colorMapper: {[id: string]: string}
 }
 
@@ -37,7 +37,12 @@ const Title = ({id, title, url, selected, onClick}: TitleProps) => (
   </Link>
 )
 
-export function SimpleResultCard({ document, onClick, selected, colorMapper }: SimpleResultCardProps) {
+export function SimpleResultCard({
+  document,
+  onClick,
+  selected,
+  colorMapper,
+}: SimpleResultCardProps) {
   const year = (publishDate: string) => publishDate.substring(0, 4)
 
   return (
@@ -62,17 +67,20 @@ export function SimpleResultCard({ document, onClick, selected, colorMapper }: S
         fontSize={'small'}
         noOfLines={5}
         dangerouslySetInnerHTML={{
-          __html: year(document.publish_date) + '&nbsp;|&nbsp;' + document.abstract,
+          __html:
+            year(document.publish_date) + '&nbsp;|&nbsp;' + document.abstract,
         }}
       ></Text>
       <Box>
         <Badge mr={1} background="black" color="white">
           {`#FIGS: ${document.num_figures}`}
         </Badge>
-        <ModalityCountBadges countMapper={document.modalities_count} colorMapper={colorMapper} />
+        <ModalityCountBadges
+          countMapper={document.modalities_count}
+          colorMapper={colorMapper}
+        />
       </Box>
     </Box>
-  )
   )
 }
 

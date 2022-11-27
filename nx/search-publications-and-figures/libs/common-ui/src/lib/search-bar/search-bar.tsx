@@ -37,7 +37,7 @@ interface SampleQueryProps {
   setKeyword: Dispatch<SetStateAction<string>>
   setStartYear: Dispatch<SetStateAction<number>>
   setEndYear: Dispatch<SetStateAction<number>>
-  setModalities: Dispatch<SetStateAction<never[]>>
+  setModalities: Dispatch<SetStateAction<{label: string; value: string}[]>>
 }
 
 const SampleQuery = ({
@@ -82,7 +82,9 @@ export function SearchBar({
   const [keyword, setKeyword] = useState('')
   const [startYear, setStartYear] = useState(defaultStartYear)
   const [endYear, setEndYear] = useState(defaultEndYear)
-  const [modalities, setModalities] = useState([])
+  const [modalities, setModalities] = useState<
+    {value: string; label: string}[]
+  >([])
 
   const onClick = () => {
     let startDate = null
@@ -92,7 +94,12 @@ export function SearchBar({
     if (endYear) endDate = `${endYear}-12-31`
 
     const terms = keyword || null
-    onSearch(terms, startDate, endDate, modalities)
+    onSearch(
+      terms,
+      startDate,
+      endDate,
+      modalities.map(el => el.value),
+    )
   }
 
   return (
@@ -167,6 +174,7 @@ export function SearchBar({
         <chakra.p mr={2}>Try these queries:</chakra.p>
         {sampleKeywords.map(el => (
           <SampleQuery
+            key={`sample-${el}`}
             keyword={el}
             onSearch={onSearch}
             setKeyword={setKeyword}

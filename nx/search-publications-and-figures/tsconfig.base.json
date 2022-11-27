@@ -15,6 +15,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "@search-publications-and-figures/api": ["libs/api/src/index.js"],
       "@search-publications-and-figures/common-ui": [
         "libs/common-ui/src/index.ts"
       ]
