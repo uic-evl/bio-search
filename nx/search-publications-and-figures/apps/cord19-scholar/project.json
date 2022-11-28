@@ -43,7 +43,8 @@
           "sourceMap": false,
           "namedChunks": false,
           "extractLicenses": true,
-          "vendorChunk": false
+          "vendorChunk": false,
+          "deployUrl": "scholar2/"
         }
       }
     },
@@ -52,7 +53,7 @@
       "defaultConfiguration": "development",
       "options": {
         "buildTarget": "cord19-scholar:build",
-        "hmr": true
+        "hmr": true        
       },
       "configurations": {
         "development": {
