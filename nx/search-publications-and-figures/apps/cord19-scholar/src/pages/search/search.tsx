@@ -5,22 +5,35 @@ import {
   SearchBar,
   searchReducer,
   initSearchState,
+  HorizontalFigureResults,
 } from '@search-publications-and-figures/common-ui'
 import {ReactComponent as Taxonomy} from '../../assets/taxonomy.svg'
 import {colorsMapper, namesMapper, ddlSearchOptions} from '../../utils/mapper'
-import {search} from '../../api/index'
+import {search, getPageFigureDetails} from '../../api/index'
+import {Document, Page} from 'libs/common-ui/src/lib/types/document'
 
 /* eslint-disable-next-line */
 export interface SearchProps {}
 
 const COLLECTION = process.env.NX_COLLECTION
+const IMAGES_BASE_URL = process.env.NX_FIGURES_ENDPOINT
+const PDFS_BASE_URL = process.env.NX_PDFS_ENDPOINT
 
 const Search = ({}: SearchProps) => {
-  const [state, dispatch] = useReducer(searchReducer, initSearchState)
+  const [{documents, isLoading}, dispatch] = useReducer(
+    searchReducer,
+    initSearchState,
+  )
   const toast = useToast()
   const baseModalities = Object.keys(colorsMapper).filter(
     el => !el.includes('.'),
   )
+
+  const getPageUrl = (document: Document, page: Page) => {
+    const paddedPage = page.page.toString().padStart(6, '0')
+    const pageUrl = `${PDFS_BASE_URL}/${document.pmcid}/${document.pmcid}-${paddedPage}.png`
+    return pageUrl
+  }
 
   const handleSearch = async (
     keywords: string | null,
@@ -50,7 +63,8 @@ const Search = ({}: SearchProps) => {
       maxDocs,
       modalities,
     )
-    console.log(results)
+    await sleep(1000)
+    dispatch({type: 'END_SEARCH', payload: results})
   }
 
   return (
@@ -71,6 +85,18 @@ const Search = ({}: SearchProps) => {
           keywordPlaceholderValue="e.g. disease"
           sampleKeywords={['disease', 'kinase']}
         />
+        <Box w="full">
+          {documents && (
+            <HorizontalFigureResults
+              documents={documents}
+              isLoading={isLoading}
+              colorsMapper={colorsMapper}
+              figuresBaseUrl={IMAGES_BASE_URL}
+              getPageFigureData={getPageFigureDetails}
+              getPageUrl={getPageUrl}
+            />
+          )}
+        </Box>
       </Box>
     </Box>
   )

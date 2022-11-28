@@ -4,6 +4,7 @@ import ImageViewer from '../image-viewer/image-viewer'
 /* eslint-disable-next-line */
 export interface PageThumbnailViewerProps {
   currPageIdx: number
+  currPageNumber: number
   onClickPrevious: (arg1: number, arg2: number) => void
   onClickNext: (arg1: number, arg2: number) => void
   numberFiguresInPage: number
@@ -13,6 +14,7 @@ export interface PageThumbnailViewerProps {
 
 export function PageThumbnailViewer({
   currPageIdx,
+  currPageNumber,
   onClickPrevious,
   onClickNext,
   numberFiguresInPage,
@@ -36,7 +38,7 @@ export function PageThumbnailViewer({
 
         <Spacer />
         <chakra.span fontSize="sm">
-          pg.&nbsp;{currPageIdx} - fig. {currFigureIdx + 1}/
+          pg.&nbsp;{currPageNumber} - fig. {currFigureIdx + 1}/
           {numberFiguresInPage}
         </chakra.span>
         <Spacer />

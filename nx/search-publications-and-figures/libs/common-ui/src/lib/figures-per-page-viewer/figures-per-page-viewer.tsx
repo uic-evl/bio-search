@@ -1,26 +1,22 @@
 import {useState} from 'react'
-import {Document} from '../types/document'
+import {Document, Page} from '../types/document'
 import useDimensions from 'react-cool-dimensions'
 import {Box, Flex} from '@chakra-ui/react'
 import PageThumbnailViewer from '../page-thumbnail-viewer/page-thumbnail-viewer'
 import FigureBboxCaptionCard from '../figure-bbox-caption-card/figure-bbox-caption-card'
 
-// TODO: getPageUrl should pass this function and probably needs to be memoized
-// const paddedPage = page.page.toString().padStart(6, 0)
-// const pageUrl = `${pmcid}/${pmcid}-${paddedPage}.png`
-
 /* eslint-disable-next-line */
 export interface FiguresPerPageViewerProps {
   document: Document
   colorsMapper: {[id: string]: string}
-  baseUrlEndpoint: string
-  getPageUrl: (arg1: Document, arg2: number) => string
+  figuresBaseUrl: string
+  getPageUrl: (arg1: Document, arg2: Page) => string
 }
 
 export function FiguresPerPageViewer({
   document,
   colorsMapper,
-  baseUrlEndpoint,
+  figuresBaseUrl,
   getPageUrl,
 }: FiguresPerPageViewerProps) {
   const [pageIdx, setPageIdx] = useState(0) // page idx in array, not page number
@@ -64,9 +60,10 @@ export function FiguresPerPageViewer({
         <Box w="30%" h="full">
           <PageThumbnailViewer
             currPageIdx={pageIdx}
+            currPageNumber={document.pages[pageIdx].page}
             currFigureIdx={figIdx}
             numberFiguresInPage={document.pages[pageIdx].figures.length}
-            pageUrl={getPageUrl(document, pageIdx)}
+            pageUrl={getPageUrl(document, document.pages[pageIdx])}
             onClickPrevious={handleClickPrevious}
             onClickNext={handleClickNext}
           />
@@ -75,7 +72,7 @@ export function FiguresPerPageViewer({
           <FigureBboxCaptionCard
             figure={document.pages[pageIdx].figures[figIdx]}
             colorsMapper={colorsMapper}
-            baseUrlEndpoint={baseUrlEndpoint}
+            baseUrlEndpoint={figuresBaseUrl}
             maxHeight={height}
           />
         )}

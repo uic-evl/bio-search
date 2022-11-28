@@ -1,6 +1,7 @@
 export interface Document {
   id: number
   pages: Page[]
+  pmcid: string
 }
 
 /** bbox is an array [xMin, yMin, width, height] where
@@ -21,6 +22,6 @@ export interface Figure {
 }
 
 export interface Page {
-  pageNumber: number
+  page: number
   figures: Figure[]
 }
