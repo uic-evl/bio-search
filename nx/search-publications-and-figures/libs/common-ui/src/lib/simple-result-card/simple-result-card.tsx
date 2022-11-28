@@ -8,6 +8,7 @@ export interface SimpleResultCardProps {
   onClick: (arg1: number) => void
   selected: boolean
   colorMapper: {[id: string]: string}
+  namesMapper: {[id: string]: string}
 }
 
 interface TitleProps {
@@ -42,6 +43,7 @@ export function SimpleResultCard({
   onClick,
   selected,
   colorMapper,
+  namesMapper,
 }: SimpleResultCardProps) {
   const year = (publishDate: string) => publishDate.substring(0, 4)
 
@@ -78,6 +80,7 @@ export function SimpleResultCard({
         <ModalityCountBadges
           countMapper={document.modalities_count}
           colorMapper={colorMapper}
+          namesMapper={namesMapper}
         />
       </Box>
     </Box>

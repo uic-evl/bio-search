@@ -73,6 +73,7 @@ const Pagination = ({currPage, numberPages, onClick}: PaginationProps) => {
 export interface HorizontalResultCardProps {
   document: LuceneDocument
   colorsMapper: {[id: string]: string}
+  namesMapper: {[id: string]: string}
   figuresBaseUrl: string
   getPageFigureData: (arg1: string) => Promise<Document>
   getPageUrl: (arg1: Document, arg2: Page) => string
@@ -81,6 +82,7 @@ export interface HorizontalResultCardProps {
 const HorizontalResultCard = ({
   document,
   colorsMapper,
+  namesMapper,
   figuresBaseUrl,
   getPageFigureData,
   getPageUrl,
@@ -103,6 +105,7 @@ const HorizontalResultCard = ({
             document={document}
             onClick={() => {}}
             colorMapper={colorsMapper}
+            namesMapper={namesMapper}
             selected={false}
           />
         )}
@@ -123,9 +126,10 @@ const HorizontalResultCard = ({
 
 /* eslint-disable-next-line */
 export interface HorizontalFigureResultsProps {
-  documents: LuceneDocument[]
+  documents: LuceneDocument[] | null
   isLoading: boolean
   colorsMapper: {[id: string]: string}
+  namesMapper: {[id: string]: string}
   figuresBaseUrl: string
   getPageFigureData: (arg1: string) => Promise<Document>
   getPageUrl: (arg1: Document, arg2: Page) => string
@@ -135,6 +139,7 @@ export function HorizontalFigureResults({
   documents,
   isLoading,
   colorsMapper,
+  namesMapper,
   figuresBaseUrl,
   getPageFigureData,
   getPageUrl,
@@ -158,7 +163,7 @@ export function HorizontalFigureResults({
   }, [documents])
 
   const handlePaginationOnClick = (pageNumber: number) => {
-    if (pageNumber !== currPage) {
+    if (documents && pageNumber !== currPage) {
       setCurrPage(pageNumber)
 
       const startIdx = pageNumber * resultsPerPage
@@ -183,6 +188,7 @@ export function HorizontalFigureResults({
               key={document.id}
               document={document}
               colorsMapper={colorsMapper}
+              namesMapper={namesMapper}
               figuresBaseUrl={figuresBaseUrl}
               getPageFigureData={getPageFigureData}
               getPageUrl={getPageUrl}

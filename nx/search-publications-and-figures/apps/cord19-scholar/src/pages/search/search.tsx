@@ -63,7 +63,7 @@ const Search = ({}: SearchProps) => {
       maxDocs,
       modalities,
     )
-    await sleep(1000)
+    await sleep(10)
     dispatch({type: 'END_SEARCH', payload: results})
   }
 
@@ -86,16 +86,15 @@ const Search = ({}: SearchProps) => {
           sampleKeywords={['disease', 'kinase']}
         />
         <Box w="full">
-          {documents && (
-            <HorizontalFigureResults
-              documents={documents}
-              isLoading={isLoading}
-              colorsMapper={colorsMapper}
-              figuresBaseUrl={IMAGES_BASE_URL}
-              getPageFigureData={getPageFigureDetails}
-              getPageUrl={getPageUrl}
-            />
-          )}
+          <HorizontalFigureResults
+            documents={documents}
+            isLoading={isLoading}
+            colorsMapper={colorsMapper}
+            namesMapper={namesMapper}
+            figuresBaseUrl={IMAGES_BASE_URL}
+            getPageFigureData={getPageFigureDetails}
+            getPageUrl={getPageUrl}
+          />
         </Box>
       </Box>
     </Box>
