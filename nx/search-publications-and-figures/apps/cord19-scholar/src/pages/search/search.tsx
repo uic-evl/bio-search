@@ -84,6 +84,7 @@ const Search = ({}: SearchProps) => {
           onSearch={handleSearch}
           keywordPlaceholderValue="e.g. disease"
           sampleKeywords={['disease', 'kinase']}
+          isLoading={isLoading}
         />
         <Box w="full">
           <HorizontalFigureResults

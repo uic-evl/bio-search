@@ -19,6 +19,7 @@ export interface SearchBarProps {
   options: {label: string; value: string}[]
   keywordPlaceholderValue: string
   sampleKeywords: string[]
+  isLoading: boolean
   onSearch: OnSearch
 }
 
@@ -77,6 +78,7 @@ export function SearchBar({
   colorsMapper,
   onSearch,
   sampleKeywords,
+  isLoading,
   keywordPlaceholderValue = 'e.g. disease',
 }: SearchBarProps) {
   const [keyword, setKeyword] = useState('')
@@ -158,6 +160,7 @@ export function SearchBar({
             </FormControl>
             <Spacer />
             <Button
+              isLoading={isLoading}
               colorScheme={'blue'}
               w="200px"
               size="md"
