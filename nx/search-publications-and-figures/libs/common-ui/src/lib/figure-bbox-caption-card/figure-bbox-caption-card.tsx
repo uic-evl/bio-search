@@ -16,7 +16,15 @@ interface CaptionProps {
 }
 
 const Caption = ({width, caption}: CaptionProps) => (
-  <Box w={`${100 - width}%`} bgColor="gray.100" p={2} pb={0} overflowY="auto">
+  <Box
+    w={`${100 - width}%`}
+    maxW={`${100 - width}%`}
+    bgColor="gray.100"
+    p={2}
+    pb={0}
+    overflowY="auto"
+    overflowX="auto"
+  >
     <Text fontSize={'sm'}>{caption}</Text>
   </Box>
 )
