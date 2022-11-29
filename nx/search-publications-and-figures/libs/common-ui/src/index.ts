@@ -1,3 +1,4 @@
+export * from './lib/login/login-page/login-page'
 export * from './lib/results-container/horizontal-figure-results/horizontal-figure-results'
 export * from './lib/figure-bbox-viewer/figure-bbox-viewer'
 export * from './lib/image-viewer/image-viewer'

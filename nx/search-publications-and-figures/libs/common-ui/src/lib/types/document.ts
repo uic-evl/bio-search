@@ -23,5 +23,6 @@ export interface Figure {
 
 export interface Page {
   page: number
+  page_url: string
   figures: Figure[]
 }
