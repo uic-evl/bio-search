@@ -178,7 +178,7 @@ export function HorizontalFigureResults({
   }
 
   return (
-    <Box p={4}>
+    <Box>
       {isLoading && <SearchingFeedback />}
       {documents && <NumberResults numberResults={documents.length} />}
       {slicedResults &&

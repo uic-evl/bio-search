@@ -1,9 +1,20 @@
 import {run} from '@search-publications-and-figures/api'
-import {Document} from 'libs/common-ui/src/lib/types/document'
+import {
+  Document,
+  Page,
+  Figure,
+  Subfigure,
+} from 'libs/common-ui/src/lib/types/document'
 import {LuceneDocument} from 'libs/common-ui/src/lib/types/lucene-document'
+import {
+  reverseNamesMapper,
+  namesMapper,
+  codeMapper,
+  colorsMapper,
+} from '../utils/mapper'
 
 const SEARCH_API_ENDPOINT = process.env.NX_SEARCH_API
-const APP_API_ENDPOINT = process.env.NX_SEARCH_API
+const APP_API_ENDPOINT = process.env.NX_APP_API
 const LOCAL_STORAGE_KEY = process.env.NX_LOCAL_STORAGE_KEY
 
 interface User {
@@ -27,31 +38,64 @@ export const search = async (
       queryString += `&to=${endDate}`
     }
   }
+
   if (modalities.length > 0) {
-    const joinedMods = modalities.join(';')
+    const mappedModalities = modalities.map(el => namesMapper[el])
+    const joinedMods = mappedModalities.join(';')
     queryString += `&modalities=${joinedMods}`
   }
   queryString += `&ds=${collection}`
 
   const url = `${SEARCH_API_ENDPOINT}/search/${queryString}`
-  const payload = await run(url, 'get', {
+  const payload: LuceneDocument[] = await run(url, 'get', {
     data: undefined,
     token: undefined,
     params: undefined,
   })
+
+  payload.forEach(el => {
+    const newMapping: Record<string, number> = {}
+    Object.keys(el.modalities_count).forEach(key => {
+      newMapping[reverseNamesMapper[key]] = el.modalities_count[key]
+    })
+    el.modalities_count = newMapping as unknown as {[id: string]: number}
+  })
+
   return payload
 }
 
 export const getPageFigureDetails = async (
   documentId: string,
 ): Promise<Document> => {
-  const url = `${SEARCH_API_ENDPOINT}/document2/${documentId}`
-  const payload = await run(url, 'get', {
+  const url = `${SEARCH_API_ENDPOINT}/document/${documentId}`
+  const document: Document = await run(url, 'get', {
     data: undefined,
     token: undefined,
     params: undefined,
   })
-  return payload
+
+  // match the GDX structure to TS types
+
+  const {cord_uid, bboxes} = document
+  if (bboxes) {
+    document.pages.forEach((page: Page) => {
+      const pageNumber = page.page
+      page.figures.forEach((figure: Figure, idx: number) => {
+        figure.url = `${cord_uid}/${pageNumber}_${idx + 1}.jpg`
+        const newSubfigures = figure.subfigures.map((sf: Subfigure) => {
+          const {name} = sf
+          return {
+            bbox: name ? bboxes[`${pageNumber}_${idx + 1}`][name] : null,
+            type: codeMapper[sf.type],
+            color: colorsMapper[codeMapper[sf.type]],
+          }
+        })
+        figure.subfigures = newSubfigures
+      })
+    })
+  }
+
+  return document
 }
 
 export const login = async (username: string, password: string) => {
@@ -62,6 +106,7 @@ export const login = async (username: string, password: string) => {
       token: undefined,
       params: undefined,
     })
+    console.log(payload)
     localStorage.setItem(LOCAL_STORAGE_KEY, payload.token)
 
     if (payload.username) {

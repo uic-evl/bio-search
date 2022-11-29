@@ -70,7 +70,7 @@ const Search = ({logout}: SearchProps) => {
 
   return (
     <Box className="container" minH="100vh" w="full">
-      <Box w="full" h="100px" p={4} pt={0} pb={0} zIndex={400}>
+      <Box w="full" h="100px" p={4} pt={2} pb={0} zIndex={400}>
         <Flex w="full">
           <RowModalityLegend
             modalities={baseModalities}
@@ -89,8 +89,8 @@ const Search = ({logout}: SearchProps) => {
           </Button>
         </Flex>
         <SearchBar
-          defaultStartYear={2000}
-          defaultEndYear={2020}
+          defaultStartYear={2012}
+          defaultEndYear={2016}
           options={ddlSearchOptions}
           colorsMapper={colorsMapper}
           onSearch={handleSearch}
@@ -98,7 +98,7 @@ const Search = ({logout}: SearchProps) => {
           sampleKeywords={['disease', 'kinase']}
           isLoading={isLoading}
         />
-        <Box w="full">
+        <Box w="full" mt={2}>
           <HorizontalFigureResults
             documents={documents}
             isLoading={isLoading}

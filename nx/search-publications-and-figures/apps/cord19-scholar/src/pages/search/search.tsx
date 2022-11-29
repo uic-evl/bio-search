@@ -69,7 +69,7 @@ const Search = ({}: SearchProps) => {
 
   return (
     <Box className="container" minH="100vh" w="full">
-      <Box w="full" h="100px" p={4} pt={0} pb={0} zIndex={400}>
+      <Box w="full" h="100px" p={4} pt={2} pb={0} zIndex={400}>
         <RowModalityLegend
           modalities={baseModalities}
           colorsMapper={colorsMapper}
@@ -86,7 +86,7 @@ const Search = ({}: SearchProps) => {
           sampleKeywords={['disease', 'kinase']}
           isLoading={isLoading}
         />
-        <Box w="full">
+        <Box w="full" mt={2}>
           <HorizontalFigureResults
             documents={documents}
             isLoading={isLoading}

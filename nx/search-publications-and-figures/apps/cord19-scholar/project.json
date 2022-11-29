@@ -53,7 +53,8 @@
       "defaultConfiguration": "development",
       "options": {
         "buildTarget": "cord19-scholar:build",
-        "hmr": true        
+        "hmr": true,
+        "port": 4201
       },
       "configurations": {
         "development": {
@@ -61,7 +62,8 @@
         },
         "production": {
           "buildTarget": "cord19-scholar:build:production",
-          "hmr": false
+          "hmr": false,
+          "port": 4202
         }
       }
     },

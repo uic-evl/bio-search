@@ -42,7 +42,7 @@ export function RowModalityLegend({
             background={colorsMapper[el]}
             color="black"
           >
-            {namesMapper[el]}
+            {namesMapper[el].substring(0, 10)}
           </Badge>
         ))}
         <Spacer />

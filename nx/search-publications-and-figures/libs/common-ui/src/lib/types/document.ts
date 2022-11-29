@@ -1,7 +1,12 @@
+/** cord_uid and bboxes are now here because the GDX api returns them in a
+ * different structure than the db. TODO: standardize
+ */
 export interface Document {
   id: number
   pages: Page[]
   pmcid: string
+  cord_uid?: string
+  bboxes?: {[id: string]: {[id: string]: number[]}}
 }
 
 /** bbox is an array [xMin, yMin, width, height] where
@@ -10,6 +15,7 @@ export interface Document {
  * I'm not sure if it's convenient to add this complexity
  */
 export interface Subfigure {
+  name?: string
   bbox: number[] | null
   color: string
   type: string

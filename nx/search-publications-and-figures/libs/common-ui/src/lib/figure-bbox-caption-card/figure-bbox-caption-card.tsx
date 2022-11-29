@@ -28,12 +28,21 @@ export function FigureBboxCaptionCard({
   maxHeight,
 }: FigureBboxCaptionCardProps) {
   const figPanelWidth = figure.caption.length > 1 ? 50 : 100
-  // TODO: some bboxes may not need to be scaled by 1000
-  const subfigureBboxes = figure.subfigures.map(sf => ({
-    bbox: sf.bbox ? sf.bbox.map(el => el * 1000) : null,
-    type: sf.type,
-    color: colorsMapper[sf.type],
-  }))
+  const subfigureBboxes = figure.subfigures.map(sf => {
+    let scale = 1
+    // bboxes that need scaling are typically very small
+    // TODO standarize the db to avoid this scaling
+    if (sf.bbox) {
+      const sum = sf.bbox.reduce((a, b) => a + b, 0)
+      if (sum < 10) scale = 1000
+    }
+
+    return {
+      bbox: sf.bbox ? sf.bbox.map(el => el * scale) : null,
+      type: sf.type,
+      color: colorsMapper[sf.type],
+    }
+  })
   const figureUrl = `${baseUrlEndpoint}/${figure.url}`
 
   return (
