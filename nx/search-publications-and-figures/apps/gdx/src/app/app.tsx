@@ -17,8 +17,10 @@ export function App() {
 
   const loginUser = async (username: string, password: string) => {
     const {user, message} = await login(username, password)
-    if (user) setAuthenticated(true)
-    else setAuthMessage(message)
+    if (user) {
+      setAuthenticated(true)
+      setAuthMessage('')
+    } else setAuthMessage(message)
   }
 
   const logoutUser = async () => {
