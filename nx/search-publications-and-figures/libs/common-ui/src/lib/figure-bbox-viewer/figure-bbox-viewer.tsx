@@ -31,11 +31,12 @@ export function FigureBboxViewer({imageSrc, bboxes}: FigureBboxViewerProps) {
       const canvas = canvasRef.current
       const ctx = canvas.getContext('2d')
       const image = new Image()
+      const padding = 8
       image.src = imageSrc
       image.onload = () => {
         const scale = Math.min(
-          canvas.width / image.width,
-          canvas.height / image.height,
+          (canvas.width - padding) / image.width,
+          (canvas.height - padding) / image.height,
         )
         const x = canvas.width / 2 - (image.width / 2) * scale
         const y = canvas.height / 2 - (image.height / 2) * scale
@@ -53,7 +54,7 @@ export function FigureBboxViewer({imageSrc, bboxes}: FigureBboxViewerProps) {
             if (el.bbox) {
               ctx.save()
               ctx.strokeStyle = el.color
-              ctx.lineWidth = 5
+              ctx.lineWidth = 4
               ctx.strokeRect(
                 el.bbox[0] * scale + x,
                 el.bbox[1] * scale + y,
