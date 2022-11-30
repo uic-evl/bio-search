@@ -67,8 +67,10 @@ class Reader:
                 range_query = None
 
             query_builder = BooleanQuery.Builder()
-            parser = QueryParser("default", StandardAnalyzer())
+            # making abstract the default field
+            parser = QueryParser("abstract", StandardAnalyzer())
             if terms:
+
                 text_query = parser.parse(f"title: {terms} OR abstract:{terms}")
                 query_builder.add(text_query, BooleanClause.Occur.MUST)
 
