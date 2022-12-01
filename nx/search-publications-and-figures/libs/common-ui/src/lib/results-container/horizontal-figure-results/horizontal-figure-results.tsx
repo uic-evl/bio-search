@@ -62,9 +62,13 @@ const Pagination = ({currPage, numberPages, onClick}: PaginationProps) => {
         <PagButton {...defaultParams} val={currPage + 2} next={currPage + 1} />
       )}
 
-      <chakra.p mr={2}>...</chakra.p>
+      {numberPages > 1 && (
+        <>
+          <chakra.p mr={2}>...</chakra.p>
 
-      <PagButton {...defaultParams} val={numberPages} next={numberPages} />
+          <PagButton {...defaultParams} val={numberPages} next={numberPages} />
+        </>
+      )}
     </Flex>
   )
 }
