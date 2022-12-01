@@ -4,8 +4,8 @@ import {
   Page,
   Figure,
   Subfigure,
-} from 'libs/common-ui/src/lib/types/document'
-import {LuceneDocument} from 'libs/common-ui/src/lib/types/lucene-document'
+} from '@search-publications-and-figures/common-ui'
+import {LuceneDocument} from '@search-publications-and-figures/common-ui'
 import {
   reverseNamesMapper,
   namesMapper,

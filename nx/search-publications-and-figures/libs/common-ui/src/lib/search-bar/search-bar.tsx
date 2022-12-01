@@ -29,7 +29,7 @@ export interface OnSearch {
     arg2: string | null,
     arg3: string | null,
     arg4: string[],
-  ): Object
+  ): void
 }
 
 interface SampleQueryProps {

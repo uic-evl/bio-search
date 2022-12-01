@@ -43,18 +43,16 @@ export function App() {
   }, [authenticated])
 
   return (
-    <>
-      <ChakraProvider theme={theme}>
-        {user && <AuthenticatedApp user={user} logout={logoutUser} />}
-        {!user && (
-          <UnauthenticatedApp
-            login={loginUser}
-            message={authMessage}
-            title="GDX Search"
-          />
-        )}
-      </ChakraProvider>
-    </>
+    <ChakraProvider theme={theme}>
+      {user && <AuthenticatedApp user={user} logout={logoutUser} />}
+      {!user && (
+        <UnauthenticatedApp
+          login={loginUser}
+          message={authMessage}
+          title="GDX Search"
+        />
+      )}
+    </ChakraProvider>
   )
 }
 

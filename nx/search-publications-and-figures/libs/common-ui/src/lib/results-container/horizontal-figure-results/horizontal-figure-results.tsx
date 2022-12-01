@@ -99,6 +99,7 @@ const HorizontalResultCard = ({
       setDocFigureInfo(details)
     }
     load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [document.id])
 
   return (
@@ -107,7 +108,7 @@ const HorizontalResultCard = ({
         {docFigureInfo && (
           <SimpleResultCard
             document={document}
-            onClick={() => {}}
+            onClick={null}
             colorMapper={colorsMapper}
             namesMapper={namesMapper}
             selected={false}
