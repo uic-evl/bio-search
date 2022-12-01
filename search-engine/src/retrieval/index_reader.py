@@ -70,8 +70,14 @@ class Reader:
             # making abstract the default field
             parser = QueryParser("abstract", StandardAnalyzer())
             if terms:
-
-                text_query = parser.parse(f"title: {terms} OR abstract:{terms}")
+                if ":" in terms:
+                    # allow passing the whole construct
+                    text_query = parser.parse(terms)
+                else:
+                    # supports search on the first term and rest on default field
+                    # or when adding " " to find a longer matching keywords on
+                    # the same field
+                    text_query = parser.parse(f"title: {terms} OR abstract:{terms}")
                 query_builder.add(text_query, BooleanClause.Occur.MUST)
 
             if range_query:
