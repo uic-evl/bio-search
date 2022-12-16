@@ -16,7 +16,7 @@ from org.apache.lucene.document import (
     StringField,
 )
 
-from CordReader import CordReader
+from retrieval.CordReader import CordReader
 
 
 def date2long(date):
@@ -79,12 +79,10 @@ class Indexer:
                 document = Document()
                 for key, val in fields.items():
                     if key == "full_text":
-                        cord_uid = row[
-                            "cord_uid"
-                        ]  # check this... i dont remember if i was saving the key
-                        full_text = ft_provider.fetch_full_text(cord_uid)
+                        pmcid = row["pmcid"]
+                        full_text = ft_provider.fetch_full_text(pmcid)
                         document.add(
-                            Field("full_text", full_text, StringField.TYPE_STORED)
+                            Field("full_text", full_text, TextField.TYPE_STORED)
                         )
                     elif key == "pub_date":
                         date_millis = date2long(row[key])
