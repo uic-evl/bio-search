@@ -9,3 +9,5 @@ pyarrow
 matplotlib
 psycopg[binary]
 ipykernel
+black
+pylint

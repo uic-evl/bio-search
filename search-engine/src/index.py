@@ -20,7 +20,9 @@ def main():
 
     ft_provider = None
     if args.cord19_base_path != "":
+      print("loading full text provider")
       ft_provider = CordReader(args.cord19_base_path)
+
 
     dataframe = read_parquet(args.input_path)
     dataframe.reset_index()

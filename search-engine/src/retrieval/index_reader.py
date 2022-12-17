@@ -46,6 +46,7 @@ class Reader:
         only_with_images=False,
         max_docs=10,
         highlight=False,
+        ft=False
     ) -> List[SearchResult]:
         """search index by fields"""
         index_dir = SimpleFSDirectory(Paths.get(self.store_path))
@@ -77,7 +78,10 @@ class Reader:
                     # supports search on the first term and rest on default field
                     # or when adding " " to find a longer matching keywords on
                     # the same field
-                    text_query = parser.parse(f"title: {terms} OR abstract:{terms}")
+                    query_input = f"title: {terms} OR abstract:{terms}"
+                    if ft:
+                        query_input = f"{query_input} OR full_text={terms}"
+                    text_query = parser.parse(query_input)
                 query_builder.add(text_query, BooleanClause.Occur.MUST)
 
             if range_query:
