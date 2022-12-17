@@ -50,7 +50,7 @@ def search():
         raise Exception(f"parameter dataset {ds} is invalid")
 
     term = args["q"] if "q" in args else None
-    full_text = True if args["ft"] == 'true' else False
+    full_text = True if args["ft"] == "true" else False
     start_date = args["from"] if "from" in args else None
     end_date = args["to"] if "to" in args else None
     max_docs = int(args["max_docs"]) if "max_docs" in args else 20
@@ -75,7 +75,7 @@ def search():
         max_docs=max_docs,
         only_with_images=image_only,
         highlight=highlight,
-        full_text=full_text
+        ft=full_text,
     )
 
     for result in results:
