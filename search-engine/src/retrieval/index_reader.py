@@ -165,7 +165,7 @@ class Reader:
         frag_full_text = ""
         if ft:
             full_text = document.get("full_text")
-            ts_full_text = analyzer.tokenStream("full_text", StringReader(abstract))
+            ts_full_text = analyzer.tokenStream("full_text", StringReader(full_text))
             frag_full_text = highlighter.getBestFragments(
                 ts_full_text, full_text, 5, "..."
             )
