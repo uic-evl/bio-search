@@ -16,6 +16,8 @@ from org.apache.lucene.document import (
     StringField,
 )
 
+from retrieval.CordReader import CordReader
+
 
 def date2long(date):
     """convert cord19 datetime format to long int for lucene"""
@@ -47,7 +49,7 @@ class Indexer:
         index_writer = IndexWriter(store, config)
         return index_writer
 
-    def index_from_dataframe(self, dataframe, split_term=" "):
+    def index_from_dataframe(self, dataframe, ft_provider: CordReader, split_term=" "):
         """index elements in dataframe"""
         fields = {
             "docId": StringField.TYPE_STORED,
@@ -63,6 +65,9 @@ class Indexer:
             "num_figures": StringField.TYPE_STORED,
         }
 
+        if ft_provider:
+            fields["full_text"] = ft_provider
+
         store = SimpleFSDirectory(Paths.get(self.store_path))
         writer = self.__create_index_writer(store)
 
@@ -73,7 +78,13 @@ class Indexer:
             ) in dataframe.iterrows():
                 document = Document()
                 for key, val in fields.items():
-                    if key == "pub_date":
+                    if key == "full_text":
+                        pmcid = row["pmcid"]
+                        full_text = ft_provider.fetch_full_text(pmcid)
+                        document.add(
+                            Field("full_text", full_text, TextField.TYPE_STORED)
+                        )
+                    elif key == "pub_date":
                         date_millis = date2long(row[key])
                         document.add(LongPoint(key, date_millis))
                         document.add(

@@ -4,11 +4,9 @@ import Search from '../pages/search/search'
 
 export function App() {
   return (
-    <>
-      <ChakraProvider theme={theme}>
-        <Search />
-      </ChakraProvider>
-    </>
+    <ChakraProvider theme={theme}>
+      <Search />
+    </ChakraProvider>
   )
 }
 

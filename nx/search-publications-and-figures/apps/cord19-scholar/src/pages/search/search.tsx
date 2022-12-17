@@ -6,20 +6,18 @@ import {
   searchReducer,
   initSearchState,
   HorizontalFigureResults,
+  Document,
+  Page,
 } from '@search-publications-and-figures/common-ui'
 import {ReactComponent as Taxonomy} from '../../assets/taxonomy.svg'
 import {colorsMapper, namesMapper, ddlSearchOptions} from '../../utils/mapper'
 import {search, getPageFigureDetails} from '../../api/index'
-import {Document, Page} from 'libs/common-ui/src/lib/types/document'
-
-/* eslint-disable-next-line */
-export interface SearchProps {}
 
 const COLLECTION = process.env.NX_COLLECTION
 const IMAGES_BASE_URL = process.env.NX_FIGURES_ENDPOINT
 const PDFS_BASE_URL = process.env.NX_PDFS_ENDPOINT
 
-const Search = ({}: SearchProps) => {
+const Search = () => {
   const [{documents, isLoading}, dispatch] = useReducer(
     searchReducer,
     initSearchState,

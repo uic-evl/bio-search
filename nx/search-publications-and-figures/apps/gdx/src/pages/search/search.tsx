@@ -6,11 +6,13 @@ import {
   searchReducer,
   initSearchState,
   HorizontalFigureResults,
+  HelpQueries,
+  Document,
+  Page,
 } from '@search-publications-and-figures/common-ui'
 import {ReactComponent as Taxonomy} from '../../assets/taxonomy.svg'
 import {colorsMapper, namesMapper, ddlSearchOptions} from '../../utils/mapper'
 import {search, getPageFigureDetails} from '../../api'
-import {Document, Page} from 'libs/common-ui/src/lib/types/document'
 
 /* eslint-disable-next-line */
 export interface SearchProps {
@@ -79,11 +81,13 @@ const Search = ({logout}: SearchProps) => {
             taxonomyImage={<Taxonomy />}
           />
           <Spacer />
+          <HelpQueries />
           <Button
             backgroundColor={undefined}
             size={'xs'}
             variant="outline"
             onClick={logout}
+            ml={1}
           >
             logout
           </Button>

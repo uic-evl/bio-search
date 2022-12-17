@@ -5,7 +5,7 @@ import ModalityCountBadges from '../modality-count-badges/modality-count-badges'
 /* eslint-disable-next-line */
 export interface SimpleResultCardProps {
   document: LuceneDocument
-  onClick: (arg1: number) => void
+  onClick: null | ((arg1: number) => void)
   selected: boolean
   colorMapper: {[id: string]: string}
   namesMapper: {[id: string]: string}
@@ -16,7 +16,7 @@ interface TitleProps {
   title: string
   url: string
   selected: boolean
-  onClick: (arg1: number) => void
+  onClick: ((arg1: number) => void) | null
 }
 
 /* innerHTML as the title may have highlighted parts to show keywords */
@@ -32,7 +32,7 @@ const Title = ({id, title, url, selected, onClick}: TitleProps) => (
         cursor: !selected ? 'pointer' : 'auto',
       }}
       onClick={() => {
-        if (!selected) onClick(id)
+        if (!selected && onClick) onClick(id)
       }}
     ></chakra.p>
   </Link>

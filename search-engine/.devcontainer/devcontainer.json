@@ -13,5 +13,8 @@
         "ms-toolsai.jupyter-renderers"
       ]
     }
-  }
+  },
+  "mounts": [
+    "source=${localEnv:HOME}/data,target=/mnt/data,type=bind,consistency=cached"
+  ]
 }

@@ -1,6 +1,8 @@
 import {run} from '@search-publications-and-figures/api'
-import {Document} from 'libs/common-ui/src/lib/types/document'
-import {LuceneDocument} from 'libs/common-ui/src/lib/types/lucene-document'
+import {
+  Document,
+  LuceneDocument,
+} from '@search-publications-and-figures/common-ui'
 
 const SEARCH_API_ENDPOINT = process.env.NX_SEARCH_API
 

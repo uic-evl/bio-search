@@ -30,10 +30,6 @@ export const searchReducer = (state: State, action: Action): State => {
         documents: action.payload,
       }
     default:
-      const {type} = action
-      return {
-        ...state,
-        error: `action ${type} not supported`,
-      }
+      throw Error('invalid action in search reducer')
   }
 }
