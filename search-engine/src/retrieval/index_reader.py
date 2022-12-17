@@ -46,7 +46,7 @@ class Reader:
         only_with_images=False,
         max_docs=10,
         highlight=False,
-        ft=False
+        ft=False,
     ) -> List[SearchResult]:
         """search index by fields"""
         index_dir = SimpleFSDirectory(Paths.get(self.store_path))
@@ -119,9 +119,10 @@ class Reader:
                 abstract = hit_doc.get("abstract")
                 num_figures = int(hit_doc.get("num_figures"))
                 if highlight:
-                    hl_title, hl_abstract = self.get_highlight(hit_doc)
+                    hl_title, hl_abstract, hl_ft = self.get_highlight(hit_doc, ft)
                     title = hl_title or title
                     abstract = hl_abstract or abstract
+                    full_text = hl_ft or ""
 
                 result = SearchResult(
                     id=hit_doc.get("docId"),
@@ -131,6 +132,7 @@ class Reader:
                     num_figures=num_figures,
                     modalities=modalities,
                     url=url,
+                    full_text=full_text,
                 )
                 results.append(result)
             return results
@@ -141,7 +143,7 @@ class Reader:
         """access to the last query performed"""
         return self._last_query
 
-    def get_highlight(self, document):
+    def get_highlight(self, document, ft):
         """Returns the highlighted title and abstract, if any"""
         formatter = SimpleHTMLFormatter()
         scorer = QueryScorer(self._last_query)
@@ -160,10 +162,19 @@ class Reader:
         ts_abs = analyzer.tokenStream("abstract", StringReader(abstract))
         frag_abs = highlighter.getBestFragments(ts_abs, abstract, 3, "...")
 
+        frag_full_text = ""
+        if ft:
+            full_text = document.get("full_text")
+            ts_full_text = analyzer.tokenStream("full_text", StringReader(abstract))
+            frag_full_text = highlighter.getBestFragments(
+                ts_full_text, full_text, 5, "..."
+            )
+
         title = frag_title if len(frag_title) > 0 else None
         abstract = frag_abs if len(frag_abs) > 0 else None
+        full_text = frag_full_text if len(frag_full_text) > 0 else None
 
-        return title, abstract
+        return title, abstract, full_text
 
 
 if __name__ == "__main__":

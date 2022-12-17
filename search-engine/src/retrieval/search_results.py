@@ -15,6 +15,7 @@ class SearchResult:
     modalities: List[str]
     num_figures: int
     url: str
+    full_text: str
     modalities_count: dict = field(init=False, default_factory=dict)
 
 
