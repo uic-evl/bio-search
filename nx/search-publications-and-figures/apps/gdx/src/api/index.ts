@@ -31,7 +31,7 @@ export const search = async (
   modalities: string[],
 ): Promise<LuceneDocument[]> => {
   const termsQuery = keywords || '*'
-  let queryString = `?highlight=true&q=${termsQuery}&max_docs=${maxDocs}`
+  let queryString = `?highlight=true&ft=false&q=${termsQuery}&max_docs=${maxDocs}`
   if (startDate) {
     queryString += `&from=${startDate}`
     if (endDate) {

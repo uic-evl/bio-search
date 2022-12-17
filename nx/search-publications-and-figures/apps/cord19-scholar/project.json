@@ -44,7 +44,7 @@
           "namedChunks": false,
           "extractLicenses": true,
           "vendorChunk": false,
-          "deployUrl": "scholar2/"
+          "deployUrl": "scholar/"
         }
       }
     },
