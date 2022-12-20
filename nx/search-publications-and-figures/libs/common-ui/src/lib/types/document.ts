@@ -30,5 +30,6 @@ export interface Figure {
 export interface Page {
   page: number
   page_url: string
+  priority?: number
   figures: Figure[]
 }

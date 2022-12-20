@@ -39,12 +39,34 @@ export const search = async (
 
 export const getPageFigureDetails = async (
   documentId: string,
+  preferredOrder: string[],
 ): Promise<Document> => {
   const url = `${SEARCH_API_ENDPOINT}/document2/${documentId}`
-  const payload = await run(url, 'get', {
+  const payload: Document = await run(url, 'get', {
     data: undefined,
     token: undefined,
     params: undefined,
   })
+  // TODO: the sorting can be done on the web server, meanwhile here
+  if (preferredOrder.length > 0) {
+    payload.pages.forEach(page => {
+      let score = 0
+      page.figures.forEach(figure => {
+        figure.subfigures.forEach(subfigure => {
+          if (preferredOrder.includes(subfigure.type)) {
+            score += 1
+          }
+        })
+      })
+      page.priority = score
+    })
+
+    payload.pages = payload.pages.sort((page1, page2) => {
+      const b = page2.priority ? page2.priority : 0
+      const a = page1.priority ? page1.priority : 0
+      return b - a
+    })
+  }
+
   return payload
 }

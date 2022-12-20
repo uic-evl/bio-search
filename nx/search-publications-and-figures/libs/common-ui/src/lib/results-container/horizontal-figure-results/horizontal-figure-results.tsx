@@ -79,7 +79,8 @@ export interface HorizontalResultCardProps {
   colorsMapper: {[id: string]: string}
   namesMapper: {[id: string]: string}
   figuresBaseUrl: string
-  getPageFigureData: (arg1: string) => Promise<Document>
+  preferredModalities: string[]
+  getPageFigureData: (arg1: string, arg2: string[]) => Promise<Document>
   getPageUrl: (arg1: Document, arg2: Page) => string
 }
 
@@ -88,6 +89,7 @@ const HorizontalResultCard = ({
   colorsMapper,
   namesMapper,
   figuresBaseUrl,
+  preferredModalities,
   getPageFigureData,
   getPageUrl,
 }: HorizontalResultCardProps) => {
@@ -95,7 +97,22 @@ const HorizontalResultCard = ({
 
   useEffect(() => {
     const load = async () => {
-      const details = await getPageFigureData(document.id.toString())
+      // not using the modality count to rank
+      // const filteredModalities = Object.keys(document.modalities_count).filter(
+      //   el => preferredModalities.includes(el),
+      // )
+      // const preferredOrder = filteredModalities
+      //   .map(el => ({
+      //     modality: el,
+      //     count: document.modalities_count[el],
+      //   }))
+      //   .sort((a, b) => b.count - a.count)
+      //   .map(el => el.modality)
+
+      const details = await getPageFigureData(
+        document.id.toString(),
+        preferredModalities,
+      )
       setDocFigureInfo(details)
     }
     load()
@@ -136,7 +153,8 @@ export interface HorizontalFigureResultsProps {
   colorsMapper: {[id: string]: string}
   namesMapper: {[id: string]: string}
   figuresBaseUrl: string
-  getPageFigureData: (arg1: string) => Promise<Document>
+  preferredModalities: string[]
+  getPageFigureData: (arg1: string, arg2: string[]) => Promise<Document>
   getPageUrl: (arg1: Document, arg2: Page) => string
 }
 
@@ -146,6 +164,7 @@ export function HorizontalFigureResults({
   colorsMapper,
   namesMapper,
   figuresBaseUrl,
+  preferredModalities,
   getPageFigureData,
   getPageUrl,
 }: HorizontalFigureResultsProps) {
@@ -195,6 +214,7 @@ export function HorizontalFigureResults({
               colorsMapper={colorsMapper}
               namesMapper={namesMapper}
               figuresBaseUrl={figuresBaseUrl}
+              preferredModalities={preferredModalities}
               getPageFigureData={getPageFigureData}
               getPageUrl={getPageUrl}
             />

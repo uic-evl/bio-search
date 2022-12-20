@@ -24,7 +24,7 @@ const IMAGES_BASE_URL = process.env.NX_FIGURES_ENDPOINT
 const PDFS_BASE_URL = process.env.NX_PDFS_ENDPOINT
 
 const Search = ({logout}: SearchProps) => {
-  const [{documents, isLoading}, dispatch] = useReducer(
+  const [{documents, isLoading, filterModalities}, dispatch] = useReducer(
     searchReducer,
     initSearchState,
   )
@@ -56,7 +56,7 @@ const Search = ({logout}: SearchProps) => {
     }
 
     const maxDocs = 2000
-    dispatch({type: 'START_SEARCH'})
+    dispatch({type: 'START_SEARCH', payload: modalities})
     const sleep = (ms: number) => new Promise(r => setTimeout(r, ms))
     const results = await search(
       keywords,
@@ -108,6 +108,7 @@ const Search = ({logout}: SearchProps) => {
             isLoading={isLoading}
             colorsMapper={colorsMapper}
             namesMapper={namesMapper}
+            preferredModalities={filterModalities}
             figuresBaseUrl={IMAGES_BASE_URL}
             getPageFigureData={getPageFigureDetails}
             getPageUrl={getPageUrl}
