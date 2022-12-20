@@ -6,4 +6,5 @@ export interface LuceneDocument {
   url: string
   num_figures: number
   modalities_count: {[id: string]: number}
+  full_text: string | null
 }

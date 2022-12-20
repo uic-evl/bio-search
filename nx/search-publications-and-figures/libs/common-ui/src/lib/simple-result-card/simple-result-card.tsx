@@ -73,6 +73,16 @@ export function SimpleResultCard({
             year(document.publish_date) + '&nbsp;|&nbsp;' + document.abstract,
         }}
       ></Text>
+      {document.full_text ? (
+        <Text
+          fontSize={'small'}
+          fontStyle={'italic'}
+          noOfLines={4}
+          dangerouslySetInnerHTML={{
+            __html: document.full_text,
+          }}
+        ></Text>
+      ) : null}
       <Box>
         <Badge mr={1} background="black" color="white">
           {`#FIGS: ${document.num_figures}`}
