@@ -91,9 +91,10 @@ class Reader:
                 mod_query = None
                 for modality in modalities:
                     if not mod_query:
-                        mod_query = f"modality:{modality.replace(' ', '?')}"
+                        # mod_query = f"modality:{modality.replace(' ', '?')}"
+                        mod_query = f"modality:{modality}"
                     else:
-                        mod_query = f"{mod_query} OR {modality}"
+                        mod_query = f"{mod_query} OR modality:{modality}"
                 query_builder.add(parser.parse(mod_query), BooleanClause.Occur.MUST)
 
             hl_query = query_builder.build()
