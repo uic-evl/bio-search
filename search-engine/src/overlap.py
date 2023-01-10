@@ -107,6 +107,12 @@ class OverlapAnalyzer:
             result += filtered_counter[key]
         return result
 
+    def _recall(self, num_relevant: int, total_relevant: int) -> str:
+        return str(round(num_relevant / total_relevant, 2))
+
+    def _precision(self, num_relevant: int, total_returned: int) -> str:
+        return str(round(num_relevant / total_returned, 2))
+
     def overlap(self, keyword: str, text_modality: str, modalities: List[str]):
         """Execute queries against Lucene and compare the overlap in results"""
         str_modalities = ";".join(modalities)
@@ -124,10 +130,14 @@ class OverlapAnalyzer:
         values1 = res1.json()
         values2 = res2.json()
 
+        cap_1 = 10
+        cap_2 = 30
+        cap_3 = 100
+
         intersections = self._calc_intersections(values1, values2)
-        intersections_10 = self._calc_intersections(values1, values2, 10)
-        intersections_30 = self._calc_intersections(values1, values2, 30)
-        intersections_100 = self._calc_intersections(values1, values2, 100)
+        intersections_10 = self._calc_intersections(values1, values2, cap_1)
+        intersections_30 = self._calc_intersections(values1, values2, cap_2)
+        intersections_100 = self._calc_intersections(values1, values2, cap_3)
 
         num_intersections = len(intersections)
         num_inters_10 = len(intersections_10)
@@ -135,19 +145,25 @@ class OverlapAnalyzer:
         num_inters_100 = len(intersections_100)
 
         num_images_1 = self._count_modalities(values1, modalities)
-        num_images_10_1 = self._count_modalities(values1, modalities, 10)
-        num_images_30_1 = self._count_modalities(values1, modalities, 30)
-        num_images_100_1 = self._count_modalities(values1, modalities, 100)
+        num_images_10_1 = self._count_modalities(values1, modalities, cap_1)
+        num_images_30_1 = self._count_modalities(values1, modalities, cap_2)
+        num_images_100_1 = self._count_modalities(values1, modalities, cap_3)
 
         num_images_2 = self._count_modalities(values2, modalities)
-        num_images_10_2 = self._count_modalities(values2, modalities, 10)
-        num_images_30_2 = self._count_modalities(values2, modalities, 30)
-        num_images_100_2 = self._count_modalities(values2, modalities, 100)
+        num_images_10_2 = self._count_modalities(values2, modalities, cap_1)
+        num_images_30_2 = self._count_modalities(values2, modalities, cap_2)
+        num_images_100_2 = self._count_modalities(values2, modalities, cap_3)
 
         num_imgs_inter = self._count_modalities(intersections, modalities)
-        num_imgs_inter_10 = self._count_modalities(intersections_10, modalities, 10)
-        num_imgs_inter_30 = self._count_modalities(intersections_30, modalities, 30)
-        num_imgs_inter_100 = self._count_modalities(intersections_100, modalities, 100)
+        num_imgs_inter_10 = self._count_modalities(intersections_10, modalities, cap_1)
+        num_imgs_inter_30 = self._count_modalities(intersections_30, modalities, cap_2)
+        num_imgs_inter_100 = self._count_modalities(
+            intersections_100, modalities, cap_3
+        )
+
+        included_10 = len(self._calc_intersections(values1[:cap_1], values2))
+        included_30 = len(self._calc_intersections(values1[:cap_2], values2))
+        included_100 = len(self._calc_intersections(values1[:cap_3], values2))
 
         print("Queries:")
         print(f"\tfull-text only:\t\t {keyword} + {text_modality}")
@@ -156,18 +172,20 @@ class OverlapAnalyzer:
         print(f"\tfull-text only:\t\t\t {len(values1)}")
         print(f"\tquery full-text + modalities:\t {len(values2)}")
         print("Intersections and Images")
-        print("\t\t\tA∩B\tImages(A∩B)\tImages(A)\tImages(B)")
         print(
-            f"\ttotal:\t\t {num_intersections}\t{num_imgs_inter}\t\t{num_images_1}\t\t{num_images_2}"
+            "\t\t\tA∩B\tA⊂B\tprecision(A)\trecall(A)\tImages(A∩B)\tImages(A)\tImages(B)"
         )
         print(
-            f"\tfirst 10:\t {num_inters_10}\t{num_imgs_inter_10}\t\t{num_images_10_1}\t\t{num_images_10_2}"
+            f"\tfirst {cap_1}:\t {num_inters_10}\t{included_10}\t{self._precision(included_10,cap_1)}\t\t{self._recall(included_10, len(values2))}\t\t{num_imgs_inter_10}\t\t{num_images_10_1}\t\t{num_images_10_2}"
         )
         print(
-            f"\tfirst 30:\t {num_inters_30}\t{num_imgs_inter_30}\t\t{num_images_30_1}\t\t{num_images_30_2}"
+            f"\tfirst {cap_2}:\t {num_inters_30}\t{included_30}\t{self._precision(included_30,cap_2)}\t\t{self._recall(included_30, len(values2))}\t\t{num_imgs_inter_30}\t\t{num_images_30_1}\t\t{num_images_30_2}"
         )
         print(
-            f"\tfirst 100:\t {num_inters_100}\t{num_imgs_inter_100}\t\t{num_images_100_1}\t\t{num_images_100_2}"
+            f"\tfirst {cap_3}:\t {num_inters_100}\t{included_100}\t{self._precision(included_100,cap_3)}\t\t{self._recall(included_100, len(values2))}\t\t{num_imgs_inter_100}\t\t{num_images_100_1}\t\t{num_images_100_2}"
+        )
+        print(
+            f"\ttotal:\t\t {num_intersections}\t{num_intersections}\t{self._precision(num_intersections,len(values1))}\t\t{self._recall(num_intersections, len(values2))}\t\t{num_imgs_inter}\t\t{num_images_1}\t\t{num_images_2}"
         )
 
 
