@@ -25,6 +25,7 @@ export interface Figure {
   caption: string
   subfigures: Subfigure[]
   url: string
+  priority?: number
 }
 
 export interface Page {

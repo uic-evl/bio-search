@@ -62,7 +62,7 @@ const Pagination = ({currPage, numberPages, onClick}: PaginationProps) => {
         <PagButton {...defaultParams} val={currPage + 2} next={currPage + 1} />
       )}
 
-      {numberPages > 1 && currPage < numberPages - 1 && (
+      {numberPages > 1 && currPage < numberPages - 2 && (
         <>
           <chakra.p mr={2}>...</chakra.p>
 
