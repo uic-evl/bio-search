@@ -61,6 +61,21 @@ export function FigureBboxViewer({imageSrc, bboxes}: FigureBboxViewerProps) {
                 el.bbox[2] * scale,
                 el.bbox[3] * scale,
               )
+              ctx.fillStyle = el.color
+              ctx.fillRect(
+                el.bbox[0] * scale + x,
+                el.bbox[1] * scale + y,
+                Math.min(40, el.bbox[2] * scale),
+                10,
+              )
+              ctx.fillStyle = 'black'
+              ctx.textBaseline = 'top'
+              ctx.fillText(
+                el.type,
+                el.bbox[0] * scale + x,
+                el.bbox[1] * scale + y,
+                Math.min(40, el.bbox[2] * scale),
+              )
               ctx.restore()
             }
           })
@@ -70,7 +85,16 @@ export function FigureBboxViewer({imageSrc, bboxes}: FigureBboxViewerProps) {
   }, [bboxes, height, imageSrc, width])
 
   return (
-    <Box ref={containerRef}>
+    <Box
+      ref={containerRef}
+      _hover={{
+        transform: 'scale(1.5) translate(-30px, -10px)',
+        zIndex: '1000',
+        cursor: 'pointer',
+        boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.5)',
+        transition: '0.3s',
+      }}
+    >
       {width > 0 && (
         <canvas id="img_canvas" width={width} height={height} ref={canvasRef} />
       )}

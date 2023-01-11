@@ -58,15 +58,19 @@ const Pagination = ({currPage, numberPages, onClick}: PaginationProps) => {
         val={currPage + 1}
         next={currPage}
       />
-      {nextPage > 0 && (
+      {nextPage > 0 && nextPage < numberPages && (
         <PagButton {...defaultParams} val={currPage + 2} next={currPage + 1} />
       )}
 
-      {numberPages > 1 && (
+      {numberPages > 1 && currPage < numberPages - 1 && (
         <>
           <chakra.p mr={2}>...</chakra.p>
 
-          <PagButton {...defaultParams} val={numberPages} next={numberPages} />
+          <PagButton
+            {...defaultParams}
+            val={numberPages}
+            next={numberPages - 1}
+          />
         </>
       )}
     </Flex>
@@ -178,7 +182,7 @@ export function HorizontalFigureResults({
   useEffect(() => {
     setCurrPage(0)
     if (documents) {
-      setNumberPages(Math.floor(documents.length / resultsPerPage))
+      setNumberPages(Math.ceil(documents.length / resultsPerPage))
       setSlicedResults(documents.slice(0, resultsPerPage))
     } else {
       setNumberPages(0)
@@ -218,7 +222,7 @@ export function HorizontalFigureResults({
               getPageFigureData={getPageFigureData}
               getPageUrl={getPageUrl}
             />
-            <Divider key={`divider-${document.id}`} mt={1} mb={1} />
+            {/* <Divider key={`divider-${document.id}`} mt={1} mb={1} /> */}
           </>
         ))}
       {documents && documents.length > 0 && (
