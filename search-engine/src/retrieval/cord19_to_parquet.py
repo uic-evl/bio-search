@@ -82,6 +82,9 @@ def get_documents_to_index(db_params: dict) -> list[LuceneDocument]:
     for document in lucene_docs:
         modalities = id_2_modalities.get(document.docId, None)
         if modalities:
+            # add the parents to the modalities so we can filter by levels
+            parents = [x.split(".")[0] for x in modalities if "." in x]
+            modalities += parents
             document.modalities = ";".join(modalities)
     return lucene_docs
 

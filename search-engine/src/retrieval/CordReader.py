@@ -44,9 +44,11 @@ class CordReader:
     def fetch_full_text(self, pmcid: str) -> str:
         """fetch the full text from the metadata file"""
         if self.id2ftpointer is None:
+            self.create_id2full_text_mapping()
             self._load_full_text_mapping()
         ft_pointer = self.id2ftpointer[pmcid]
-        if ft_pointer == "": return "" # no file
+        if ft_pointer == "":
+            return ""  # no file
         ft_path = self.base_path / ft_pointer
 
         with open(ft_path, "r", encoding="utf-8") as ft_file:
