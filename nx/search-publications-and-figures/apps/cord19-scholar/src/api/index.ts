@@ -52,13 +52,24 @@ export const getPageFigureDetails = async (
     payload.pages.forEach(page => {
       let score = 0
       page.figures.forEach(figure => {
+        let figurePriority = 0
         figure.subfigures.forEach(subfigure => {
           if (preferredOrder.includes(subfigure.type)) {
             score += 1
+            figurePriority += 1
           }
         })
+        figure.priority = figurePriority
       })
       page.priority = score
+    })
+
+    payload.pages.forEach(page => {
+      page.figures = page.figures.sort((fig1, fig2) => {
+        const b = fig2.priority ? fig2.priority : 0
+        const a = fig1.priority ? fig1.priority : 0
+        return b - a
+      })
     })
 
     payload.pages = payload.pages.sort((page1, page2) => {
