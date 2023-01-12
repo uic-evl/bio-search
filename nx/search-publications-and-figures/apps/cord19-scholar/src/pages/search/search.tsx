@@ -1,5 +1,5 @@
 import {useReducer} from 'react'
-import {Box, useToast} from '@chakra-ui/react'
+import {Box, Flex, Spacer, useToast} from '@chakra-ui/react'
 import {
   RowModalityLegend,
   SearchBar,
@@ -7,6 +7,7 @@ import {
   initSearchState,
   HorizontalFigureResults,
   Document,
+  HelpQueries,
   Page,
 } from '@search-publications-and-figures/common-ui'
 import {ReactComponent as Taxonomy} from '../../assets/taxonomy.svg'
@@ -69,12 +70,16 @@ const Search = () => {
   return (
     <Box className="container" minH="100vh" w="full">
       <Box w="full" h="100px" p={4} pt={2} pb={0} zIndex={400}>
-        <RowModalityLegend
-          modalities={baseModalities}
-          colorsMapper={colorsMapper}
-          namesMapper={namesMapper}
-          taxonomyImage={<Taxonomy />}
-        />
+        <Flex w="full">
+          <RowModalityLegend
+            modalities={baseModalities}
+            colorsMapper={colorsMapper}
+            namesMapper={namesMapper}
+            taxonomyImage={<Taxonomy />}
+          />
+          <Spacer />
+          <HelpQueries />
+        </Flex>
         <SearchBar
           defaultStartYear={2000}
           defaultEndYear={2020}
@@ -82,7 +87,21 @@ const Search = () => {
           colorsMapper={colorsMapper}
           onSearch={handleSearch}
           keywordPlaceholderValue="e.g. disease"
-          sampleKeywords={['disease', 'kinase']}
+          sampleQueries={[
+            {query: 'disease', label: 'disease', modalities: []},
+            {
+              query: 'title:kinase AND abstract:transcription',
+              label: 'kinase in title and transcription in abstract',
+              modalities: [],
+            },
+            {
+              query: 'full_text:auditory AND full_text:cortex',
+              label: 'auditory and cortex in full text with microscopy images',
+              modalities: [
+                {label: 'fluorescence microscopy', value: 'mic.flu'},
+              ],
+            },
+          ]}
           isLoading={isLoading}
         />
         <Box w="full" mt={2}>

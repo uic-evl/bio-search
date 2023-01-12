@@ -10,6 +10,7 @@ import {
 } from '@chakra-ui/react'
 import ColorMultiSelect from '../color-multi-select/color-multi-select'
 import {Dispatch, SetStateAction, useState} from 'react'
+import {SampleQueryType} from '../types/sampleQuery'
 
 /* eslint-disable-next-line */
 export interface SearchBarProps {
@@ -18,7 +19,7 @@ export interface SearchBarProps {
   colorsMapper: {[id: string]: string}
   options: {label: string; value: string}[]
   keywordPlaceholderValue: string
-  sampleKeywords: string[]
+  sampleQueries: SampleQueryType[]
   isLoading: boolean
   onSearch: OnSearch
 }
@@ -33,7 +34,7 @@ export interface OnSearch {
 }
 
 interface SampleQueryProps {
-  keyword: string
+  query: SampleQueryType
   onSearch: OnSearch
   setKeyword: Dispatch<SetStateAction<string>>
   setStartYear: Dispatch<SetStateAction<number>>
@@ -42,7 +43,7 @@ interface SampleQueryProps {
 }
 
 const SampleQuery = ({
-  keyword,
+  query,
   onSearch,
   setKeyword,
   setStartYear,
@@ -52,21 +53,22 @@ const SampleQuery = ({
   const startDate = null
   const endDate = null
   const handleOnClick = () => {
-    setKeyword(keyword)
+    setKeyword(query.query)
     setStartYear(2000)
     setEndYear(2020)
-    setModalities([])
-    onSearch(keyword, startDate, endDate, [])
+    setModalities(query.modalities)
+    const queryModalities = query.modalities.map(el => el.value)
+    onSearch(query.query, startDate, endDate, queryModalities)
   }
 
   return (
     <chakra.p
-      mr={1}
+      mr={4}
       color="blue.500"
       _hover={{textDecoration: 'underline', cursor: 'pointer'}}
       onClick={handleOnClick}
     >
-      {keyword}
+      {query.label}
     </chakra.p>
   )
 }
@@ -77,7 +79,7 @@ export function SearchBar({
   defaultEndYear,
   colorsMapper,
   onSearch,
-  sampleKeywords,
+  sampleQueries,
   isLoading,
   keywordPlaceholderValue = 'e.g. disease',
 }: SearchBarProps) {
@@ -175,10 +177,10 @@ export function SearchBar({
       </Flex>
       <Flex dir="row" w="full" ml={4}>
         <chakra.p mr={2}>Try these queries:</chakra.p>
-        {sampleKeywords.map(el => (
+        {sampleQueries.map(el => (
           <SampleQuery
             key={`sample-${el}`}
-            keyword={el}
+            query={el}
             onSearch={onSearch}
             setKeyword={setKeyword}
             setStartYear={setStartYear}
