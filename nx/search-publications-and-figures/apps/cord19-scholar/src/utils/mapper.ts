@@ -3,6 +3,7 @@ const namesMapper: {[id: string]: string} = {
   'mol.pro': 'mol - protein sequence',
   'mol.dna': 'mol - dna sequence',
   'mol.che': 'mol - chemical structure',
+  'mol.3ds': 'mol - 3D structure',
   mic: 'microscopy',
   'mic.lig': 'light microscopy',
   'mic.ele': 'electron microscopy',
@@ -22,6 +23,8 @@ const namesMapper: {[id: string]: string} = {
   'gra.lin': 'gra - line chart',
   'gra.his': 'gra - histogram',
   'gra.sca': 'gra - scatterplot',
+  'gra.flow': 'gra - flowchart',
+  'gra.3dr': 'gra - 3d rendering',
 }
 
 const colorsMapper: {[id: string]: string} = {
@@ -29,6 +32,7 @@ const colorsMapper: {[id: string]: string} = {
   'mol.pro': '#a6cee3',
   'mol.dna': '#a6cee3',
   'mol.che': '#a6cee3',
+  'mol.3ds': '#a6cee3',
   mic: '#1f78b4',
   'mic.lig': '#1f78b4',
   'mic.ele': '#1f78b4',
@@ -48,6 +52,8 @@ const colorsMapper: {[id: string]: string} = {
   'gra.lin': '#fdbf6f',
   'gra.his': '#fdbf6f',
   'gra.sca': '#fdbf6f',
+  'gra.flow': '#fdbf6f',
+  'gra.3dr': '#fdbf6f',
 }
 
 // options to popular the search dropdown list

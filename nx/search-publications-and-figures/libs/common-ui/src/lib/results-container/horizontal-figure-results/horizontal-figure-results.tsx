@@ -124,7 +124,7 @@ const HorizontalResultCard = ({
   }, [document.id])
 
   return (
-    <Flex direction={'row'} h="250px">
+    <Flex direction={'row'} h="250px" mb={4}>
       <Box w="40%" h="100%">
         {docFigureInfo && (
           <SimpleResultCard

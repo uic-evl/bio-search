@@ -14,16 +14,20 @@ export function ModalityCountBadges({
 }: ModalityCountBadgesProps) {
   return (
     <>
-      {Object.keys(countMapper).map(key => (
-        <Tooltip
-          label={`# ${namesMapper[key]} subfigures: ${countMapper[key]}`}
-          key={`tooltip-${key}`}
-        >
-          <Badge key={key} mr={1} background={colorMapper[key]} color="black">
-            {key}:{countMapper[key]}
-          </Badge>
-        </Tooltip>
-      ))}
+      {Object.keys(countMapper).map(key => {
+        if (['gra', 'exp', 'mol', 'mic'].includes(key)) return null
+
+        return (
+          <Tooltip
+            label={`# ${namesMapper[key]} subfigures: ${countMapper[key]}`}
+            key={`tooltip-${key}`}
+          >
+            <Badge key={key} mr={1} background={colorMapper[key]} color="black">
+              {key}:{countMapper[key]}
+            </Badge>
+          </Tooltip>
+        )
+      })}
     </>
   )
 }
