@@ -113,15 +113,43 @@ class OverlapAnalyzer:
     def _precision(self, num_relevant: int, total_returned: int) -> str:
         return str(round(num_relevant / total_returned, 2))
 
-    def overlap(self, keyword: str, text_modality: str, modalities: List[str]):
-        """Execute queries against Lucene and compare the overlap in results"""
+    def _make_full_text_query(self, keywords: List[str], proxies: List[str]) -> str:
+        terms = keywords + proxies
+        query = "&q="
+        for idx, keyword in enumerate(terms):
+            query += f"full_text:{keyword}"
+            if idx < len(terms) - 1:
+                query += "%20AND%20"
+        return query
+
+    def _make_text_image_query(self, keywords: List[str], modalities: List[str]) -> str:
+        query = "&q="
+        for idx, keyword in enumerate(keywords):
+            query += f"full_text:{keyword}"
+            if idx < len(keywords) - 1:
+                query += "%20AND%20"
+
         str_modalities = ";".join(modalities)
-        query1 = f"q=full_text:{keyword} AND full_text:{text_modality}"
-        query2 = f"q=full_text:{keyword}&modalities={str_modalities}"
+        query += f"&modalities={str_modalities}"
+        return query
+
+    def overlap(
+        self,
+        keyword: List[str],
+        text_modality: List[str],
+        modalities: List[str],
+        cuts: List[int],
+    ):
+        """Execute queries against Lucene and compare the overlap in results"""
+        query1 = self._make_full_text_query(keyword, text_modality)
+        query2 = self._make_text_image_query(keyword, modalities)
 
         base_url = f"{ROOT}/search/?ds={self.dataset}&ft=true&from=2000-01-01&to=2020-12-31&highlight=true&max_docs=2000"
         url1 = f"{base_url}&{query1}"
         url2 = f"{base_url}&{query2}"
+
+        print(url1)
+        print(url2)
 
         res1 = get(url=url1)
         res2 = get(url=url2)
@@ -130,9 +158,9 @@ class OverlapAnalyzer:
         values1 = res1.json()
         values2 = res2.json()
 
-        cap_1 = 10
-        cap_2 = 30
-        cap_3 = 100
+        cap_1 = cuts[0]
+        cap_2 = cuts[1]
+        cap_3 = cuts[2]
 
         intersections = self._calc_intersections(values1, values2)
         intersections_10 = self._calc_intersections(values1, values2, cap_1)
@@ -166,8 +194,8 @@ class OverlapAnalyzer:
         included_100 = len(self._calc_intersections(values1[:cap_3], values2))
 
         print("Queries:")
-        print(f"\tfull-text only:\t\t {keyword} + {text_modality}")
-        print(f"\tfull-text + modalities:\t {keyword} + {str_modalities}")
+        print(f"\tfull-text only:\t\t {query1}")
+        print(f"\tfull-text + modalities:\t {query2}")
         print("Number of results")
         print(f"\tfull-text only:\t\t\t {len(values1)}")
         print(f"\tquery full-text + modalities:\t {len(values2)}")
@@ -192,13 +220,52 @@ class OverlapAnalyzer:
 def parse() -> Namespace:
     """Parse from command line"""
     parser = ArgumentParser(prog="calc differences between queries")
-    parser.add_argument("keyword")
-    parser.add_argument("keyword_modality")
-    parser.add_argument("modalities", nargs="+")
+    parser.add_argument(
+        "-k",
+        "--keywords",
+        nargs="+",
+        required=True,
+        help="<Required> Keywords on full text. Pass multi-words with _",
+    )
+    parser.add_argument(
+        "-p",
+        "--proxies",
+        nargs="+",
+        required=True,
+        help="<Required> Proxy keyword for modalities",
+    )
+    parser.add_argument(
+        "-m",
+        "--modalities",
+        nargs="+",
+        required=True,
+        help="<Required> Image modalities from taxonomy",
+    )
+    parser.add_argument(
+        "-c",
+        "--cuts",
+        nargs="+",
+        required=True,
+        default=["10", "30", "100"],
+        help="<Required> Number of elements for comparison: array of 3 numbers",
+    )
     return parser.parse_args()
 
 
 if __name__ == "__main__":
     args = parse()
-    analyzer = OverlapAnalyzer(dataset="cord19")
-    analyzer.overlap(args.keyword, args.keyword_modality, args.modalities)
+    if len(args.cuts) != 3:
+        print("--cuts should be three numbers")
+    else:
+        keywords = []
+        for keyword in args.keywords:
+            if "_" in keyword:
+                keyword = keyword.replace("_", " ")
+                keywords.append(f"%22{keyword}%22")
+            else:
+                keywords.append(keyword)
+
+        cuts = [int(x) for x in args.cuts]
+        print("keywords: ", keywords)
+        analyzer = OverlapAnalyzer(dataset="cord19")
+        analyzer.overlap(keywords, args.proxies, args.modalities, cuts)
