@@ -15,7 +15,7 @@ export function ModalityCountBadges({
   return (
     <>
       {Object.keys(countMapper).map(key => {
-        if (['gra', 'exp', 'mol', 'mic'].includes(key)) return null
+        if (['gra', 'exp', 'mol', 'mic', 'rad'].includes(key)) return null
 
         return (
           <Tooltip

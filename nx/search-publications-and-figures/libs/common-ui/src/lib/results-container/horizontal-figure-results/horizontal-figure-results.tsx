@@ -1,7 +1,7 @@
 import {useState, useEffect} from 'react'
 import {LuceneDocument} from '../../types/lucene-document'
 import {Document, Page} from '../../types/document'
-import {Box, Flex, Divider, chakra, Button} from '@chakra-ui/react'
+import {Box, Flex, chakra, Button} from '@chakra-ui/react'
 import SimpleResultCard from '../../simple-result-card/simple-result-card'
 import FiguresPerPageViewer from '../../figures-per-page-viewer/figures-per-page-viewer'
 
@@ -124,7 +124,7 @@ const HorizontalResultCard = ({
   }, [document.id])
 
   return (
-    <Flex direction={'row'} h="250px" mb={4}>
+    <Flex direction={'row'} h="300px" mb={4}>
       <Box w="40%" h="100%">
         {docFigureInfo && (
           <SimpleResultCard

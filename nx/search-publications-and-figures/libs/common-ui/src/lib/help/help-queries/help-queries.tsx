@@ -11,14 +11,25 @@ import {
   Text,
   UnorderedList,
   ListItem,
+  Link,
 } from '@chakra-ui/react'
+
+import {ExternalLinkIcon} from '@chakra-ui/icons'
 
 const Explanation = () => (
   <Box>
+    <Box mb={2}>
+      <Link
+        href="https://docs.google.com/document/d/19msOo9-Tl90aRvWWBfk4uCfiXGPSR5taNHYSghSzyMg/edit?usp=sharing"
+        isExternal
+      >
+        Inteface tutorial
+        <ExternalLinkIcon ml="3px" />
+      </Link>
+    </Box>
     <Text>
       The following sections explain the behavior of the search input box, which
-      only support full-text queries over titles and abstracts. We currently do
-      not index any other section (e.g. Introduction).
+      only support full-text queries over titles, abstracts and full text.
     </Text>
     <Text fontWeight={'bold'} mt={2}>
       1. Simple search:

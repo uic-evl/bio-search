@@ -54,10 +54,19 @@ export const getPageFigureDetails = async (
       page.figures.forEach(figure => {
         let figurePriority = 0
         figure.subfigures.forEach(subfigure => {
-          if (preferredOrder.includes(subfigure.type)) {
-            score += 1
-            figurePriority += 1
-          }
+          preferredOrder.forEach(prioritized_type => {
+            if (
+              prioritized_type === subfigure.type ||
+              subfigure.type.includes(prioritized_type)
+            ) {
+              score += 1
+              figurePriority += 1
+            }
+          })
+          // if (preferredOrder.includes(subfigure.type)) {
+          //   score += 1
+          //   figurePriority += 1
+          // }
         })
         figure.priority = figurePriority
       })
