@@ -46,6 +46,16 @@ export function SimpleResultCard({
   namesMapper,
 }: SimpleResultCardProps) {
   const year = (publishDate: string) => publishDate.substring(0, 4)
+  const authors = (authorsStr: string) => {
+    const authorsList = authorsStr.split(';')
+    const formattedList = authorsList.map(el => {
+      const idx = el.indexOf(',')
+      return el.substring(idx + 2, idx + 3) + ' ' + el.substring(0, idx)
+    })
+    const authorsOutput = formattedList.join(', ')
+    if (authorsOutput.length > 50) return authorsOutput.substring(0, 50) + '...'
+    else return authorsOutput
+  }
 
   return (
     <Box
@@ -65,21 +75,31 @@ export function SimpleResultCard({
           onClick={onClick}
         />
       </Flex>
-      <Text
-        fontSize={'small'}
-        noOfLines={5}
-        dangerouslySetInnerHTML={{
-          __html:
-            year(document.publish_date) + '&nbsp;|&nbsp;' + document.abstract,
-        }}
-      ></Text>
+      <Text fontSize={'small'} color={'#006621'}>
+        {year(document.publish_date) +
+          ' | ' +
+          document.journal +
+          ' | ' +
+          authors(document.authors)}
+      </Text>
+      {document.abstract.length > 0 && (
+        <Text
+          fontSize={'small'}
+          noOfLines={5}
+          dangerouslySetInnerHTML={{
+            __html: '...' + document.abstract,
+          }}
+        ></Text>
+      )}
+
       {document.full_text ? (
         <Text
+          mt={1}
           fontSize={'small'}
           fontStyle={'italic'}
           noOfLines={4}
           dangerouslySetInnerHTML={{
-            __html: document.full_text,
+            __html: '...' + document.full_text,
           }}
         ></Text>
       ) : null}

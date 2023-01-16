@@ -3,6 +3,8 @@ export interface LuceneDocument {
   title: string
   publish_date: string
   abstract: string
+  journal: string
+  authors: string
   url: string
   num_figures: number
   modalities_count: {[id: string]: number}
