@@ -134,6 +134,8 @@ class Reader:
                     modalities=modalities,
                     url=url,
                     full_text=full_text,
+                    journal=hit_doc.get("journal"),
+                    authors=hit_doc.get("authors"),
                 )
                 results.append(result)
             return results

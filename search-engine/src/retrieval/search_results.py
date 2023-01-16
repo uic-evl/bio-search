@@ -16,6 +16,8 @@ class SearchResult:
     num_figures: int
     url: str
     full_text: str
+    journal: str
+    authors: str
     modalities_count: dict = field(init=False, default_factory=dict)
 
 
