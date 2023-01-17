@@ -71,7 +71,7 @@ export function SimpleResultCard({
           title={document.title}
           selected={selected}
           id={document.id}
-          url={`https://www.google.com/search?q=${document.url}`}
+          url={`https://doi.org/${document.url}`}
           onClick={onClick}
         />
       </Flex>
