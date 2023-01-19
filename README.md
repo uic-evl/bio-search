@@ -4,3 +4,7 @@ Monorepo for a collection of tools used to implement a biomedical search system 
 
 ## Data availability
 We have extracted and tagged a large number of document figures based on their image modality. If you are interested in accessing this dataset, please contact Juan at jtrell2@uic.edu.
+
+## Projects
+* NX/search: nx monorepo for the user interface
+* search-engine: Pylucene functions and seach API
