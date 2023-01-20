@@ -1,11 +1,14 @@
 # Search Engine for CORD-19 Collection
 
-Index data in a parquet file and provide a Flask web server to search over 
+test
+
+Index data in a parquet file and provide a Flask web server to search over
 that collection.
 
 Now I'm converting to parquet from jupyter but I need a script to do this
 
 ## 1. Schema
+
 ```python
 'cord_uid': StringField.TYPE_STORED,
 'source_x': StringField.TYPE_STORED,
@@ -28,7 +31,9 @@ python src/index.py --input_path sample_data/gxd.parquet --output_path /tmp/gxd
 ```
 
 ## 3. Search web server
+
 ### Environmental variables
+
 ```
 INDEX_PATH = Path to indexes to use for searches, e.g. /tmp/gxd
 DATA_PATH = Path to JSON metadata, e.g. ./sample_data/gxd_dict.json
@@ -36,6 +41,7 @@ FLASK_ROOT = prefix for API call, e.g., /api
 ```
 
 ### Start Flask
+
 ```bash
 cd src/
 export FLASK_APP=app
@@ -43,7 +49,6 @@ flask run
 ```
 
 http.server 6000 on /mnt
-
 
 ## Tests
 
