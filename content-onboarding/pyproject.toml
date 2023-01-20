@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "content-onboarding"
+version = "0.1.0"
+description = ""
+authors = ["Juan Trelles <juantrelles@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+pandas = "^1.5.3"
+pyarrow = "^10.0.1"
+Pillow = "^9.4.0"
+psycopg = {extras = ["binary"], version = "^3.1.8"}
+black = "^22.12.0"
+pylint = "^2.15.10"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
