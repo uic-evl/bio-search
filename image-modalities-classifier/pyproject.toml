@@ -1,0 +1,32 @@
+[tool.poetry]
+name = "image-modalities-classifier"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+packages = [{include = "image_modalities_classifier"}]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+pylint = "^2.15.10"
+ipykernel = "^6.20.2"
+black = "^22.12.0"
+torch = "^1.13.1"
+torchvision = "^0.14.1"
+pandas = "1.5.3"
+scikit-learn = "1.2"
+fastparquet = "2023.1.0"
+python-dotenv = "^0.21.1"
+flask = "^2.2.2"
+flask-cors = "^3.0.10"
+scikit-image = "^0.19.3"
+umap-learn = "^0.5.3"
+iterative-stratification = "^0.1.7"
+matplotlib = "^3.6.3"
+pytorch-lightning = "1.8.1"
+wandb = "^0.13.9"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
