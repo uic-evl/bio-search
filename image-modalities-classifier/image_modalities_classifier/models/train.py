@@ -4,13 +4,10 @@ from pathlib import Path
 from os import makedirs, listdir
 from typing import Tuple
 import pandas as pd
-
-
-from utils.label_encoder import label_encoder_target
-from utils.calc_stat import calc_dataset_mean_std
-
+from sklearn.preprocessing import LabelEncoder
 
 import torch
+from torch.utils.data import DataLoader
 from pytorch_lightning import Trainer, seed_everything
 from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
@@ -20,7 +17,46 @@ import wandb
 
 
 import image_modalities_classifier.dataset as ds
+from image_modalities_classifier.dataset.image_dataset import ImageDataset
 from image_modalities_classifier.models.resnet import Resnet
+
+
+ENCODED_COL_NAME = "enc_label"
+
+
+def calc_ds_stats(
+    dataset: ImageDataset, batch_size: int = 32, num_workers: int = 0
+) -> Tuple[float, float]:
+    """Calculate the mean and standard deviation over the pixels in the dataset"""
+    loader = DataLoader(
+        dataset,
+        batch_size=batch_size,
+        num_workers=num_workers,
+        shuffle=False,
+    )
+
+    mean = 0.0
+    for batch in loader:
+        images = batch[0]
+        batch_samples = images.size(0)
+        images = images.view(batch_samples, images.size(1), -1)
+        mean += images.mean(2).sum(0)
+    mean = mean / len(loader.dataset)
+
+    var = 0.0
+    image_info = dataset[0]
+    sample_img = image_info[0]
+    # for std calculations
+    height, width = sample_img.shape[1], sample_img.shape[2]
+
+    for batch in loader:
+        images = batch[0]
+        batch_samples = images.size(0)
+        images = images.view(batch_samples, images.size(1), -1)
+        var += ((images - mean.unsqueeze(1)) ** 2).sum([0, 2])
+    std = torch.sqrt(var / (len(loader.dataset) * width * height))
+
+    return mean, std
 
 
 class ModalityModelTrainer:
@@ -62,15 +98,33 @@ class ModalityModelTrainer:
         self.img_path_col = "img_path"
         self.taxonomy = taxonomy
 
-        self.output_dir = Path(output_dir) / self.taxonomy / self.classifier
+        self.artifacts_dir = output_dir
+        self.data = None
+        self.encoder = None
+        self.output_dir = None
+        self.version = None
+
+    def _prepare_data(self):
+        self.data = pd.read_parquet(self.data_path)
+        self.data = ds.utils.remove_small_classes(self.data, col_name=self.label_col)
+        self._encode_dataset()
+
+    def _create_artifacts_folder(self):
+        self.output_dir = Path(self.artifacts_dir) / self.taxonomy / self.classifier
         makedirs(self.output_dir, exist_ok=True)
         self.version = self._get_version()
 
-        self.data = pd.read_parquet(self.data_path)
-        self.data = ds.utils.remove_small_classes(self.data, col_name=self.label_col)
-        self.label_encoder, _ = label_encoder_target(
-            self.data, target_col=self.label_col
-        )
+    def _encode_dataset(self) -> None:
+        """Created a column for holding the encoded label value and sets the
+        label encoder with the classes in alphabetical order"""
+        self.encoder = LabelEncoder()
+        unique_labels = sorted(self.data[self.label_col].unique())
+        if None in unique_labels:
+            raise Exception(
+                f"Data file has None values on the ${self.label_col} column"
+            )
+        self.encoder.fit(unique_labels)
+        self.data[ENCODED_COL_NAME] = self.encoder.transform(self.data.values)
 
     def _get_version(self):
         models = [x for x in listdir(self.output_dir) if x[-3:] == ".pt"]
@@ -88,7 +142,7 @@ class ModalityModelTrainer:
             path_col=self.img_path_col,
         )
 
-        mean, std = calc_dataset_mean_std(
+        mean, std = calc_ds_stats(
             train_dataset, batch_size=self.batch_size, num_workers=self.num_workers
         )
         return mean, std
@@ -96,6 +150,8 @@ class ModalityModelTrainer:
     def run(self):
         """Start the training loop"""
         seed_everything(self.seed)
+        self._prepare_data()
+        self._create_artifacts_folder()
         train_mean, train_std = self._calculate_dataset_stats()
 
         wandb.init()
@@ -108,7 +164,7 @@ class ModalityModelTrainer:
         # setup data
         datamodule = ds.image_datamodule.ImageDataModule(
             batch_size=self.batch_size,
-            label_encoder=self.label_encoder,
+            label_encoder=self.encoder,
             data_path=str(self.data_path),
             base_img_dir=str(self.base_img_dir),
             seed=self.seed,
@@ -142,7 +198,7 @@ class ModalityModelTrainer:
         )
         checkpoint_callback.FILE_EXTENSION = self.extension
 
-        num_classes = len(self.label_encoder.classes_)
+        num_classes = len(self.encoder.classes_)
 
         model = Resnet(
             name=self.model_name,

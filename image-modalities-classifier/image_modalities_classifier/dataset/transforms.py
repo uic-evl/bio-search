@@ -35,6 +35,7 @@ class ModalityTransforms:
 
     def val_transforms(self) -> transforms.Compose:
         """Image transformations for the training set"""
+
         val_transforms = [
             transforms.ToPILImage(),
             transforms.Resize((224, 224)),
