@@ -1,4 +1,14 @@
-""" Code for training a new model or update an existing model """
+""" Code for training a new model or update an existing model 
+
+Model versioning
+
+The trainer receives a directory path to set where the trained model should be
+stored. If there is any existing model in the directory (.pt), the trainer 
+load the latest existing model and increments the version number. The versioning
+syntax is very simple <taxonomy_name>_<classifier>_<version>, where version
+is an integer.
+
+"""
 
 from pathlib import Path
 from os import makedirs, listdir
@@ -60,12 +70,32 @@ def calc_ds_stats(
 
 
 class ModalityModelTrainer:
-    """Trainer for image modality classifiers"""
+    """Trainer for image modality classifiers
+
+    Attributes
+    ----------
+    dataset_filepath: str
+        File path to the parquet file with the training, validation, and test data.
+    base_img_dir: str
+        Relative path where all the images are stored on disk, such that by
+        contatenating base_img_dir and the path in the dataset_filepath, the
+        trainer can access to the image.
+    output_dir: str
+        Location where to save the model weights.
+    taxonomy: str
+        Name of the taxonomy used in the project. Used for setting up the output
+        directory and saving the metadata.
+    classifier_name: str
+        As expected. Used for setting up the output directory and saving metadata
+    project: str
+        Project name to organize model tracking on wandb
+
+    """
 
     def __init__(
         self,
         dataset_filepath,
-        images_path,
+        base_img_dir,
         output_dir,
         taxonomy,
         classifier_name,
@@ -80,25 +110,28 @@ class ModalityModelTrainer:
         num_workers: int = 16,
     ):
         self.data_path = Path(dataset_filepath)
-        self.base_img_dir = Path(images_path)
+        self.base_img_dir = Path(base_img_dir)
+        self.project = project
         self.num_workers = num_workers
         self.seed = seed
-        self.project = project
-        self.learning_rate = learning_rate
-        self.gpus = gpus
-        self.classifier = classifier_name
+        # attributes mostly related
         self.model_name = model_name
         self.epochs = epochs
+        self.learning_rate = learning_rate
+        self.gpus = gpus
+        self.batch_size = batch_size
+
+        self.label_col = label_col
+        self.artifacts_dir = output_dir
+        self.classifier = classifier_name
+        self.taxonomy = taxonomy
+
         self.metric_monitor = "val_avg_loss"
         self.mode = "min"
         self.extension = ".pt"
-        self.batch_size = batch_size
-        self.label_col = label_col
         self.partition_col = "split_set"
         self.img_path_col = "img_path"
-        self.taxonomy = taxonomy
 
-        self.artifacts_dir = output_dir
         self.data = None
         self.encoder = None
         self.output_dir = None
