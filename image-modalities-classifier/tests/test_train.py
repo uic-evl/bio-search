@@ -4,7 +4,7 @@ import tempfile
 from os import makedirs
 from pathlib import Path
 import pandas as pd
-from image_modalities_classifier.models.train import ModalityModelTrainer
+from image_modalities_classifier.models.trainer import ModalityModelTrainer
 
 
 def test_check_artifacts_first_time():

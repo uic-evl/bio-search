@@ -2,7 +2,7 @@
 name = "image-modalities-classifier"
 version = "0.1.0"
 description = ""
-authors = ["Your Name <you@example.com>"]
+authors = ["Juan Trelles <jtrell2@uic.edu>"]
 readme = "README.md"
 packages = [{include = "image_modalities_classifier"}]
 
@@ -37,3 +37,6 @@ pytest = "^5.2"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+train = 'image_modalities_classifier.train:main'

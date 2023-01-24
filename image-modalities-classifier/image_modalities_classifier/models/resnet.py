@@ -23,12 +23,13 @@ class Resnet(pl.LightningModule):
     # pylint: disable=unused-argument
     def __init__(
         self,
+        classes: List[str],
+        num_classes: int,
         name: str = "resnet18",
-        num_classes: int = 6,
         pretrained: bool = True,
         fine_tuned_from: str = "whole",
         lr: float = 1e-3,
-        metric_monitor: str = "val_avg_loss",
+        metric_monitor: str = "val_loss",
         mode_scheduler: str = "min",
         class_weights: Optional[List[float]] = None,
         mean_dataset: Optional[float] = None,
@@ -37,6 +38,7 @@ class Resnet(pl.LightningModule):
         super().__init__()
         self.save_hyperparameters(
             "name",
+            "classes",
             "num_classes",
             "pretrained",
             "fine_tuned_from",
@@ -84,6 +86,7 @@ class Resnet(pl.LightningModule):
         return loss
 
     def test_step(self, batch, batch_idx):
+        # batch_idx needs to be as a parameter to match signature
         imgs, labels = batch
         preds = self.model(imgs)
         # loss = self.loss(y_hat, y_true)

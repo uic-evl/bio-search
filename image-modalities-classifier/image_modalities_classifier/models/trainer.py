@@ -106,9 +106,9 @@ class ModalityModelTrainer:
         gpus: int = 1,
         learning_rate: float = 0.0001,
         batch_size: int = 32,
-        epochs: int = 10,
+        epochs: int = 0,
         seed: int = 443,
-        num_workers: int = 16,
+        num_workers: int = 4,
         remove_small: bool = True,
     ):
         self.data_path = Path(dataset_filepath)
@@ -128,8 +128,6 @@ class ModalityModelTrainer:
         self.classifier = classifier_name
         self.taxonomy = taxonomy
 
-        self.metric_monitor = "val_loss"
-        self.mode = "min"
         self.extension = ".pt"
         self.partition_col = "split_set"
         self.img_path_col = "img_path"
@@ -137,11 +135,12 @@ class ModalityModelTrainer:
         self.remove_small = remove_small
         self.data = None
         self.encoder = None
-        self.output_dir = None
+        self.output_dir: Path = None
         self.version = None
 
     def _prepare_data(self):
         self.data = pd.read_parquet(self.data_path, engine="pyarrow")
+        self.data = self.data[self.data[self.partition_col] != "UNL"]
         if self.remove_small:
             self.data = remove_small_classes(self.data, col_name=self.label_col)
         self._encode_dataset()
@@ -205,79 +204,90 @@ class ModalityModelTrainer:
         datamodule.set_seed()
         return datamodule
 
+    def _append_logger_name(self, cp_name: str, run_name: str):
+        filename = self.output_dir / "logger.txt"
+        with open(filename, "a", encoding="utf-8") as file:
+            file.write(f"{cp_name},{run_name}\n")
+
     def run(self):
-        """Start the training loop"""
+        """Start the training loop
+        Logging the data
+        https://github.com/Lightning-AI/lightning/issues/14054
+        """
         # TODO adapt for pseudo labels
         seed_everything(self.seed)
+        print("preparing data")
         self._prepare_data()
+        print("creating artifacts")
         self._create_artifacts_folder()
+        print("calculating dataset stats")
         train_mean, train_std = self._calculate_dataset_stats()
-
-        wandb.init()
-        wandb_logger = WandbLogger(project=self.project, reinit=True)
-        wandb_logger.experiment.save()
-
         output_run_path = self.output_dir
-
         datamodule = self._create_data_module(train_mean, train_std)
 
+        # start wandb for logging stats
+        run = wandb.init(project=self.project, tags=[self.classifier, self.model_name])
+        wandb_logger = WandbLogger(project=self.project)
+
         # Callbacks
+        metric_monitor = "val_loss"
         lr_monitor = LearningRateMonitor(logging_interval="epoch")
         early_stop_callback = EarlyStopping(
-            monitor=self.metric_monitor,
+            monitor=metric_monitor,
             min_delta=0.0,
             patience=5,
             verbose=True,
-            mode=self.mode,
+            mode="min",
         )
 
+        cp_name = f"{self.model_name}_{self.classifier}_{self.version}"
         checkpoint_callback = ModelCheckpoint(
             dirpath=output_run_path,
-            filename=f"{self.classifier}_{self.version}",
-            monitor=self.metric_monitor,
-            mode=self.mode,
+            filename=cp_name,
+            monitor=metric_monitor,
+            mode="min",
             save_top_k=1,
         )
         checkpoint_callback.FILE_EXTENSION = self.extension
 
         num_classes = len(self.encoder.classes_)
-        print("NUMBER OF CLASSES", num_classes)
-
         model = Resnet(
+            self.encoder.classes_,
+            num_classes,
             name=self.model_name,
-            num_classes=num_classes,
             pretrained=True,
             fine_tuned_from="whole",
             lr=self.learning_rate,
-            metric_monitor=self.metric_monitor,
-            mode_scheduler=self.mode,
+            metric_monitor=metric_monitor,
+            mode_scheduler="min",
             class_weights=datamodule.class_weights,
             mean_dataset=train_mean,
             std_dataset=train_std,
         )
-        if self.version > 1:
-            # model = ResNetClass.load_from_checkpoint(self.output_dir/f'{self.classifier}_{self.version}.{self.extension}')
-            # model.class_weights = dm.class_weights
-            # model.mean_dataset = mean
-            # model.std_dataset = std
-            # self.save_hyperparameters("class_weights","mean_dataset","std_dataset")
-            checkpoint = torch.load(
-                self.output_dir / f"{self.classifier}_{self.version-1}{self.extension}"
-            )
-            model.load_state_dict(checkpoint["state_dict"])
+        # if self.version > 1:
+        #     # model = ResNetClass.load_from_checkpoint(self.output_dir/f'{self.classifier}_{self.version}.{self.extension}')
+        #     # model.class_weights = dm.class_weights
+        #     # model.mean_dataset = mean
+        #     # model.std_dataset = std
+        #     # self.save_hyperparameters("class_weights","mean_dataset","std_dataset")
+        #     checkpoint = torch.load(
+        #         self.output_dir / f"{self.classifier}_{self.version-1}{self.extension}"
+        #     )
+        #     model.load_state_dict(checkpoint["state_dict"])
 
         max_epochs = 100 if self.epochs == 0 else self.epochs
         callbacks = [lr_monitor, checkpoint_callback, early_stop_callback]
         trainer = Trainer(
-            accelerator="gpu",
-            gpus=self.gpus,
+            accelerator="gpu" if torch.cuda.is_available() else "cpu",
+            devices=self.gpus,
             max_epochs=max_epochs,
             callbacks=callbacks,
-            deterministic=True,
+            deterministic=False,
             logger=wandb_logger,
             num_sanity_val_steps=0,
         )
         trainer.fit(model, datamodule)
 
         wandb.finish()
-        return f"{self.classifier}_{self.version}.{self.extension}"
+        self._append_logger_name(cp_name, run.name)
+        return f"{cp_name}{self.extension}"
