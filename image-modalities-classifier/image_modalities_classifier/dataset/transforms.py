@@ -1,12 +1,13 @@
 """ Transformation for the Image Modality Classifier """
 
 from torchvision import transforms
+from torch import Tensor
 
 
 class ModalityTransforms:
     """Image transformations during training and inference"""
 
-    def __init__(self, train_mean: float, train_std: float):
+    def __init__(self, train_mean: Tensor, train_std: Tensor):
         self.mean = train_mean
         self.std = train_std
 

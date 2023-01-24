@@ -7,12 +7,12 @@ readme = "README.md"
 packages = [{include = "image_modalities_classifier"}]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.10"
 pylint = "^2.15.10"
 ipykernel = "^6.20.2"
 black = "^22.12.0"
-torch = "^1.13.1"
-torchvision = "^0.14.1"
+torch = { version="^1.13.1", source="torch" }
+torchvision = { version = "^0.14.1", source="torch" }
 pandas = "1.5.3"
 scikit-learn = "1.2"
 python-dotenv = "^0.21.1"
@@ -21,9 +21,15 @@ flask-cors = "^3.0.10"
 scikit-image = "^0.19.3"
 iterative-stratification = "^0.1.7"
 matplotlib = "^3.6.3"
-pytorch-lightning = "1.8.1"
+pytorch-lightning = "^1.9.0"
 wandb = "^0.13.9"
 pyarrow = "^10.0.1"
+
+[[tool.poetry.source]]
+name = "torch"
+url = "https://download.pytorch.org/whl/cu116"
+default = false
+secondary = true
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

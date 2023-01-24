@@ -16,6 +16,9 @@ from image_modalities_classifier.dataset.image_dataset import ImageDataset
 from image_modalities_classifier.dataset.transforms import ModalityTransforms
 
 
+ENCODED_LABEL_COL = "enc_label"
+
+
 class ImageDataModule(pl.LightningDataModule):
     """Responsible for preparing the data and providing the dataloaders for
     train, validation and test"""
@@ -30,9 +33,9 @@ class ImageDataModule(pl.LightningDataModule):
         train_std: float,
         seed: int = 42,
         num_workers: int = 8,
-        partition_col: str = "SET",
-        label_col: str = "MODALITY",
-        path_col: str = "PATH",
+        partition_col: str = "split_set",
+        label_col: str = "label",
+        path_col: str = "img_path",
         remove_small=True,
     ):
         super().__init__()
@@ -61,7 +64,7 @@ class ImageDataModule(pl.LightningDataModule):
             self.data = pd.read_parquet(self.data_path)
 
         # create new column with encoded values
-        self.data["ENCODED"] = self.label_encoder.transform(
+        self.data[ENCODED_LABEL_COL] = self.label_encoder.transform(
             self.data[self.label_col].values
         )
 
@@ -70,7 +73,7 @@ class ImageDataModule(pl.LightningDataModule):
         seed_everything(self.seed)
 
     # pylint: disable=arguments-differ
-    def setup(self):
+    def setup(self, stage: str):
         train_df = self.data[self.data[self.partition_col] == "TRAIN"]
         y_train = train_df[self.label_col].values
         self.class_weights = class_weight.compute_class_weight(
@@ -85,7 +88,7 @@ class ImageDataModule(pl.LightningDataModule):
             data=train_df,
             base_img_dir=self.base_img_dir,
             transforms=self.transforms.train_transforms(),
-            label_name="ENCODED",
+            label_col=ENCODED_LABEL_COL,
             path_col=self.path_col,
         )
 
@@ -103,7 +106,7 @@ class ImageDataModule(pl.LightningDataModule):
             data=val_df,
             base_img_dir=self.base_img_dir,
             transforms=self.transforms.val_transforms(),
-            label_name="ENCODED",
+            label_col=ENCODED_LABEL_COL,
             path_col=self.path_col,
         )
 
@@ -121,7 +124,7 @@ class ImageDataModule(pl.LightningDataModule):
             data=test_df,
             base_img_dir=self.base_img_dir,
             transforms=self.transforms.test_transforms(),
-            label_name="ENCODED",
+            label_col=ENCODED_LABEL_COL,
             path_col=self.path_col,
         )
 

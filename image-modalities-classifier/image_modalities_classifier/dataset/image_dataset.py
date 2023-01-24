@@ -1,12 +1,13 @@
 """ Datasets for training, validation, test, and inference """
 
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Tuple
 import torch
 from pandas import DataFrame
 from skimage import io
 from skimage.color import gray2rgb
 from torchvision.transforms import Compose
+from numpy import int64
 
 
 def read_image(data: DataFrame, base_dir: str, path_col: str, idx):
@@ -33,28 +34,28 @@ class ImageDataset(torch.utils.data.Dataset):
         data: DataFrame,
         base_img_dir: str,
         transforms: Optional[Compose],
-        path_col: str = "PATH",
-        label_name: str = "LABEL",
+        path_col: str = "img_path",
+        label_col: str = "label",
     ):
         self.data = data
         self.base_dir = Path(base_img_dir)
         self.transforms = transforms
-        self.label_name = label_name
+        self.label_col = label_col
         self.path_col = path_col
 
     def __len__(self) -> int:
         return self.data.shape[0]
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx) -> Tuple[torch.Tensor, int64]:
         if torch.is_tensor(idx):
             idx = idx.tolist()
 
         image = read_image(self.data, self.base_dir, self.path_col, idx)
-        labels = self.data.iloc[idx][self.label_name]
+        labels = self.data.iloc[idx][self.label_col]
 
         if self.transforms:
             image = self.transforms(image)
-        return (image, labels[0])
+        return (image, labels)
 
 
 class EvalImageDataset(torch.utils.data.Dataset):
@@ -79,7 +80,7 @@ class EvalImageDataset(torch.utils.data.Dataset):
     def __len__(self) -> int:
         return self.data.shape[0]
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx) -> torch.Tensor:
         if torch.is_tensor(idx):
             idx = idx.tolist()
         image = read_image(self.data, self.base_dir, self.path_col, idx)

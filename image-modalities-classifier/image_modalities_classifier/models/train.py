@@ -25,9 +25,10 @@ from pytorch_lightning.loggers import WandbLogger
 
 import wandb
 
-
-import image_modalities_classifier.dataset as ds
+from image_modalities_classifier.dataset.utils import remove_small_classes
 from image_modalities_classifier.dataset.image_dataset import ImageDataset
+from image_modalities_classifier.dataset.image_datamodule import ImageDataModule
+from image_modalities_classifier.dataset.transforms import ModalityTransforms
 from image_modalities_classifier.models.resnet import Resnet
 
 
@@ -105,9 +106,10 @@ class ModalityModelTrainer:
         gpus: int = 1,
         learning_rate: float = 0.0001,
         batch_size: int = 32,
-        epochs: int = 0,
+        epochs: int = 10,
         seed: int = 443,
         num_workers: int = 16,
+        remove_small: bool = True,
     ):
         self.data_path = Path(dataset_filepath)
         self.base_img_dir = Path(base_img_dir)
@@ -126,20 +128,22 @@ class ModalityModelTrainer:
         self.classifier = classifier_name
         self.taxonomy = taxonomy
 
-        self.metric_monitor = "val_avg_loss"
+        self.metric_monitor = "val_loss"
         self.mode = "min"
         self.extension = ".pt"
         self.partition_col = "split_set"
         self.img_path_col = "img_path"
 
+        self.remove_small = remove_small
         self.data = None
         self.encoder = None
         self.output_dir = None
         self.version = None
 
     def _prepare_data(self):
-        self.data = pd.read_parquet(self.data_path)
-        self.data = ds.utils.remove_small_classes(self.data, col_name=self.label_col)
+        self.data = pd.read_parquet(self.data_path, engine="pyarrow")
+        if self.remove_small:
+            self.data = remove_small_classes(self.data, col_name=self.label_col)
         self._encode_dataset()
 
     def _create_artifacts_folder(self):
@@ -157,21 +161,23 @@ class ModalityModelTrainer:
                 f"Data file has None values on the ${self.label_col} column"
             )
         self.encoder.fit(unique_labels)
-        self.data[ENCODED_COL_NAME] = self.encoder.transform(self.data.values)
+        self.data[ENCODED_COL_NAME] = self.encoder.transform(
+            self.data[self.label_col].values
+        )
 
     def _get_version(self):
         models = [x for x in listdir(self.output_dir) if x[-3:] == ".pt"]
         return len(models) + 1
 
     def _calculate_dataset_stats(self) -> Tuple[float, float]:
-        basic_transforms = ds.transforms.ModalityTransforms.basic_transforms()
+        basic_transforms = ModalityTransforms.basic_transforms()
         train_df = self.data[self.data[self.partition_col] == "TRAIN"]
 
-        train_dataset = ds.image_dataset.ImageDataset(
+        train_dataset = ImageDataset(
             train_df,
             str(self.base_img_dir),
             transforms=basic_transforms,
-            label_name=self.label_col,
+            label_col=self.label_col,
             path_col=self.img_path_col,
         )
 
@@ -180,22 +186,8 @@ class ModalityModelTrainer:
         )
         return mean, std
 
-    def run(self):
-        """Start the training loop"""
-        seed_everything(self.seed)
-        self._prepare_data()
-        self._create_artifacts_folder()
-        train_mean, train_std = self._calculate_dataset_stats()
-
-        wandb.init()
-        wandb_logger = WandbLogger(project=self.project, reinit=True)
-        wandb_logger.experiment.save()
-
-        output_run_path = self.output_dir
-        # makedirs(output_run_path, exist_ok=False)
-
-        # setup data
-        datamodule = ds.image_datamodule.ImageDataModule(
+    def _create_data_module(self, train_mean, train_std):
+        datamodule = ImageDataModule(
             batch_size=self.batch_size,
             label_encoder=self.encoder,
             data_path=str(self.data_path),
@@ -209,8 +201,25 @@ class ModalityModelTrainer:
             train_std=train_std,
         )
         datamodule.prepare_data()
-        datamodule.setup()
+        datamodule.setup("fit")
         datamodule.set_seed()
+        return datamodule
+
+    def run(self):
+        """Start the training loop"""
+        # TODO adapt for pseudo labels
+        seed_everything(self.seed)
+        self._prepare_data()
+        self._create_artifacts_folder()
+        train_mean, train_std = self._calculate_dataset_stats()
+
+        wandb.init()
+        wandb_logger = WandbLogger(project=self.project, reinit=True)
+        wandb_logger.experiment.save()
+
+        output_run_path = self.output_dir
+
+        datamodule = self._create_data_module(train_mean, train_std)
 
         # Callbacks
         lr_monitor = LearningRateMonitor(logging_interval="epoch")
@@ -232,6 +241,7 @@ class ModalityModelTrainer:
         checkpoint_callback.FILE_EXTENSION = self.extension
 
         num_classes = len(self.encoder.classes_)
+        print("NUMBER OF CLASSES", num_classes)
 
         model = Resnet(
             name=self.model_name,
@@ -259,6 +269,7 @@ class ModalityModelTrainer:
         max_epochs = 100 if self.epochs == 0 else self.epochs
         callbacks = [lr_monitor, checkpoint_callback, early_stop_callback]
         trainer = Trainer(
+            accelerator="gpu",
             gpus=self.gpus,
             max_epochs=max_epochs,
             callbacks=callbacks,
