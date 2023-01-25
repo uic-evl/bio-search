@@ -168,7 +168,7 @@ class ModalityModelTrainer:
         models = [x for x in listdir(self.output_dir) if x[-3:] == ".pt"]
         return len(models) + 1
 
-    def _calculate_dataset_stats(self) -> Tuple[float, float]:
+    def _calculate_dataset_stats(self) -> Tuple[torch.Tensor, torch.Tensor]:
         basic_transforms = ModalityTransforms.basic_transforms()
         train_df = self.data[self.data[self.partition_col] == "TRAIN"]
 
@@ -261,8 +261,8 @@ class ModalityModelTrainer:
             metric_monitor=metric_monitor,
             mode_scheduler="min",
             class_weights=datamodule.class_weights,
-            mean_dataset=train_mean,
-            std_dataset=train_std,
+            mean_dataset=list(train_mean.numpy()),
+            std_dataset=list(train_std.numpy()),
         )
         # if self.version > 1:
         #     # model = ResNetClass.load_from_checkpoint(self.output_dir/f'{self.classifier}_{self.version}.{self.extension}')

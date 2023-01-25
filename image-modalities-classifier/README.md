@@ -44,3 +44,11 @@ docker run -ti --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864
 # now inside the container you can run the train script
 train_image_modality_model ...
 ```
+
+## TODOs
+
+- Adapt trainer to use pseudo-labels
+- Adapt trainer to reload previous trained model
+- Add a test config file to manage the prediction cases
+- Add prediction by tree of modalities
+- Modify TOML to install only required libraries for inference

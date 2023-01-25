@@ -1,3 +1,5 @@
+""" Inference tests """
+
 from pathlib import Path
 from os import listdir
 import pandas as pd
@@ -15,7 +17,7 @@ def test_prediction():
     input_df = pd.DataFrame(img_paths, columns=["path"])
 
     config = RunConfig(batch_size=32, num_workers=1, device="cuda:0")
-    predictor = SingleModalityPredictor("microscopy", model_path, config)
+    predictor = SingleModalityPredictor(model_path, config)
     predictions = predictor.predict(input_df, base_img_dir)
     predictor.free()
 

@@ -32,8 +32,8 @@ class Resnet(pl.LightningModule):
         metric_monitor: str = "val_loss",
         mode_scheduler: str = "min",
         class_weights: Optional[List[float]] = None,
-        mean_dataset: Optional[float] = None,
-        std_dataset: Optional[float] = None,
+        mean_dataset: Optional[List[float]] = None,
+        std_dataset: Optional[List[float]] = None,
     ):
         super().__init__()
         self.save_hyperparameters(
@@ -72,7 +72,7 @@ class Resnet(pl.LightningModule):
         acc = (preds.argmax(dim=-1) == labels).float().mean()
 
         self.log("train_acc", acc, on_step=False, on_epoch=True)
-        self.log("train_loss", loss)
+        self.log("train_loss", loss, on_step=False, on_epoch=True)
         return loss
 
     def validation_step(self, batch, batch_idx) -> float:
@@ -82,7 +82,7 @@ class Resnet(pl.LightningModule):
         loss = self.loss(preds, labels)
         acc = (preds.argmax(dim=-1) == labels).float().mean()
         self.log("val_acc", acc, on_step=False, on_epoch=True)
-        self.log("val_loss", loss)
+        self.log("val_loss", loss, on_step=False, on_epoch=True)
         return loss
 
     def test_step(self, batch, batch_idx):
