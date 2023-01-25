@@ -2594,8 +2594,8 @@ text = ["nltk (>=3.6)", "regex (>=2021.9.24)", "tqdm (>=4.41.0)"]
 name = "torchvision"
 version = "0.14.1+cu116"
 description = "image and video datasets and models for torch deep learning"
-category = "dev"
-optional = false
+category = "main"
+optional = true
 python-versions = ">=3.7"
 files = [
     {file = "torchvision-0.14.1+cu116-cp310-cp310-linux_x86_64.whl", hash = "sha256:fcb58d41bf95dd8b85d388fa1969d1dcad55eec055e317981d653a05c4ca6d8b"},
@@ -2926,7 +2926,10 @@ files = [
 idna = ">=2.0"
 multidict = ">=4.0"
 
+[extras]
+torch = ["torch", "torchvision"]
+
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8.1"
-content-hash = "3d0c8fff76906f9fdaaacaa957778bd4982d5f8a983b527b0ea573410f79cbaa"
+content-hash = "bb16af4416867b1d96c2f45181c396b595c1afde09c0a6a5c2b41af7c1fcefd1"
