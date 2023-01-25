@@ -7,17 +7,9 @@ readme = "README.md"
 packages = [{include = "image_modalities_classifier"}]
 
 [tool.poetry.dependencies]
-python = "^3.10"
-pylint = "^2.15.10"
-ipykernel = "^6.20.2"
-black = "^22.12.0"
-torch = { version="^1.13.1", source="torch" }
-torchvision = { version = "^0.14.1", source="torch" }
+python = "^3.8.1"
 pandas = "1.5.3"
 scikit-learn = "1.2"
-python-dotenv = "^0.21.1"
-flask = "^2.2.2"
-flask-cors = "^3.0.10"
 scikit-image = "^0.19.3"
 iterative-stratification = "^0.1.7"
 matplotlib = "^3.6.3"
@@ -34,9 +26,16 @@ secondary = true
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
 
+[tool.poetry.group.dev.dependencies]
+black = "^22.12.0"
+pylint = "^2.15.10"
+ipykernel = "^6.20.2"
+torch = { version="^1.13.1", source="torch" }
+torchvision = { version = "^0.14.1", source="torch" }
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-train = 'image_modalities_classifier.train:main'
+train_image_modality_model = 'image_modalities_classifier.train:main'
