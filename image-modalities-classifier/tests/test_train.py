@@ -14,6 +14,7 @@ from os import makedirs
 from pathlib import Path
 import pandas as pd
 from image_modalities_classifier.models.trainer import ModalityModelTrainer
+from image_modalities_classifier.train import parse_args
 
 
 def test_check_artifacts_first_time():
@@ -150,3 +151,37 @@ def test_prepare_dataset_without_pseudolabels():
 
     assert expected_df.shape[0] == trainer.data.shape[0]
     assert expected_df.shape[1] + 1 == trainer.data.shape[1]
+
+
+def test_parser_with_mean_and_std():
+    """Test the parser passes the mean and std correctly"""
+    args = [
+        "classifier_name",
+        "model_name",
+        "model_dir",
+        "data_dir",
+        "-m",
+        "0.1",
+        "0.2",
+        "0.3",
+        "-s",
+        "0.5",
+        "0.6",
+        "0.7",
+    ]
+    parsed_args = parse_args(args)
+    assert parsed_args.mean == [0.1, 0.2, 0.3]
+    assert parsed_args.std == [0.5, 0.6, 0.7]
+
+
+def test_parser_without_mean_and_std():
+    """Test the parser passes the mean and std correctly"""
+    args = [
+        "classifier_name",
+        "model_name",
+        "model_dir",
+        "data_dir",
+    ]
+    parsed_args = parse_args(args)
+    assert parsed_args.mean is None
+    assert parsed_args.std is None

@@ -118,8 +118,8 @@ class ModalityModelTrainer:
         self.learning_rate = learning_rate
         self.gpus = gpus
         self.batch_size = batch_size
-        self.mean = torch.Tensor(mean) if mean is not None else None
-        self.std = torch.Tensor(std) if mean is not None else None
+        self.mean = torch.Tensor(mean) if mean is not None else torch.Tensor()
+        self.std = torch.Tensor(std) if mean is not None else torch.Tensor()
 
         self.label_col = label_col
         self.artifacts_dir = output_dir
@@ -138,6 +138,7 @@ class ModalityModelTrainer:
         self.version = None
 
     def _prepare_data(self):
+        print("preparing data")
         self.data = pd.read_parquet(self.data_path, engine="pyarrow")
         self.data = self.data[self.data[self.partition_col] != "UNL"]
         if not self.use_pseudo:
@@ -147,6 +148,7 @@ class ModalityModelTrainer:
         self._encode_dataset()
 
     def _create_artifacts_folder(self):
+        print("creating artifacts")
         self.output_dir = Path(self.artifacts_dir) / self.taxonomy / self.classifier
         makedirs(self.output_dir, exist_ok=True)
         self.version = self._get_version()
@@ -170,6 +172,13 @@ class ModalityModelTrainer:
         return len(models) + 1
 
     def _calculate_dataset_stats(self) -> Tuple[torch.Tensor, torch.Tensor]:
+        if self.mean.nelement() == 3 and self.std.nelement() == 3:
+            # do not calculate when values are passed
+            print("mean", self.mean)
+            print("std", self.std)
+            return
+
+        print("calculating dataset stats")
         basic_transforms = ModalityTransforms.basic_transforms()
         train_df = self.data[self.data[self.partition_col] == "TRAIN"]
 
@@ -180,9 +189,9 @@ class ModalityModelTrainer:
             label_col=self.label_col,
             path_col=self.img_path_col,
         )
-
         mean, std = calc_ds_stats(train_dataset, batch_size=self.batch_size)
-        return mean, std
+        self.mean = mean
+        self.std = std
 
     def _create_data_module(self, train_mean, train_std):
         datamodule = ImageDataModule(
@@ -214,18 +223,9 @@ class ModalityModelTrainer:
         https://github.com/Lightning-AI/lightning/issues/14054
         """
         seed_everything(self.seed)
-        print("preparing data")
         self._prepare_data()
-        print("creating artifacts")
         self._create_artifacts_folder()
-
-        print("calculating dataset stats")
-        if not self.mean or not self.std:
-            stats = self._calculate_dataset_stats()
-            self.mean = stats[0]
-            self.std = stats[1]
-
-        output_run_path = self.output_dir
+        self._calculate_dataset_stats()
         datamodule = self._create_data_module(self.mean, self.std)
 
         # start wandb for logging stats
@@ -245,7 +245,7 @@ class ModalityModelTrainer:
 
         cp_name = f"{self.model_name}_{self.classifier}_{self.version}"
         checkpoint_callback = ModelCheckpoint(
-            dirpath=output_run_path,
+            dirpath=self.output_dir,
             filename=cp_name,
             monitor=metric_monitor,
             mode="min",

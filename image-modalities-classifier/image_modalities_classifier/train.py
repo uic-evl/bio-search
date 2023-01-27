@@ -1,5 +1,5 @@
 """ Entry script for training modality models """
-
+from sys import argv
 from os import listdir
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
@@ -78,7 +78,7 @@ def setup_logger(workspace: str):
     )
 
 
-def parse_args() -> Namespace:
+def parse_args(args) -> Namespace:
     """Read arguments from command line
     classifier: one of microscopy | electron | graphics | experimental |
       molecular | radiology
@@ -114,7 +114,7 @@ def parse_args() -> Namespace:
     )
     parser.set_defaults(feature=False)
 
-    return parser.parse_args()
+    return parser.parse_args(args)
 
 
 def verify_stats(name: str, stat: Optional[List[float]]):
@@ -126,7 +126,7 @@ def verify_stats(name: str, stat: Optional[List[float]]):
 
 def main():
     """main entry point"""
-    args = parse_args()
+    args = parse_args(argv[1:])
     classifier_name = args.classifier
     setup_logger(args.workspace)
 
