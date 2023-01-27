@@ -1,6 +1,6 @@
 """ Module for predicting modalities """
 
-from typing import List
+from typing import List, Dict
 from dataclasses import dataclass, field
 from torch.cuda import empty_cache
 
@@ -92,3 +92,55 @@ class SingleModalityPredictor:
         """Remove model from gpu"""
         del self.model
         empty_cache()
+
+
+class ModalityPredictor:
+    """Predicts modalities by traversing over a tree of classifiers
+    Parameters:
+    -----------
+    classifiers: dict
+        Dictionary with structure
+        { 'classifier': str, # full name of the classifier
+          'classname': str,  # short-name defined as the labels (e.g., exp)
+          'path': str,
+          'children': [
+            {... recursive definition }
+          ]
+        }
+    """
+
+    def __init__(self, classifiers: Dict, config: RunConfig):
+        self.classifiers = classifiers
+        self.config = config
+        self.data = None
+
+    def _load_dataframe(self, image_names: List[str]) -> DataFrame:
+        """Load a dummy dataframe because the Dataset requires the data to
+        be organized in a dataframe.
+        """
+        self.data = DataFrame(columns=["img_path"], data=image_names)
+        self.data["prediction"] = None
+
+    def _merge_values(self, updated_subset: DataFrame) -> DataFrame:
+        """merge update dataframes with latest predicted values"""
+        self.data.set_index("img_path", inplace=True)
+        self.data.update(updated_subset.set_index("img_path"))
+        self.data.reset_index()
+
+    def predict(self, relative_img_paths: List[str], base_img_path: str) -> DataFrame:
+        """Traverse the classifiers in BFS to add labels by level"""
+        self._load_dataframe(relative_img_paths)
+
+        fringe = [self.classifiers]
+        while len(fringe) > 0:
+            classifier_node = fringe.pop(0)
+            class_name = classifier_node["classname"]
+            if classifier_node["children"]:
+                fringe += classifier_node["children"]
+
+            model = SingleModalityPredictor(classifier_node["path"], self.config)
+            filtered_imgs = self.data.loc[self.data.prediction == class_name]
+            predictions = model.predict(filtered_imgs, base_img_path, as_classes=True)
+            filtered_imgs["prediction"] = predictions
+
+            self._merge_values(filtered_imgs)

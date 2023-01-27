@@ -70,7 +70,7 @@ class EvalImageDataset(torch.utils.data.Dataset):
         data: DataFrame,
         base_img_dir: str,
         image_transform=None,
-        path_col="PATH",
+        path_col="img_path",
     ):
         self.base_dir = Path(base_img_dir)
         self.image_transform = image_transform

@@ -11,8 +11,9 @@ is an integer.
 """
 
 from pathlib import Path
-from os import makedirs, listdir
-from typing import Tuple
+from os import makedirs, listdir, cpu_count
+from typing import Tuple, List
+from tqdm import tqdm
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 
@@ -36,37 +37,29 @@ ENCODED_COL_NAME = "enc_label"
 
 
 def calc_ds_stats(
-    dataset: ImageDataset, batch_size: int = 32, num_workers: int = 0
-) -> Tuple[float, float]:
-    """Calculate the mean and standard deviation over the pixels in the dataset"""
-    loader = DataLoader(
-        dataset,
-        batch_size=batch_size,
-        num_workers=num_workers,
-        shuffle=False,
-    )
+    dataset: ImageDataset, batch_size: int = 512
+) -> Tuple[torch.Tensor, torch.Tensor]:
+    """Calculate the mean and standard deviation over the pixels in the dataset
+    https://www.binarystudy.com/2021/04/how-to-calculate-mean-standard-deviation-images-pytorch.html
+    """
+    num_workers = cpu_count()
+    loader = DataLoader(dataset, batch_size=batch_size, num_workers=num_workers)
 
-    mean = 0.0
-    for batch in loader:
-        images = batch[0]
-        batch_samples = images.size(0)
-        images = images.view(batch_samples, images.size(1), -1)
-        mean += images.mean(2).sum(0)
-    mean = mean / len(loader.dataset)
+    cnt = 0
+    fst_moment = torch.empty(3)
+    snd_moment = torch.empty(3)
 
-    var = 0.0
-    image_info = dataset[0]
-    sample_img = image_info[0]
-    # for std calculations
-    height, width = sample_img.shape[1], sample_img.shape[2]
+    for images, _ in tqdm(loader):
+        # calcs with respect to the channels
+        b_size, _, height, width = images.shape
+        nb_pixels = b_size * height * width
+        sum_ = torch.sum(images, dim=[0, 2, 3])
+        sum_of_square = torch.sum(images**2, dim=[0, 2, 3])
+        fst_moment = (cnt * fst_moment + sum_) / (cnt + nb_pixels)
+        snd_moment = (cnt * snd_moment + sum_of_square) / (cnt + nb_pixels)
+        cnt += nb_pixels
 
-    for batch in loader:
-        images = batch[0]
-        batch_samples = images.size(0)
-        images = images.view(batch_samples, images.size(1), -1)
-        var += ((images - mean.unsqueeze(1)) ** 2).sum([0, 2])
-    std = torch.sqrt(var / (len(loader.dataset) * width * height))
-
+    mean, std = fst_moment, torch.sqrt(snd_moment - fst_moment**2)
     return mean, std
 
 
@@ -110,6 +103,9 @@ class ModalityModelTrainer:
         seed: int = 443,
         num_workers: int = 4,
         remove_small: bool = True,
+        use_pseudo: bool = False,
+        mean: List[float] = None,
+        std: List[float] = None,
     ):
         self.data_path = Path(dataset_filepath)
         self.base_img_dir = Path(base_img_dir)
@@ -122,6 +118,8 @@ class ModalityModelTrainer:
         self.learning_rate = learning_rate
         self.gpus = gpus
         self.batch_size = batch_size
+        self.mean = torch.Tensor(mean) if mean is not None else None
+        self.std = torch.Tensor(std) if mean is not None else None
 
         self.label_col = label_col
         self.artifacts_dir = output_dir
@@ -131,6 +129,7 @@ class ModalityModelTrainer:
         self.extension = ".pt"
         self.partition_col = "split_set"
         self.img_path_col = "img_path"
+        self.use_pseudo = use_pseudo
 
         self.remove_small = remove_small
         self.data = None
@@ -141,6 +140,8 @@ class ModalityModelTrainer:
     def _prepare_data(self):
         self.data = pd.read_parquet(self.data_path, engine="pyarrow")
         self.data = self.data[self.data[self.partition_col] != "UNL"]
+        if not self.use_pseudo:
+            self.data = self.data[self.data.is_gt]
         if self.remove_small:
             self.data = remove_small_classes(self.data, col_name=self.label_col)
         self._encode_dataset()
@@ -180,9 +181,7 @@ class ModalityModelTrainer:
             path_col=self.img_path_col,
         )
 
-        mean, std = calc_ds_stats(
-            train_dataset, batch_size=self.batch_size, num_workers=self.num_workers
-        )
+        mean, std = calc_ds_stats(train_dataset, batch_size=self.batch_size)
         return mean, std
 
     def _create_data_module(self, train_mean, train_std):
@@ -214,16 +213,20 @@ class ModalityModelTrainer:
         Logging the data
         https://github.com/Lightning-AI/lightning/issues/14054
         """
-        # TODO adapt for pseudo labels
         seed_everything(self.seed)
         print("preparing data")
         self._prepare_data()
         print("creating artifacts")
         self._create_artifacts_folder()
+
         print("calculating dataset stats")
-        train_mean, train_std = self._calculate_dataset_stats()
+        if not self.mean or not self.std:
+            stats = self._calculate_dataset_stats()
+            self.mean = stats[0]
+            self.std = stats[1]
+
         output_run_path = self.output_dir
-        datamodule = self._create_data_module(train_mean, train_std)
+        datamodule = self._create_data_module(self.mean, self.std)
 
         # start wandb for logging stats
         run = wandb.init(project=self.project, tags=[self.classifier, self.model_name])
@@ -261,8 +264,8 @@ class ModalityModelTrainer:
             metric_monitor=metric_monitor,
             mode_scheduler="min",
             class_weights=datamodule.class_weights,
-            mean_dataset=list(train_mean.numpy()),
-            std_dataset=list(train_std.numpy()),
+            mean_dataset=list(self.mean.numpy()),
+            std_dataset=list(self.std.numpy()),
         )
         # if self.version > 1:
         #     # model = ResNetClass.load_from_checkpoint(self.output_dir/f'{self.classifier}_{self.version}.{self.extension}')

@@ -1,4 +1,13 @@
-""" Test set fo training image classifiers"""
+""" Test set fo training image classifiers
+
+Sample parquet
+
+img_path	label	is_gt	split_set
+0	test_1.png	A	True	TRAIN
+1	test_2.png	B	True	TRAIN
+2	test_3.png	B	False	TRAIN
+3	test_4.png	C	True	TRAIN
+"""
 
 import tempfile
 from os import makedirs
@@ -64,9 +73,7 @@ def test_check_artifacts_following_times():
 
 def test_encode_dataset():
     """Test that the trainer is encoding the input dataframe from string to ints
-    Sample dataset has two columns: img_path and labels, with values:
-        img_paths = ["test_1.png", "test_2.png", "test_3.png", "test_4.png"]
-        labels = ["A", "B", "B", "C"]
+    Test dataset: sample.parquet
     """
     data_path = str(Path("./tests/sample_data/sample.parquet").resolve())
     taxonomy = "test_taxonomy"
@@ -88,3 +95,58 @@ def test_encode_dataset():
     assert len(trainer.encoder.classes_) == 3
     assert "enc_label" in trainer.data.columns
     assert trainer.data.enc_label.unique().tolist() == [0, 1, 2]
+
+
+def test_prepare_dataset_with_pseudolabels():
+    """Check pseudo labels are part of the data"""
+    data_path = str(Path("./tests/sample_data/sample.parquet").resolve())
+    taxonomy = "test_taxonomy"
+    classifier = "test_classifier"
+    project = "test"
+
+    expected_df = pd.read_parquet(data_path)
+
+    trainer = ModalityModelTrainer(
+        data_path,
+        "./notimportant_images_path",
+        output_dir="./notimportant_outputdir",
+        taxonomy=taxonomy,
+        classifier_name=classifier,
+        project=project,
+        remove_small=False,  # avoid removal for testing
+        use_pseudo=True,
+    )
+    # pylint: disable=protected-access
+    trainer._prepare_data()
+
+    assert expected_df.shape[0] == trainer.data.shape[0]
+    assert expected_df.shape[1] + 1 == trainer.data.shape[1]
+
+
+def test_prepare_dataset_without_pseudolabels():
+    """Check pseudo labels are part of the data"""
+    data_path = str(Path("./tests/sample_data/sample.parquet").resolve())
+    taxonomy = "test_taxonomy"
+    classifier = "test_classifier"
+    project = "test"
+
+    expected_df = pd.read_parquet(data_path)
+    expected_df = expected_df.loc[
+        (expected_df.split_set == "TRAIN") & (expected_df.is_gt)
+    ]
+
+    trainer = ModalityModelTrainer(
+        data_path,
+        "./notimportant_images_path",
+        output_dir="./notimportant_outputdir",
+        taxonomy=taxonomy,
+        classifier_name=classifier,
+        project=project,
+        remove_small=False,  # avoid removal for testing
+        use_pseudo=False,
+    )
+    # pylint: disable=protected-access
+    trainer._prepare_data()
+
+    assert expected_df.shape[0] == trainer.data.shape[0]
+    assert expected_df.shape[1] + 1 == trainer.data.shape[1]

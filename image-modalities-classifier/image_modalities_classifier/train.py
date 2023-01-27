@@ -3,6 +3,7 @@
 from os import listdir
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
+from typing import Optional, List
 
 import logging
 
@@ -38,6 +39,9 @@ def train(
     learning_rate: float,
     num_workers: int,
     epochs: int,
+    pseudo: bool,
+    mean: Optional[List[float]],
+    std: Optional[List[float]],
 ):
     """Train the model"""
     dataset_path = find_latest_dataset(workspace, taxonomy, classifier)
@@ -53,6 +57,9 @@ def train(
         model_name=model,
         learning_rate=learning_rate,
         epochs=epochs,
+        use_pseudo=pseudo,
+        mean=mean,
+        std=std,
     )
     trainer.run()
 
@@ -97,8 +104,24 @@ def parse_args() -> Namespace:
     parser.add_argument("--taxonomy", "-t", type=str, default="cord19")
     parser.add_argument("--project", "-p", type=str, default="biocuration")
     parser.add_argument("--epochs", "-e", type=int, default=1)
+    parser.add_argument("--pseudo", dest="pseudo", action="store_true")
+    parser.add_argument("--no-pseudo", dest="pseudo", action="store_false")
+    parser.add_argument(
+        "--mean", "-m", type=float, nargs="+", default=None, help="Dataset mean"
+    )
+    parser.add_argument(
+        "--std", "-s", type=float, nargs="+", default=None, help="Dataset std"
+    )
+    parser.set_defaults(feature=False)
 
     return parser.parse_args()
+
+
+def verify_stats(name: str, stat: Optional[List[float]]):
+    """validate stats are array of 3 elements, one per RGB channel"""
+    if stat is not None and len(stat) != 3:
+        message = f"{name} should be an array of 3 elements"
+        raise Exception(message)
 
 
 def main():
@@ -106,6 +129,9 @@ def main():
     args = parse_args()
     classifier_name = args.classifier
     setup_logger(args.workspace)
+
+    verify_stats("mean", args.mean)
+    verify_stats("std", args.std)
 
     try:
         train(
@@ -118,6 +144,9 @@ def main():
             args.lr,
             args.num_workers,
             args.epochs,
+            args.pseudo,
+            args.mean,
+            args.std,
         )
     # pylint: disable=broad-except
     except Exception:

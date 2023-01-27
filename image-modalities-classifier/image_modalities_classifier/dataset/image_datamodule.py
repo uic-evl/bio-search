@@ -5,11 +5,9 @@ import pytorch_lightning as pl
 from pytorch_lightning import seed_everything
 import pandas as pd
 import numpy as np
-import torch
 from sklearn.preprocessing import LabelEncoder
 from sklearn.utils import class_weight
 from torch.utils.data import DataLoader
-from torchvision import transforms
 
 
 from image_modalities_classifier.dataset.image_dataset import ImageDataset
