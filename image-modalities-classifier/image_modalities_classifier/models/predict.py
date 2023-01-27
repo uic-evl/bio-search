@@ -112,24 +112,29 @@ class ModalityPredictor:
     def __init__(self, classifiers: Dict, config: RunConfig):
         self.classifiers = classifiers
         self.config = config
-        self.data = None
 
     def _load_dataframe(self, image_names: List[str]) -> DataFrame:
         """Load a dummy dataframe because the Dataset requires the data to
         be organized in a dataframe.
+        The prediction column starts as "" to match the classname of classifier
+        at the root (higher-modality), which reflects that the classifier has
+        no parent. We prefer "" over None to be able to do
+        .loc[df.prediction==CLASSNAME] later, and None requires a isna()
+        comparison. Therefore, == is simpler when all are strings.
         """
-        self.data = DataFrame(columns=["img_path"], data=image_names)
-        self.data["prediction"] = None
+        data = DataFrame(columns=["img_path"], data=image_names)
+        data.loc[:, "prediction"] = ""
+        return data
 
-    def _merge_values(self, updated_subset: DataFrame) -> DataFrame:
+    def _merge_values(self, data: DataFrame, updated_subset: DataFrame) -> DataFrame:
         """merge update dataframes with latest predicted values"""
-        self.data.set_index("img_path", inplace=True)
-        self.data.update(updated_subset.set_index("img_path"))
-        self.data.reset_index()
+        data.set_index("img_path", inplace=True)
+        data.update(updated_subset.set_index("img_path"))
+        return data.reset_index(inplace=True)
 
     def predict(self, relative_img_paths: List[str], base_img_path: str) -> DataFrame:
         """Traverse the classifiers in BFS to add labels by level"""
-        self._load_dataframe(relative_img_paths)
+        data = self._load_dataframe(relative_img_paths)
 
         fringe = [self.classifiers]
         while len(fringe) > 0:
@@ -139,8 +144,11 @@ class ModalityPredictor:
                 fringe += classifier_node["children"]
 
             model = SingleModalityPredictor(classifier_node["path"], self.config)
-            filtered_imgs = self.data.loc[self.data.prediction == class_name]
-            predictions = model.predict(filtered_imgs, base_img_path, as_classes=True)
-            filtered_imgs["prediction"] = predictions
-
-            self._merge_values(filtered_imgs)
+            filtered_imgs = data.loc[data.prediction == class_name].copy()
+            if len(filtered_imgs) > 0:
+                predictions = model.predict(
+                    filtered_imgs, base_img_path, as_classes=True
+                )
+                filtered_imgs.loc[:, "prediction"] = predictions
+                self._merge_values(data, filtered_imgs)
+        return data
