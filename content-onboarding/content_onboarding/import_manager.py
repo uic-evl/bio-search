@@ -16,8 +16,9 @@ from content_onboarding.db.model import (
     FigureType,
     FigureStatus,
 )
-from content_onboarding.db.select import build_pmc_to_id_mapper
-from content_onboarding.db.insert import insert_documents_to_db
+from content_onboarding.db.select import build_pmc_to_id_mapper, build_uri_to_id_mapper
+from content_onboarding.db.insert import insert_documents_to_db, insert_figures_to_db
+from content_onboarding.bbox_reader import BoundingBoxMapper
 
 
 class Loader(ABC):
@@ -103,13 +104,14 @@ class ImportManager:
     def __init__(self, projects_dir: str, project: str, params_file: str):
         self.projects_dir = Path(projects_dir)
         self.project = project
+        self.import_dir = self.projects_dir / self.project / "to_import"
         self.params = params_from_env(str(Path(params_file.resolve())))
 
         if not self.projects_dir.exists():
             raise FileNotFoundError(f"projects dir {projects_dir} does not exist")
 
     def _fetch_content(self, path: Path, extension: str) -> List[str]:
-        return [path / elem for elem in listdir(path) if elem.endswith(extension)]
+        return [str(path / elem) for elem in listdir(path) if elem.endswith(extension)]
 
     def _should_skip(self, folder: Path) -> bool:
         """Check if all PDFs have associated folders for images"""
@@ -178,13 +180,52 @@ class ImportManager:
             figures += self.fetch_folder_figures(folder, doc_id, self.project)
         return figures
 
+    def fetch_subfigures(
+        self, figures: List[DBFigure], url_to_id: Dict[str, str]
+    ) -> List[DBFigure]:
+        """Fetch subfigures and bounding boxes information"""
+        subfigures = []
+
+        bbox_reader = BoundingBoxMapper()
+        for figure in figures:
+            figure_folder = self.import_dir / figure.uri[:-4]  # remove .jpg
+            subfig_paths = self._fetch_content(figure_folder, ".jpg")
+
+            bbox_reader.load(subfig_paths)
+            for subfig_path in subfig_paths:
+                coordinates = bbox_reader.mapping[subfig_path]
+                local_path = Path(subfig_path)
+                subfigures.append(
+                    DBFigure(
+                        id=None,
+                        status=FigureStatus.STATUS_UNLABELED,
+                        uri=figure_folder / local_path.name,
+                        width=coordinates[2],
+                        height=coordinates[3],
+                        type=FigureType.FIGURE,
+                        name=local_path.stem,
+                        caption=None,
+                        num_panes=None,
+                        doc_id=figure.doc_id,
+                        parent_id=url_to_id[figure.uri],
+                        coordinates=coordinates,
+                        last_update_by=None,
+                        owner=None,
+                        migration_key=None,
+                        notes=None,
+                        labels=None,
+                        source=self.project,
+                        page=figure.page,
+                    )
+                )
+        return subfigures
+
     def import_content(self, metadata_path: str, loader: Loader):
         """Insert documents, figures and subfigures to the database based
         on the documents found on /to_import folder"""
-        import_dir = self.projects_dir / self.project / "to_import"
         paths_to_import = [
-            str(import_dir / doc)
-            for doc in listdir(import_dir)
+            str(self.import_dir / doc)
+            for doc in listdir(self.import_dir)
             if doc.startswith("PMC")
         ]
         documents = loader.load(metadata_path, paths_to_import)
@@ -195,8 +236,9 @@ class ImportManager:
 
         pmc_to_id = build_pmc_to_id_mapper(self.params)
         figures = self.fetch_figures(paths_to_import, pmc_to_id)
-        # insert figures to db
-        # TODO add scripts for creating tables
+        insert_figures_to_db(self.params, figures)
+
+        url_to_id = build_uri_to_id_mapper(self.params)
 
         # fetch mapper for subfigures
         # fetch subfigures and read coordinates

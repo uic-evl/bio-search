@@ -2,7 +2,7 @@
 
 from re import findall
 from pathlib import Path
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 
 class BoundingBoxMapper:
@@ -25,7 +25,7 @@ class BoundingBoxMapper:
     file corresponds to 001.jpg
     """
 
-    def __init__(self, base_path: Path):
+    def __init__(self, base_path: Optional[Path] = None):
         self.base_path = base_path
         self.mapping = {}
         self.errors = []
@@ -39,7 +39,10 @@ class BoundingBoxMapper:
             filename = f"{Path(parent_path).name}.jpg.txt"
             lines = None
             try:
-                bboxes_path = self.base_path / parent_path / filename
+                if self.base_path:
+                    bboxes_path = self.base_path / parent_path / filename
+                else:
+                    bboxes_path = Path(parent_path) / filename
                 with open(bboxes_path, "r", encoding="utf8") as file:
                     lines = file.readlines()
             except FileNotFoundError:
