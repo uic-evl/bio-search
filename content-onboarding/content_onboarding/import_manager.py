@@ -52,12 +52,13 @@ class Cord19Loader(Loader):
                 author = author.replace("\x00", "")
         return authors
 
-    def load(self, csv_path: str, pdf_paths: Dict[str, str]) -> List[DbDocument]:
+    def load(self, csv_path: str, pdf_paths: List[str]) -> List[DbDocument]:
         """Collect metadata from metadata.csv document in CORD19 collection.
         The loader insert the metadata from the documents in the database only
         if the document exists in the pdf_paths. In other words, we insert
         documents that also have extracted content.
         """
+        dict_paths = {Path(elem_path).stem: elem_path for elem_path in pdf_paths}
         documents = []
         import_date = datetime.now()
 
@@ -65,11 +66,15 @@ class Cord19Loader(Loader):
             reader = csv.DictReader(f_in)
             for row in reader:
                 # only insert documents with local folder
-                if row["pmcid"] not in pdf_paths:
+                if row["pmcid"] not in dict_paths:
                     continue
 
+                main_pdf = [
+                    x for x in listdir(dict_paths[row["pmcid"]]) if x.endswith(".pdf")
+                ][0]
+
                 publication_date = self._read_publication_date(row)
-                uri = pdf_paths[row["pmcid"]]
+                uri = f'{row["pmcid"]}/{main_pdf}'
                 authors = self._read_authors(row)
                 # pubmed_id should be an integer value
                 pubmed_id = row["pubmed_id"]
@@ -95,7 +100,7 @@ class Cord19Loader(Loader):
                     import_date=import_date,
                 )
                 documents.append(document)
-            return documents
+        return documents
 
 
 class ImportManager:
@@ -105,7 +110,7 @@ class ImportManager:
         self.projects_dir = Path(projects_dir)
         self.project = project
         self.import_dir = self.projects_dir / self.project / "to_import"
-        self.params = params_from_env(str(Path(params_file.resolve())))
+        self.params = params_from_env(str(Path(params_file).resolve()))
 
         if not self.projects_dir.exists():
             raise FileNotFoundError(f"projects dir {projects_dir} does not exist")
@@ -116,21 +121,21 @@ class ImportManager:
     def _should_skip(self, folder: Path) -> bool:
         """Check if all PDFs have associated folders for images"""
         pdfs = self._fetch_content(folder, ".pdf")
-        skip = False
-        for pdf in pdfs:
-            pdf_folder = folder / pdf
-            if not pdf_folder.exists():
-                skip = True
-                break
-        return skip
+        if len(pdfs) == 0 or len(pdfs) > 1:
+            return True
 
-    def validate_pdf_folders(self, paths_to_import: List[Path]) -> List[Path]:
+        metadatas = self._fetch_content(folder, ".json")
+        if len(metadatas) == 1:
+            return False
+        return True
+
+    def validate_pdf_folders(self, paths_to_import: List[str]) -> List[Path]:
         """Folders that need to be removed because they do not have a
         corresponding folder for each PDF document
         """
         skipping = []
         for folder in paths_to_import:
-            if self._should_skip(folder):
+            if self._should_skip(Path(folder)):
                 skipping.append(folder)
         return skipping
 
@@ -140,7 +145,7 @@ class ImportManager:
         """Read the metadata file from a PMC folder to get the figure info"""
         figures = []
         with open(folder / "metadata.json", "r", encoding="utf-8") as reader:
-            json_data = json.loads(reader)
+            json_data = json.load(reader)
             for page in json_data["pages"]:
                 for fig_data in page["figures"]:
                     coordinates = fig_data["bbox"]
@@ -151,7 +156,7 @@ class ImportManager:
                         DBFigure(
                             id=None,
                             status=FigureStatus.STATUS_UNLABELED,
-                            uri=f"{folder.stem}/{fig_data['id']}",
+                            uri=f"{folder.stem}/{fig_data['id']}.jpg",
                             width=width,
                             height=height,
                             type=FigureType.FIGURE,
@@ -160,7 +165,7 @@ class ImportManager:
                             num_panes=None,
                             doc_id=doc_id,
                             parent_id=None,
-                            coordinates=fig_data["coordinates"],
+                            coordinates=coordinates,
                             last_update_by=None,
                             owner=None,
                             migration_key=None,
@@ -176,8 +181,9 @@ class ImportManager:
         """Inspect every folder and collect figures and subfigures"""
         figures = []
         for folder in paths_to_import:
-            doc_id = pmc_to_id[folder.stem]
-            figures += self.fetch_folder_figures(folder, doc_id, self.project)
+            folder_path = Path(folder)
+            doc_id = pmc_to_id[folder_path.stem]
+            figures += self.fetch_folder_figures(folder_path, doc_id, self.project)
         return figures
 
     def fetch_subfigures(
@@ -186,11 +192,11 @@ class ImportManager:
         """Fetch subfigures and bounding boxes information"""
         subfigures = []
 
-        bbox_reader = BoundingBoxMapper()
         for figure in figures:
             figure_folder = self.import_dir / figure.uri[:-4]  # remove .jpg
             subfig_paths = self._fetch_content(figure_folder, ".jpg")
 
+            bbox_reader = BoundingBoxMapper()
             bbox_reader.load(subfig_paths)
             for subfig_path in subfig_paths:
                 coordinates = bbox_reader.mapping[subfig_path]
@@ -199,10 +205,10 @@ class ImportManager:
                     DBFigure(
                         id=None,
                         status=FigureStatus.STATUS_UNLABELED,
-                        uri=figure_folder / local_path.name,
+                        uri=f"{figure.uri[:-4]}/{local_path.name}",
                         width=coordinates[2],
                         height=coordinates[3],
-                        type=FigureType.FIGURE,
+                        type=FigureType.SUBFIGURE,
                         name=local_path.stem,
                         caption=None,
                         num_panes=None,
@@ -220,14 +226,17 @@ class ImportManager:
                 )
         return subfigures
 
-    def import_content(self, metadata_path: str, loader: Loader):
-        """Insert documents, figures and subfigures to the database based
-        on the documents found on /to_import folder"""
-        paths_to_import = [
+    def _get_paths_to_import(self):
+        return [
             str(self.import_dir / doc)
             for doc in listdir(self.import_dir)
             if doc.startswith("PMC")
         ]
+
+    def import_content(self, metadata_path: str, loader: Loader):
+        """Insert documents, figures and subfigures to the database based
+        on the documents found on /to_import folder"""
+        paths_to_import = self._get_paths_to_import()
         documents = loader.load(metadata_path, paths_to_import)
         # TODO -> validate folder has images
         # load images, filter skip

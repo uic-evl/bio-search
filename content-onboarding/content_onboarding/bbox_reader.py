@@ -57,6 +57,5 @@ class BoundingBoxMapper:
             for idx, line in enumerate(lines):
                 values = findall(r"\d+\.\d+", line)
                 values = [mult_factor * float(x) for x in values]
-                print(values)
                 key = f"{parent_path}/{str(idx+1).zfill(3)}.jpg"
                 self.mapping[key] = values
