@@ -6,19 +6,25 @@ from typing import List, Dict
 from pathlib import Path
 from abc import ABC, abstractmethod
 from datetime import datetime
+from shutil import move
 import csv
 import logging
 import json
+from psycopg import Rollback
 from content_onboarding.db.model import (
     params_from_env,
     DbDocument,
     DBFigure,
     FigureType,
     FigureStatus,
+    SubFigureStatus,
+    connect,
 )
 from content_onboarding.db.select import build_pmc_to_id_mapper, build_uri_to_id_mapper
 from content_onboarding.db.insert import insert_documents_to_db, insert_figures_to_db
+from content_onboarding.db.create import create_documents_table, create_figures_table
 from content_onboarding.bbox_reader import BoundingBoxMapper
+from content_onboarding.managers.base import Structure
 
 
 class Loader(ABC):
@@ -109,7 +115,8 @@ class ImportManager:
     def __init__(self, projects_dir: str, project: str, params_file: str):
         self.projects_dir = Path(projects_dir)
         self.project = project
-        self.import_dir = self.projects_dir / self.project / "to_import"
+        self.import_dir = self.projects_dir / self.project / Structure.TO_IMPORT.value
+        self.pred_dir = self.projects_dir / self.project / Structure.TO_PREDICT.value
         self.params = params_from_env(str(Path(params_file).resolve()))
 
         if not self.projects_dir.exists():
@@ -144,7 +151,8 @@ class ImportManager:
     ) -> List[DBFigure]:
         """Read the metadata file from a PMC folder to get the figure info"""
         figures = []
-        with open(folder / "metadata.json", "r", encoding="utf-8") as reader:
+        metadata_file = f"{folder.name}.json"
+        with open(folder / metadata_file, "r", encoding="utf-8") as reader:
             json_data = json.load(reader)
             for page in json_data["pages"]:
                 for fig_data in page["figures"]:
@@ -155,11 +163,11 @@ class ImportManager:
                     figures.append(
                         DBFigure(
                             id=None,
-                            status=FigureStatus.STATUS_UNLABELED,
-                            uri=f"{folder.stem}/{fig_data['id']}.jpg",
+                            status=FigureStatus.IMPORTED.value,
+                            uri=f"{folder.stem}/{fig_data['id']}",
                             width=width,
                             height=height,
-                            type=FigureType.FIGURE,
+                            type=FigureType.FIGURE.value,
                             name=fig_data["name"],
                             caption=fig_data["caption"],
                             num_panes=None,
@@ -193,6 +201,7 @@ class ImportManager:
         subfigures = []
 
         for figure in figures:
+            # TODO: fix test case
             figure_folder = self.import_dir / figure.uri[:-4]  # remove .jpg
             subfig_paths = self._fetch_content(figure_folder, ".jpg")
 
@@ -204,11 +213,11 @@ class ImportManager:
                 subfigures.append(
                     DBFigure(
                         id=None,
-                        status=FigureStatus.STATUS_UNLABELED,
+                        status=SubFigureStatus.NOT_PREDICTED.value,
                         uri=f"{figure.uri[:-4]}/{local_path.name}",
                         width=coordinates[2],
                         height=coordinates[3],
-                        type=FigureType.SUBFIGURE,
+                        type=FigureType.SUBFIGURE.value,
                         name=local_path.stem,
                         caption=None,
                         num_panes=None,
@@ -233,22 +242,65 @@ class ImportManager:
             if doc.startswith("PMC")
         ]
 
+    def _move_folders(self, folders_to_move: List[str]):
+        for folder in folders_to_move:
+            dest = self.pred_dir / Path(folder).name
+            move(folder, dest)
+
     def import_content(self, metadata_path: str, loader: Loader):
         """Insert documents, figures and subfigures to the database based
         on the documents found on /to_import folder"""
+
+        # prepare the paths to explore
+        print("checking paths")
         paths_to_import = self._get_paths_to_import()
+        path_to_remove = self.validate_pdf_folders(paths_to_import)
+        paths_to_import = list(set(paths_to_import).difference(set(path_to_remove)))
+
+        print("loading documents")
         documents = loader.load(metadata_path, paths_to_import)
-        # TODO -> validate folder has images
-        # load images, filter skip
 
-        insert_documents_to_db(self.params, documents)
+        conn = connect(self.params)
+        schema = self.params.schema
+        with conn.cursor() as cursor:
+            try:
+                print("inserting documents")
+                insert_documents_to_db(cursor, schema, documents)
+                pmc_to_id = build_pmc_to_id_mapper(cursor, schema)
 
-        pmc_to_id = build_pmc_to_id_mapper(self.params)
-        figures = self.fetch_figures(paths_to_import, pmc_to_id)
-        insert_figures_to_db(self.params, figures)
+                print("inserting figures")
+                figures = self.fetch_figures(paths_to_import, pmc_to_id)
+                insert_figures_to_db(cursor, schema, figures)
 
-        url_to_id = build_uri_to_id_mapper(self.params)
+                print("inserting subfigures")
+                url_to_id = build_uri_to_id_mapper(cursor, schema)
+                subfigures = self.fetch_subfigures(figures, url_to_id)
+                insert_figures_to_db(cursor, schema, subfigures)
 
-        # fetch mapper for subfigures
-        # fetch subfigures and read coordinates
-        # insert to db
+                self._move_folders(paths_to_import)
+                conn.commit()
+            # pylint: disable=broad-except
+            except Exception as exc:
+                print("Error inserting content", exc)
+                logging.error("Error inserting content", exc_info=True)
+                conn.rollback()
+        conn.close()
+
+    def create_tables(self):
+        """Create database tables"""
+        conn = connect(self.params)
+        schema = self.params.schema
+        with conn.transaction() as trx:
+            try:
+                create_documents_table(conn, schema, self.params.user)
+                create_figures_table(conn, schema, self.params.user)
+            # pylint: disable=broad-except
+            except Exception as exc:
+                print("Erorr creating tables", exc)
+                logging.error("Error creating tables", exc_info=True)
+                Rollback(trx)
+        conn.close()
+
+
+# move the pdfs to these folders
+# do the scripts for the other steps

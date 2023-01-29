@@ -9,14 +9,32 @@ from dotenv import dotenv_values
 
 
 class FigureType(Enum):
+    """Figure type in the database"""
+
     FIGURE = 0
     SUBFIGURE = 1
 
 
 class FigureStatus(Enum):
-    STATUS_LABELED = 0
-    STATUS_UNLABELED = 1
-    STATUS_LABELED_EXTERNALLY = 2
+    """Figure status in the database
+    Imported: The figure was imported from after segmentation
+    Verified: Every subfigure has been validated
+    """
+
+    IMPORTED = 0
+    VERIFIED = 1
+
+
+class SubFigureStatus(Enum):
+    """Subfigure status in database
+    Not predicted: The record was just imported from disk
+    Predicted: A model estimated the label
+    Ground Truth: Someone validated the label
+    """
+
+    NOT_PREDICTED = 2
+    PREDICTED = 3
+    GROUND_TRUTH = 4
 
 
 @dataclass
@@ -47,7 +65,9 @@ def params_from_env(env_path: str) -> ConnectionParams:
 def connect(conn_params: ConnectionParams) -> psycopg.Connection:
     """Establish a database connection"""
     conn_str = f"host={conn_params.host} port={conn_params.port} dbname={conn_params.dbname} user={conn_params.user} password={conn_params.password}"
-    return psycopg.connect(conn_str)
+    connection = psycopg.connect(conn_str)
+    connection.autocommit = False
+    return connection
 
 
 @dataclass
@@ -137,4 +157,5 @@ class DBFigure:
             self.notes,
             self.labels,
             self.source,
+            self.page,
         )

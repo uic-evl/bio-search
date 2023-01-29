@@ -1,10 +1,11 @@
 """ Create needed tables on a defined schema"""
 
 import logging
+from psycopg import Connection
 from content_onboarding.db.model import connect, ConnectionParams
 
 
-def create_documents_table(db_params: ConnectionParams, schema: str, owner: str):
+def create_documents_table(conn: Connection, schema: str, owner: str):
     """Create documents table"""
     sql = """
       -- Table: dev.documents
@@ -39,20 +40,11 @@ def create_documents_table(db_params: ConnectionParams, schema: str, owner: str)
         schema=schema, owner=owner
     )
 
-    try:
-        conn = connect(db_params)
-        with conn.cursor() as cur:
-            cur.execute(sql)
-            conn.commit()
-    # pylint: disable=broad-except
-    except Exception as exception:
-        logging.error("Failed to establish database connection\n", exc_info=True)
-        raise Exception(exception) from exception
-    finally:
-        conn.close()
+    with conn.cursor() as cur:
+        cur.execute(sql)
 
 
-def create_figures_table(db_params: ConnectionParams, schema: str, owner: str):
+def create_figures_table(conn: Connection, schema: str, owner: str):
     """Create figures table"""
     sql = """
         -- Table: {schema}.figures
@@ -78,12 +70,13 @@ def create_figures_table(db_params: ConnectionParams, schema: str, owner: str):
             notes TEXT COLLATE pg_catalog."default",
             labels TEXT[] COLLATE pg_catalog."default",
             source TEXT COLLATE pg_catalog."default" NOT NULL,
-            page numeric pg_catalog."default" NULL,
+            page numeric NULL,
             CONSTRAINT figures_pkey PRIMARY KEY (id),
             CONSTRAINT fk_document_id FOREIGN KEY (doc_id)
-                REFERENCES dev.documents (id) MATCH SIMPLE
+                REFERENCES {schema}.documents (id) MATCH SIMPLE
                 ON UPDATE NO ACTION
                 ON DELETE NO ACTION
+                DEFERRABLE INITIALLY DEFERRED
         )
 
         TABLESPACE pg_default;
@@ -94,14 +87,5 @@ def create_figures_table(db_params: ConnectionParams, schema: str, owner: str):
         schema=schema, owner=owner
     )
 
-    try:
-        conn = connect(db_params)
-        with conn.cursor() as cur:
-            cur.execute(sql)
-            conn.commit()
-    # pylint: disable=broad-except
-    except Exception as exception:
-        logging.error("Failed to establish database connection\n", exc_info=True)
-        raise Exception(exception) from exception
-    finally:
-        conn.close()
+    with conn.cursor() as cur:
+        cur.execute(sql)

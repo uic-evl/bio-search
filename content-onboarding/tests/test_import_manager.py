@@ -8,7 +8,7 @@ from os import makedirs
 from typing import Dict
 from pathlib import Path
 
-from content_onboarding.import_manager import ImportManager, Cord19Loader
+from content_onboarding.managers.import_manager import ImportManager, Cord19Loader
 from content_onboarding.db.model import FigureType, FigureStatus
 
 # Fake data ###################################################################
@@ -76,7 +76,9 @@ def create_valid_pmc_folder(import_folder: Path, idx: int):
     makedirs(folder_name, exist_ok=True)
     Path(folder_name / "document.pdf").touch()
     metadata = create_figure_metadata()
-    with open(folder_name / "metadata.json", "w", encoding="utf-8") as mfile:
+
+    metadata_file = f"{folder_name.name}.json"
+    with open(folder_name / metadata_file, "w", encoding="utf-8") as mfile:
         serialized = json.dumps(metadata, indent=4)
         mfile.write(serialized)
 
