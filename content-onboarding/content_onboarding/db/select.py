@@ -1,8 +1,8 @@
 """ Module with selects during onboarding """
 
 
-from typing import Dict
-from content_onboarding.db.model import FigureStatus
+from typing import Dict, List
+from content_onboarding.db.model import FigureStatus, SubFigureStatus, FigureType
 
 
 def build_pmc_to_id_mapper(cursor, schema: str) -> Dict[str, str]:
@@ -26,3 +26,10 @@ def build_uri_to_id_mapper(cursor, schema: str) -> Dict[str, int]:
     )
     rows = cursor.fetchall()
     return {r[1]: r[0] for r in rows}
+
+
+def select_subfigures_for_prediction(cursor, schema: str) -> List[str]:
+    cursor.execute(
+        f"SELECT id, uri FROM {schema}.figures WHERE status={SubFigureStatus.NOT_PREDICTED.value} AND fig_type={FigureType.SUBFIGURE.value}"
+    )
+    return cursor.fetchall()
