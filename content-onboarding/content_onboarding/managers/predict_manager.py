@@ -8,6 +8,7 @@ from os import cpu_count
 from typing import Dict
 from pathlib import Path
 import traceback
+import logging
 from pandas import DataFrame
 from torch import cuda
 
@@ -46,15 +47,17 @@ class PredictManager:
             try:
                 # tuples id, img_path
                 rows = select_subfigures_for_prediction(cursor, self.params.schema)
-                rel_img_paths = [elem[1] for elem in rows]
+                if len(rows) > 0:
+                    rel_img_paths = [elem[1] for elem in rows]
 
-                predictor = ModalityPredictor(self.classifiers, self.run_config)
-                # predict does not shuffle
-                output_df = predictor.predict(rel_img_paths, self.base_img_path)
-                output_df["id"] = [elem[0] for elem in rows]
-                self._update_db(cursor, output_df)
-                conn.commit()
+                    predictor = ModalityPredictor(self.classifiers, self.run_config)
+                    # predict does not shuffle
+                    output_df = predictor.predict(rel_img_paths, self.base_img_path)
+                    output_df["id"] = [elem[0] for elem in rows]
+                    self._update_db(cursor, output_df)
+                    conn.commit()
             except:
+                logging.error("Prediction error", exc_info=True)
                 traceback.print_exc()
         conn.close()
         return output_df
