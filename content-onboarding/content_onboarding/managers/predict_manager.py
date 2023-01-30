@@ -8,12 +8,14 @@ from os import cpu_count
 from typing import Dict
 from pathlib import Path
 import traceback
+from pandas import DataFrame
 from torch import cuda
 
 from image_modalities_classifier.models.predict import ModalityPredictor, RunConfig
 from content_onboarding.managers.base import Structure
 from content_onboarding.db.model import ConnectionParams, connect
 from content_onboarding.db.select import select_subfigures_for_prediction
+from content_onboarding.db.update import update_predictions_in_figures
 
 
 class PredictManager:
@@ -30,7 +32,14 @@ class PredictManager:
         self.classifiers = classifiers
         self.base_img_path = Path(project_dir) / Structure.TO_PREDICT.value
 
+    def _update_db(self, cursor, data: DataFrame):
+        values = data[["prediction", "id"]]
+        values = list(values.itertuples(index=False, name=None))
+        flattened = [item for sublist in values for item in sublist]
+        update_predictions_in_figures(cursor, self.params.schema, flattened)
+
     def predict(self):
+        """Predict label and set status to predicted"""
         conn = connect(self.params)
         output_df = None
         with conn.cursor() as cursor:
@@ -43,6 +52,8 @@ class PredictManager:
                 # predict does not shuffle
                 output_df = predictor.predict(rel_img_paths, self.base_img_path)
                 output_df["id"] = [elem[0] for elem in rows]
+                self._update_db(cursor, output_df)
+                conn.commit()
             except:
                 traceback.print_exc()
         conn.close()

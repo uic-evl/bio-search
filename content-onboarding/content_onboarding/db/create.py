@@ -68,9 +68,9 @@ def create_figures_table(conn: Connection, schema: str, owner: str):
             owner TEXT COLLATE pg_catalog."default",
             migration_key character varying(30) COLLATE pg_catalog."default",
             notes TEXT COLLATE pg_catalog."default",
-            labels TEXT[] COLLATE pg_catalog."default",
+            label TEXT COLLATE pg_catalog."default",
             source TEXT COLLATE pg_catalog."default" NOT NULL,
-            page numeric NULL,
+            page numeric,
             CONSTRAINT figures_pkey PRIMARY KEY (id),
             CONSTRAINT fk_document_id FOREIGN KEY (doc_id)
                 REFERENCES {schema}.documents (id) MATCH SIMPLE
