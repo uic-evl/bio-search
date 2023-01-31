@@ -166,6 +166,7 @@ class Reader:
             tstream = analyzer.tokenStream("caption", StringReader(caption))
             highlighted = highlighter.getBestFragments(tstream, caption, 3, "...")
             if len(highlighted) > 0:
+                print("found")
                 caption = highlighted
         return captions
 

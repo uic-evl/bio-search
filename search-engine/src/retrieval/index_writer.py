@@ -101,13 +101,11 @@ class Indexer:
                                 Field("modality", mod, StringField.TYPE_STORED)
                             )
                     elif key == "captions":
-                        #TODO: save captions as [] when none found
+                        # TODO: save captions as [] when none found
                         # captions = [] if isnull(row["captions"]) else row["captions"]
                         for caption in row["captions"]:
                             document.add(
-                                Field(
-                                    "caption", caption["text"], StringField.TYPE_STORED
-                                )
+                                Field("caption", caption["text"], TextField.TYPE_STORED)
                             )
                     else:
                         document.add(Field(key, row[key] if row[key] else "", val))
