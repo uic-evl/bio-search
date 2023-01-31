@@ -63,6 +63,7 @@ class Indexer:
             "pmcid": StringField.TYPE_STORED,
             "modalities": StringField.TYPE_STORED,
             "num_figures": StringField.TYPE_STORED,
+            "captions": StringField.TYPE_STORED,
         }
 
         if ft_provider:
@@ -98,6 +99,15 @@ class Indexer:
                         for mod in modalities:
                             document.add(
                                 Field("modality", mod, StringField.TYPE_STORED)
+                            )
+                    elif key == "captions":
+                        #TODO: save captions as [] when none found
+                        # captions = [] if isnull(row["captions"]) else row["captions"]
+                        for caption in row["captions"]:
+                            document.add(
+                                Field(
+                                    "caption", caption["text"], StringField.TYPE_STORED
+                                )
                             )
                     else:
                         document.add(Field(key, row[key] if row[key] else "", val))

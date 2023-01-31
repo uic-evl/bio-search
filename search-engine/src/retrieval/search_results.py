@@ -18,6 +18,7 @@ class SearchResult:
     full_text: str
     journal: str
     authors: str
+    captions: List[str]
     modalities_count: dict = field(init=False, default_factory=dict)
 
 

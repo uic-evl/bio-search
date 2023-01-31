@@ -78,7 +78,9 @@ class Reader:
                     # supports search on the first term and rest on default field
                     # or when adding " " to find a longer matching keywords on
                     # the same field
-                    query_input = f"title: {terms} OR abstract:{terms}"
+                    query_input = (
+                        f"title: {terms} OR abstract:{terms} OR caption:{terms}"
+                    )
                     if ft:
                         query_input = f"{query_input} OR full_text={terms}"
                     text_query = parser.parse(query_input)
@@ -125,6 +127,8 @@ class Reader:
                     abstract = hl_abstract or abstract
                     full_text = hl_ft or ""
 
+                captions = self.get_highlighted_captions(hit_doc)
+
                 result = SearchResult(
                     id=hit_doc.get("docId"),
                     title=title,
@@ -136,6 +140,7 @@ class Reader:
                     full_text=full_text,
                     journal=hit_doc.get("journal"),
                     authors=hit_doc.get("authors"),
+                    captions=captions
                 )
                 results.append(result)
             return results
@@ -145,6 +150,24 @@ class Reader:
     def get_last_query(self):
         """access to the last query performed"""
         return self._last_query
+
+    def get_highlighted_captions(self, document):
+        """Get a highlighted section or the whole caption"""
+        formatter = SimpleHTMLFormatter()
+        scorer = QueryScorer(self._last_query)
+        highlighter = Highlighter(formatter, scorer)
+        analyzer = StandardAnalyzer()
+
+        fragmenter = SimpleSpanFragmenter(scorer)
+        highlighter.setTextFragmenter(fragmenter)
+
+        captions = [x.stringValue() for x in document.getFields("caption")]
+        for caption in captions:
+            tstream = analyzer.tokenStream("caption", StringReader(caption))
+            highlighted = highlighter.getBestFragments(tstream, caption)
+            if len(highlighted) > 0:
+                caption = highlighted
+        return captions
 
     def get_highlight(self, document, ft):
         """Returns the highlighted title and abstract, if any"""
