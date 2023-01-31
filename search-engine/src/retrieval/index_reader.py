@@ -162,14 +162,15 @@ class Reader:
         highlighter.setTextFragmenter(fragmenter)
 
         captions = [x.stringValue() for x in document.getFields("caption")]
+        outputs = []
         for caption in captions:
             tstream = analyzer.tokenStream("caption", StringReader(caption))
             highlighted = highlighter.getBestFragments(tstream, caption, 3, "...")
             if len(highlighted) > 0:
                 print("found")
                 print(highlighted)
-                caption = highlighted
-        return captions
+                outputs.append(highlighted)
+        return outputs
 
     def get_highlight(self, document, ft):
         """Returns the highlighted title and abstract, if any"""
