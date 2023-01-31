@@ -161,12 +161,13 @@ class Reader:
         fragmenter = SimpleSpanFragmenter(scorer)
         highlighter.setTextFragmenter(fragmenter)
 
-        captions = [x.stringValue() for x in document.getFields("caption")]
+        captions = [x for x in document.getFields("caption")]
         for caption in captions:
             tstream = analyzer.tokenStream("caption", StringReader(caption))
             highlighted = highlighter.getBestFragments(tstream, caption, 3, "...")
             if len(highlighted) > 0:
                 print("found")
+                print(highlighted)
                 caption = highlighted
         return captions
 
