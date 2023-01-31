@@ -183,7 +183,7 @@ def test_fetching_figures_and_subfigures():
         paths = manager._get_paths_to_import()
 
         pmc_to_id = {"PMC1": 1, "PMC2": 2}
-        figures = manager.fetch_figures(paths, pmc_to_id)
+        figures, _ = manager.fetch_figures(paths, pmc_to_id)
 
         url_to_id = {
             "PMC1/fig1.jpg": 1,

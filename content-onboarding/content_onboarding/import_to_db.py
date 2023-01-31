@@ -3,7 +3,23 @@ extraction and segmentation"""
 
 from sys import argv
 from argparse import ArgumentParser, Namespace
+from pathlib import Path
+import logging
 from content_onboarding.managers.import_manager import ImportManager, Cord19Loader
+
+
+def setup_logger(workspace: str):
+    """configure logger"""
+    logger_dir = Path(workspace) / "logs"
+    if not logger_dir.exists:
+        raise Exception("workspace does not exist")
+
+    logging.basicConfig(
+        filename=str(logger_dir / "importdb.log"),
+        filemode="a",
+        format="%(asctime)s - %(levelname)s - %(message)s",
+        level=logging.INFO,
+    )
 
 
 def parse_args(args) -> Namespace:
@@ -27,7 +43,9 @@ def parse_args(args) -> Namespace:
 def main():
     """main entry"""
     args = parse_args(argv[1:])
-    manager = ImportManager(args.project_dir, args.project, args.db)
+    setup_logger(str(Path(args.projects_dir) / args.project))
+
+    manager = ImportManager(args.projects_dir, args.project, args.db)
     loader = Cord19Loader()
     manager.import_content(args.metadata, loader)
 
