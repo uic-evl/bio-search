@@ -2,7 +2,7 @@
 
 from typing import List
 from psycopg import sql
-from content_onboarding.db.model import SubFigureStatus
+from biosearch_core.db.model import SubFigureStatus
 
 
 def update_predictions_in_figures(cursor, schema: str, values: List):

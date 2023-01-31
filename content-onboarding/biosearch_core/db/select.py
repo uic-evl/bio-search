@@ -2,7 +2,7 @@
 
 
 from typing import Dict, List
-from content_onboarding.db.model import FigureStatus, SubFigureStatus, FigureType
+from biosearch_core.db.model import FigureStatus, SubFigureStatus, FigureType
 
 
 def build_pmc_to_id_mapper(cursor, schema: str) -> Dict[str, str]:

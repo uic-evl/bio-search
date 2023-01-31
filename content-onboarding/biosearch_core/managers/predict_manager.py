@@ -13,10 +13,10 @@ from pandas import DataFrame
 from torch import cuda
 
 from image_modalities_classifier.models.predict import ModalityPredictor, RunConfig
-from content_onboarding.managers.base import Structure
-from content_onboarding.db.model import ConnectionParams, connect
-from content_onboarding.db.select import select_subfigures_for_prediction
-from content_onboarding.db.update import update_predictions_in_figures
+from biosearch_core.managers.base import Structure
+from biosearch_core.db.model import ConnectionParams, connect
+from biosearch_core.db.select import select_subfigures_for_prediction
+from biosearch_core.db.update import update_predictions_in_figures
 
 
 class PredictManager:

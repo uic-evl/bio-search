@@ -2,7 +2,7 @@
 
 import logging
 from psycopg import Connection
-from content_onboarding.db.model import connect, ConnectionParams
+from biosearch_core.db.model import connect, ConnectionParams
 
 
 def create_documents_table(conn: Connection, schema: str, owner: str):

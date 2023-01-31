@@ -2,7 +2,7 @@
 
 from pathlib import Path
 from pytest import approx
-from content_onboarding.bbox_reader import BoundingBoxMapper
+from biosearch_core.bbox_reader import BoundingBoxMapper
 
 
 def test_load():

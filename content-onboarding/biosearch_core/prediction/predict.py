@@ -6,8 +6,8 @@ from pathlib import Path
 from typing import Dict
 import logging
 import json
-from content_onboarding.managers.predict_manager import PredictManager
-from content_onboarding.db.model import params_from_env
+from biosearch_core.prediction.predictor import PredictManager
+from biosearch_core.db.model import params_from_env
 
 
 def setup_logger(workspace: str):

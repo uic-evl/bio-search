@@ -48,6 +48,11 @@ class ConnectionParams:
     password: str
     schema: str
 
+    def conninfo(self):
+        """Postgresql connection string"""
+        # pylint: disable=line-too-long
+        return f"host={self.host} port={self.port} dbname={self.dbname} user={self.user} password={self.password}"
+
 
 def params_from_env(env_path: str) -> ConnectionParams:
     """Read connection params from .env"""

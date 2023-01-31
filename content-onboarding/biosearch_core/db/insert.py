@@ -1,7 +1,7 @@
 """ Module for inserting into PostgreSQL"""
 
 from typing import List
-from content_onboarding.db.model import DbDocument, DBFigure
+from biosearch_core.db.model import DbDocument, DBFigure
 
 
 def insert_documents_to_db(cursor, schema: str, documents: List[DbDocument]):

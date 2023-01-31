@@ -1,11 +1,13 @@
-""" Module to import content to database after the folders passed through
-extraction and segmentation"""
+""" Fetch subfigures with status unpredicted and predict the modality """
 
 from sys import argv
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
+from typing import Dict
 import logging
-from content_onboarding.managers.import_manager import ImportManager, Cord19Loader
+import json
+from biosearch_core.managers.predict_manager import PredictManager
+from biosearch_core.db.model import params_from_env
 
 
 def setup_logger(workspace: str):
@@ -15,11 +17,19 @@ def setup_logger(workspace: str):
         raise Exception("workspace does not exist")
 
     logging.basicConfig(
-        filename=str(logger_dir / "importdb.log"),
+        filename=str(logger_dir / "predict_labes.log"),
         filemode="a",
         format="%(asctime)s - %(levelname)s - %(message)s",
         level=logging.INFO,
     )
+
+
+def load_classifiers_info(definition_path: str) -> Dict:
+    """Load json file with classifiers info"""
+    with open(definition_path, "r", encoding="utf-8") as input_file:
+        json_data = json.load(input_file)
+        # TODO validate everything exists
+        return json_data
 
 
 def parse_args(args) -> Namespace:
@@ -29,11 +39,9 @@ def parse_args(args) -> Namespace:
         "projects_dir", type=str, help="root folder where projects are stored"
     )
     parser.add_argument("project", type=str, help="project name")
-    parser.add_argument("metadata", type=str, help="path to metadata")
     parser.add_argument("db", type=str, help="path to .env with db conn")
-    # TODO: temp parameter for setting what importer to use
     parser.add_argument(
-        "--loader", "-l", type=str, help="metadata loader", default="cord19"
+        "classifiers", type=str, help="json file with classifiers to use"
     )
     parsed_args = parser.parse_args(args)
 
@@ -43,11 +51,13 @@ def parse_args(args) -> Namespace:
 def main():
     """main entry"""
     args = parse_args(argv[1:])
-    setup_logger(str(Path(args.projects_dir) / args.project))
+    project_dir = Path(args.projects_dir) / args.project
+    conn_params = params_from_env(args.db)
 
-    manager = ImportManager(args.projects_dir, args.project, args.db)
-    loader = Cord19Loader()
-    manager.import_content(args.metadata, loader)
+    setup_logger(project_dir)
+    classifiers = load_classifiers_info(args.classifiers)
+    manager = PredictManager(str(project_dir), conn_params, classifiers)
+    manager.predict()
 
 
 if __name__ == "__main__":

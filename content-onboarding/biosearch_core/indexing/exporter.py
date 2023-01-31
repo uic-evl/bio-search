@@ -1,43 +1,15 @@
-""" Module to handle the creation of files to index"""
+""" Module to exporting the database records for indexing """
 
-from dataclasses import dataclass, asdict
 from typing import Optional, List, Tuple
-from collections import defaultdict
+from dataclasses import asdict
 from datetime import datetime
+from collections import defaultdict
+from pandas import json_normalize as pd_json_normalize
+import psycopg
 from psycopg import Cursor
-import pandas as pd
-from content_onboarding.db.model import FigureType, ConnectionParams, connect
-
-
-@dataclass
-class Caption:
-    """Figure caption to index. Id to match db record if needed"""
-
-    # pylint: disable=invalid-name
-    figId: int
-    text: str
-
-
-@dataclass
-class LuceneDocument:
-    """
-    datetime: str in format "%Y-%m%d" or year alone
-    modalities: str with modalities separated by a white space
-    """
-
-    # pylint: disable=invalid-name
-    docId: int
-    source: str
-    title: str
-    abstract: str
-    pub_date: str
-    journal: str
-    authors: str
-    pmcid: str
-    num_figures: int
-    modalities: str
-    url: str
-    captions: Optional[List[Caption]]
+from biosearch_core.data.figure import FigureType
+from biosearch_core.indexing.lucene import LuceneCaption, LuceneDocument
+from biosearch_core.db.model import ConnectionParams
 
 
 class IndexManager:
@@ -92,41 +64,42 @@ class IndexManager:
         """Fetch data from db and return list of data to index"""
         lucene_docs = []
 
-        conn = connect(self.params)
-        with conn.cursor() as cursor:
-            document_db_records = self.get_documents_from_db(cursor)
-            caption_db_records = self.get_captions_from_db(cursor)
+        # https://github.com/PyCQA/pylint/issues/5273
+        # pylint: disable=not-context-manager
+        with psycopg.connect(conninfo=self.params.conninfo(), autocommit=False) as conn:
+            with conn.cursor() as cursor:
+                document_db_records = self.get_documents_from_db(cursor)
+                caption_db_records = self.get_captions_from_db(cursor)
 
-            id_to_captions = defaultdict(list)
-            for caption in caption_db_records:
-                id_to_captions[caption[0]].append(
-                    Caption(figId=caption[1], text=caption[2])
-                )
-            for document in document_db_records:
-                modalities = self._add_modality_parents(document[10])
-                captions = id_to_captions[document[0]]
-                lucene_docs.append(
-                    LuceneDocument(
-                        docId=document[0],
-                        source=document[1],
-                        title=document[2],
-                        abstract=document[3],
-                        pub_date=datetime.strftime(document[4], "%Y-%m-%d"),
-                        journal=document[5],
-                        authors=";".join(document[6]) if document[6] else "",
-                        url=document[7],
-                        pmcid=document[8],
-                        num_figures=document[9],
-                        modalities=modalities,
-                        captions=captions,
+                id_to_captions = defaultdict(list)
+                for caption in caption_db_records:
+                    id_to_captions[caption[0]].append(
+                        LuceneCaption(figure_id=caption[1], text=caption[2])
                     )
-                )
-        conn.close()
+                for document in document_db_records:
+                    modalities = self._add_modality_parents(document[10])
+                    captions = id_to_captions[document[0]]
+                    lucene_docs.append(
+                        LuceneDocument(
+                            doc_id=document[0],
+                            source=document[1],
+                            title=document[2],
+                            abstract=document[3],
+                            pub_date=datetime.strftime(document[4], "%Y-%m-%d"),
+                            journal=document[5],
+                            authors=";".join(document[6]) if document[6] else "",
+                            url=document[7],
+                            pmcid=document[8],
+                            num_figures=document[9],
+                            modalities=modalities,
+                            captions=captions,
+                        )
+                    )
         return lucene_docs
 
-    def to_parquet(self, output_file: str):
+    def to_parquet(self, output_file: str) -> None:
         """save data as parquet"""
         documents_to_index = self.fetch_docs_to_index()
-        data = pd.json_normalize(asdict(obj) for obj in documents_to_index)
+        data = pd_json_normalize(asdict(obj) for obj in documents_to_index)
         data.modalities = data.modalities.astype(str)
         data.to_parquet(output_file, engine="pyarrow")

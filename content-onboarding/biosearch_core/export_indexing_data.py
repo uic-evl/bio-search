@@ -2,8 +2,8 @@ from sys import argv
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
 import logging
-from content_onboarding.managers.indexing_manager import IndexManager
-from content_onboarding.db.model import params_from_env
+from biosearch_core.managers.indexing_manager import IndexManager
+from biosearch_core.db.model import params_from_env
 
 
 def setup_logger(workspace: str):
