@@ -19,6 +19,7 @@ CORD19_INDEX_DIR = getenv("CORD_INDEX_PATH")
 DATADIR = getenv("DATA_PATH")
 BBOXESDIR = getenv("BBOXES_PATH")
 ROOT = getenv("FLASK_ROOT")
+SCHEMA = getenv("SCHEMA")
 
 GXD_DATA = None
 with open(DATADIR, "r", encoding="utf8") as f:
@@ -127,7 +128,7 @@ def get_document_db(id):
         "port": getenv("port"),
         "host": getenv("host"),
     }
-    document = fetch_doc_by_id(config, document_id)
+    document = fetch_doc_by_id(config, SCHEMA, document_id)
     return document
 
 
