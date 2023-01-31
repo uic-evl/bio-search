@@ -17,7 +17,7 @@ def query_document_details(id, schema):
 def query_fig_subfigs(doc_id: int, schema: str):
     """get the figures and subfigures data for a document"""
     return """
-        SELECT f.id as figId, sf.id as subfigId, f.caption, f.uri, sf.uri, sf.coordinates, sf.label as prediction, f.width, f.height
+        SELECT f.id as figId, sf.id as subfigId, f.caption, f.uri, sf.uri, sf.coordinates, sf.label as prediction, f.width, f.height, f.page
         FROM {schema}.figures f, {schema}.figures sf, {schema}.documents d
         WHERE d.id={doc_id} and d.id = f.doc_id and f.fig_type=0  and f.id = sf.parent_id 
     """.format(
@@ -57,12 +57,9 @@ class Subfigure:
     prediction: str
     figure_width: float
     figure_height: float
-    page_number: int = field(init=False)
+    page_number: int
 
     def __post_init__(self):
-        url_split = self.figure_url.split("/")
-        name = url_split[-1][:-4]  # remove .jpg
-        self.page_number = int(name.split("_")[0])
         if self.coordinates:
             self.coordinates = [float(x) for x in self.coordinates]
 
@@ -94,6 +91,7 @@ def fetch_subfigures(db_params: dict, schema: str, id: int) -> list[Subfigure]:
                 prediction=record[6],
                 figure_width=record[7],
                 figure_height=record[8],
+                page_number=record[9],
             )
         )
     return subfigures
