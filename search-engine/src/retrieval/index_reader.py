@@ -140,7 +140,7 @@ class Reader:
                     full_text=full_text,
                     journal=hit_doc.get("journal"),
                     authors=hit_doc.get("authors"),
-                    captions=captions
+                    captions=captions,
                 )
                 results.append(result)
             return results
@@ -164,7 +164,7 @@ class Reader:
         captions = [x.stringValue() for x in document.getFields("caption")]
         for caption in captions:
             tstream = analyzer.tokenStream("caption", StringReader(caption))
-            highlighted = highlighter.getBestFragments(tstream, caption)
+            highlighted = highlighter.getBestFragments(tstream, caption, 3, "...")
             if len(highlighted) > 0:
                 caption = highlighted
         return captions
