@@ -11,7 +11,6 @@ from psycopg import sql, Cursor, connect  # https://github.com/PyCQA/pylint/issu
 
 from image_modalities_classifier.models.predict import ModalityPredictor, RunConfig
 from biosearch_core.data.figure import SubFigureStatus, FigureType
-from biosearch_core.managers.base import Structure
 from biosearch_core.db.model import ConnectionParams
 
 
@@ -29,7 +28,7 @@ class PredictManager:
             batch_size=128, num_workers=cpu_count(), device=device
         )
         self.classifiers = classifiers
-        self.base_img_path = Path(project_dir) / Structure.TO_PREDICT.value
+        self.base_img_path = Path(project_dir) / "to_predict"
 
     def fetch_subfigures_from_db(self, cursor: Cursor) -> List[Tuple]:
         """Fetch not predicted subfigures from db"""

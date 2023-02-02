@@ -17,6 +17,8 @@ image_modalities_classifier = { git = "https://github.com/uic-evl/bio-search.git
 torch = { version="^1.13.1", source="torch", optional = true }
 torchvision = { version = "^0.14.1", source="torch", optional = true }
 tqdm = "^4.64.1"
+flask = "^2.2.2"
+flask-cors = "^3.0.10"
 
 [[tool.poetry.source]]
 name = "torch"

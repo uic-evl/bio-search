@@ -2,6 +2,7 @@
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Optional
+from datetime import datetime
 
 
 class FigureType(Enum):
@@ -56,6 +57,9 @@ class DBFigure:
     notes: str = field(init=False, default=None)
     label: str = field(init=False, default=None)
     page: Optional[int]
+
+    def __post_init__(self):
+        self.last_update_by = datetime.now()
 
     def to_tuple(self):
         """Return data as tuple to insert in database"""

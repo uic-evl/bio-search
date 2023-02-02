@@ -4,7 +4,7 @@ them in the database"""
 from pathlib import Path
 from os import listdir
 from typing import List, Dict, Tuple
-from shutil import move
+from shutil import move, rmtree
 import logging
 import json
 from psycopg import Cursor, connect
@@ -217,21 +217,27 @@ class ImportManager:
             if doc.startswith("PMC")
         ]
 
-    def _move(self, folders: List[str], target: Path):
+    def _move(self, folders: List[str], target: Path, ok_if_exists: bool):
         for folder in folders:
-            dest = target / Path(folder).name
-            move(folder, dest)
+            name = Path(folder).name
+            if ok_if_exists and (target / name).exists():
+                rmtree(target / name)
+            move(folder, target)
 
     def _move_successful_imports(self, folders: List[str]):
-        self._move(folders, Project.predict_dir(self.dir))
+        self._move(folders, Project.predict_dir(self.dir), False)
 
     def _move_folder_with_errors(self):
         reasons = self.validator.violation_reasons_
-        self._move(reasons["to_segment"], Project.segment_dir(self.dir))
-        self._move(reasons["to_extract"], Project.extract_dir(self.dir))
-        self._move(reasons["not_in_metadata"], Project.error_no_meta_dir(self.dir))
-        self._move(reasons["missing_pdf"], Project.error_missing_pdf_dir(self.dir))
-        self._move(reasons["multiple_pdfs"], Project.error_multiple_dir(self.dir))
+        err_no_meta = Project.error_no_meta_dir(self.dir)
+        err_no_pdf = Project.error_missing_pdf_dir(self.dir)
+        err_multiple = Project.error_multiple_dir(self.dir)
+
+        self._move(reasons["to_segment"], Project.segment_dir(self.dir), True)
+        self._move(reasons["to_extract"], Project.extract_dir(self.dir), True)
+        self._move(reasons["not_in_metadata"], err_no_meta, True)
+        self._move(reasons["missing_pdf"], err_no_pdf, True)
+        self._move(reasons["multiple_pdfs"], err_multiple, True)
 
     def _insert_documents_to_db(self, cursor: Cursor, documents: List[DbDocument]):
         """Massive import of documents to database"""
@@ -295,6 +301,15 @@ class ImportManager:
         self.validator.violation_reasons_["not_in_metadata"] = paths_to_remove
         paths_to_import = paths_in_metadata
 
+        # remove any folder that already exists on to_predict
+        tmp = []
+        for folder in paths_to_import:
+            name = Path(folder).name
+            if (Project.predict_dir(self.dir) / name).exists():
+                logging.info("%s,IGNORED,already exists in predicted", name)
+            else:
+                tmp.append(folder)
+        paths_to_import = tmp
         if len(paths_to_import) == 0:
             return
 
