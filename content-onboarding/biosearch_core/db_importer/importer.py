@@ -77,11 +77,19 @@ class Validator:
                     fig_folder = Path(str(fig_path)[:-4])
                     if not fig_folder.exists():
                         self.violation_reasons_["to_segment"].append(str(folder))
-                        logging.info("%s,TO_SEGMENT,missing extraction folder")
+                        logging.info(
+                            "%s,TO_SEGMENT,missing extraction folder %s",
+                            folder.name,
+                            fig_folder,
+                        )
                         return False
                     if not (fig_folder / f"{fig_path.name}.txt").exists():
                         self.violation_reasons_["to_segment"].append(str(folder))
-                        logging.info("%s,TO_SEGMENT,missing segment data", folder.name)
+                        logging.info(
+                            "%s,TO_SEGMENT,missing segment data %s",
+                            folder.name,
+                            fig_folder,
+                        )
                         return False
         return True
 
@@ -128,9 +136,12 @@ class ImportManager:
         metadata_file = f"{folder.name}.json"
         with open(folder / metadata_file, "r", encoding="utf-8") as reader:
             json_data = json.load(reader)
+
             for page in json_data["pages"]:
                 for fig_data in page["figures"]:
-                    coordinates = fig_data["bbox"]
+                    # if "0x00" in fig_data["caption"]:
+                    #     print(fig_data["caption"])
+                    coordinates = [int(x) for x in fig_data["bbox"]]
                     width = coordinates[2]
                     height = coordinates[3]
 
@@ -182,19 +193,23 @@ class ImportManager:
                     if len(coordinates) == 0:
                         # no subfigures present
                         coordinates = [0, 0, figure.width, figure.height]
+                    width = coordinates[2]
+                    height = coordinates[3]
                 except KeyError:
                     # figsplit did not generate coordinates file
                     coordinates = None
                     message = f"Missing coordinates: {subfig_path}"
                     logging.info(message)
+                    width = -1
+                    height = -1
 
                 local_path = Path(subfig_path)
                 subfigures.append(
                     DBFigure(
                         status=SubFigureStatus.NOT_PREDICTED.value,
                         uri=f"{figure.uri[:-4]}/{local_path.name}",
-                        width=coordinates[2] if coordinates else -1,
-                        height=coordinates[3] if coordinates else -1,
+                        width=width,
+                        height=height,
                         type=FigureType.SUBFIGURE.value,
                         name=local_path.stem,
                         caption=None,

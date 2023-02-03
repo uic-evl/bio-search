@@ -50,9 +50,9 @@ class BoundingBoxMapper:
                 return
 
             mult_factor = 1
-            if "1.0e+03 *" in lines[0]:
+            if "*" in lines[0]:
                 # avoid the first two lines when the values need scaling
-                mult_factor = 1000
+                mult_factor = float(lines[0].strip().split(" ")[0])
                 lines = lines[2:]
             for idx, line in enumerate(lines):
                 values = findall(r"\d+\.\d+", line)
