@@ -1,6 +1,7 @@
 import {Figure} from '../types/document'
 import {Flex, Box, Text} from '@chakra-ui/react'
 import FigureBboxViewer from '../figure-bbox-viewer/figure-bbox-viewer'
+import {LuceneCaption} from '../types'
 
 /* eslint-disable-next-line */
 export interface FigureBboxCaptionCardProps {
@@ -8,6 +9,7 @@ export interface FigureBboxCaptionCardProps {
   colorsMapper: {[id: string]: string}
   baseUrlEndpoint: string
   maxHeight: number
+  captionHits: LuceneCaption[]
 }
 
 interface CaptionProps {
@@ -25,7 +27,12 @@ const Caption = ({width, caption}: CaptionProps) => (
     overflowY="auto"
     overflowX="auto"
   >
-    <Text fontSize={'sm'}>{caption}</Text>
+    <Text
+      fontSize={'sm'}
+      dangerouslySetInnerHTML={{
+        __html: caption,
+      }}
+    ></Text>
   </Box>
 )
 
@@ -34,6 +41,7 @@ export function FigureBboxCaptionCard({
   colorsMapper,
   baseUrlEndpoint,
   maxHeight,
+  captionHits,
 }: FigureBboxCaptionCardProps) {
   const figPanelWidth = figure.caption.length > 1 ? 50 : 100
   const subfigureBboxes = figure.subfigures.map(sf => {
@@ -52,6 +60,18 @@ export function FigureBboxCaptionCard({
     }
   })
   const figureUrl = `${baseUrlEndpoint}/${figure.url}`
+  const hits = captionHits.filter(
+    el => el.figure_id.toString() === figure.id.toString(),
+  )
+  let caption = figure.caption
+  if (hits.length === 1) {
+    const textFragment = hits[0].text
+    const textNoFormatting = textFragment.replace('<b>', '').replace('</b>', '')
+    const idxStart = figure.caption.indexOf(textNoFormatting)
+    const idxEnd = idxStart + textNoFormatting.length
+    caption =
+      caption.substring(0, idxStart) + textFragment + caption.substring(idxEnd)
+  }
 
   return (
     <Flex h="full" w="full">
@@ -61,7 +81,7 @@ export function FigureBboxCaptionCard({
         </Box>
       </Box>
       {figPanelWidth < 100 && (
-        <Caption width={figPanelWidth} caption={figure.caption} />
+        <Caption width={figPanelWidth} caption={caption} />
       )}
     </Flex>
   )

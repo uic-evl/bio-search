@@ -22,6 +22,7 @@ export interface Subfigure {
 }
 
 export interface Figure {
+  id: number
   caption: string
   subfigures: Subfigure[]
   url: string

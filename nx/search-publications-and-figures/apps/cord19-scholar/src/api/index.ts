@@ -34,20 +34,21 @@ export const search = async (
     token: undefined,
     params: undefined,
   })
-  return payload
+  return payload as LuceneDocument[]
 }
 
 export const getPageFigureDetails = async (
   documentId: string,
   preferredOrder: string[],
 ): Promise<Document> => {
-  const url = `${SEARCH_API_ENDPOINT}/document2/${documentId}`
+  const url = `${SEARCH_API_ENDPOINT}/document/${documentId}`
   const payload: Document = await run(url, 'get', {
     data: undefined,
     token: undefined,
     params: undefined,
   })
   // TODO: the sorting can be done on the web server, meanwhile here
+
   if (preferredOrder.length > 0) {
     payload.pages.forEach(page => {
       let score = 0

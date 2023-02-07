@@ -1,5 +1,5 @@
 import {useState, useEffect} from 'react'
-import {LuceneDocument} from '../../types/lucene-document'
+import {LuceneDocument, LuceneCaption} from '../../types/lucene-document'
 import {Document, Page} from '../../types/document'
 import {Box, Flex, chakra, Button} from '@chakra-ui/react'
 import SimpleResultCard from '../../simple-result-card/simple-result-card'
@@ -143,6 +143,7 @@ const HorizontalResultCard = ({
             colorsMapper={colorsMapper}
             figuresBaseUrl={figuresBaseUrl}
             getPageUrl={getPageUrl}
+            captionHits={document.captions}
           />
         )}
       </Box>
