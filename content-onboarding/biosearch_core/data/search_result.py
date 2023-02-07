@@ -30,5 +30,7 @@ class SearchResultEncoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, SearchResult):
             return o.__dict__
+        if isinstance(o, LuceneCaption):
+            return o.__dict__
         # Base class default() raises TypeError:
         return json.JSONEncoder.default(self, o)
