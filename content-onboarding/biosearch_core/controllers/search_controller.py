@@ -45,6 +45,7 @@ class SearchController:
                         figure_id
                     ) in subfigs_by_fig:  # pylint: disable=consider-using-dict-items
                         figure = {
+                            "id": int(figure_id),
                             "caption": subfigs_by_fig[figure_id][0].caption,
                             "page": subfigs_by_fig[figure_id][0].page_number,
                             "url": subfigs_by_fig[figure_id][0].figure_url,
