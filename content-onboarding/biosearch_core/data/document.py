@@ -103,6 +103,7 @@ class DocumentModel:
             WHERE d.id = {doc_id} 
                   AND f.doc_id = d.id 
                   AND f.fig_type = {fig_type}
+            GROUP BY d.id
         """.format(
             schema=schema, doc_id=doc_id, fig_type=FigureType.FIGURE.value
         )
