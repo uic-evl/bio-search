@@ -27,7 +27,7 @@ conn_params = ConnectionParams(
     dbname=getenv("dbname"),
     user=getenv("user"),
     password=getenv("password"),
-    schema=getenv("schema"),
+    schema=SCHEMA,
 )
 
 
