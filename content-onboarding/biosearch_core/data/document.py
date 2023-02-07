@@ -104,7 +104,7 @@ class DocumentModel:
                   AND f.doc_id = d.id 
                   AND f.fig_type = {fig_type}
         """.format(
-            schema=schema, doc_id=doc_id, fig_type=FigureType.FIGURE
+            schema=schema, doc_id=doc_id, fig_type=FigureType.FIGURE.value
         )
         cursor.execute(query)
         rows = cursor.fetchall()
