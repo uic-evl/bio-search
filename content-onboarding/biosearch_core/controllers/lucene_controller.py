@@ -36,6 +36,7 @@ from org.apache.lucene.search.highlight import (
 )
 
 from biosearch_core.data.search_result import SearchResult, SearchResultEncoder
+from biosearch_core.indexing.lucene import LuceneCaption
 
 
 def strdate2long(date: str) -> int:
@@ -135,7 +136,9 @@ class Reader:
                 abstract = hit_doc.get("abstract")
                 num_figures = int(hit_doc.get("num_figures"))
                 if highlight:
-                    hl_title, hl_abstract, hl_ft = self.get_highlight(hit_doc, ft)
+                    hl_title, hl_abstract, hl_ft = self.get_highlight(
+                        hit_doc, full_text
+                    )
                     title = hl_title or title
                     abstract = hl_abstract or abstract
                     full_text = hl_ft or ""
@@ -164,7 +167,7 @@ class Reader:
         """access to the last query performed"""
         return self._last_query
 
-    def get_highlighted_captions(self, document):
+    def get_highlighted_captions(self, document) -> List[LuceneCaption]:
         """Get a highlighted section or the whole caption"""
         formatter = SimpleHTMLFormatter()
         scorer = QueryScorer(self._last_query)
@@ -175,12 +178,14 @@ class Reader:
         highlighter.setTextFragmenter(fragmenter)
 
         captions = [x.stringValue() for x in document.getFields("caption")]
+        figure_ids = [x.stringValue() for x in document.getFields("fig_id")]
         outputs = []
-        for caption in captions:
+        for fig_id, caption in zip(figure_ids, captions):
             tstream = analyzer.tokenStream("caption", StringReader(caption))
             highlighted = highlighter.getBestFragments(tstream, caption, 3, "...")
             if len(highlighted) > 0:
-                outputs.append(highlighted)
+                outputs.append(LuceneCaption(figure_id=fig_id, text=highlighted))
+                # outputs.append(highlighted)
         return outputs
 
     def get_highlight(self, document, full_text):

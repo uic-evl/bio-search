@@ -3,6 +3,8 @@ import json
 from typing import List
 from dataclasses import dataclass, field
 
+from biosearch_core.indexing.lucene import LuceneCaption
+
 
 @dataclass
 class SearchResult:
@@ -18,7 +20,7 @@ class SearchResult:
     full_text: str
     journal: str
     authors: str
-    captions: List[str]
+    captions: List[LuceneCaption]
     modalities_count: dict = field(init=False, default_factory=dict)
 
 
