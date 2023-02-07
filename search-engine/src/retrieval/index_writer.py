@@ -107,6 +107,7 @@ class Indexer:
                             document.add(
                                 Field("caption", caption["text"], TextField.TYPE_STORED)
                             )
+                            document.add(Field("fig_id"), caption["figId"], StringField.TYPE_STORED)
                     else:
                         document.add(Field(key, row[key] if row[key] else "", val))
                 writer.addDocument(document)
