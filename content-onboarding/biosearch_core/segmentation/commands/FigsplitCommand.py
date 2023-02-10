@@ -1,6 +1,7 @@
 """ Command for segmenting images in a folder using FigSplit"""
 
 import subprocess
+from os import listdir
 from pathlib import Path
 
 
@@ -12,7 +13,8 @@ class FigsplitDockerCommand:
 
     def execute(self, doc_folder: str):
         """Iterate over folder and segment images"""
-        pathlist = Path(doc_folder).rglob("*.jpg")
+        pathlist = [elem for elem in listdir(Path(doc_folder)) if elem.endswith(".jpg")]
+        print(pathlist)
         for img_path in pathlist:
             cmd = f"{self.command} {str(img_path)}".split()
             # output = subprocess.run(
