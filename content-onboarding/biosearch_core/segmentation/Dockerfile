@@ -101,11 +101,11 @@ RUN export DEBIAN_FRONTEND=noninteractive && apt-get update \
 
 # Switch back to notebook user
 USER $NB_USER
-WORKDIR /home/${NB_USER}
+WORKDIR /home/jovyan
 
 # Install integration and Figsplit
 RUN python -m pip install jupyter-matlab-proxy && git clone https://github.com/KasraNezamabadi/figsplit_wrapper
-COPY ./figsplit.sh ./figsplit.sh
+COPY figsplit.sh /workspace/figsplit.sh
 
 # Make JupyterLab the default environment
 ENV JUPYTER_ENABLE_LAB="yes"
