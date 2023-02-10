@@ -6,6 +6,7 @@ from biosearch_core.segmentation.commands.FigsplitCommand import FigsplitDockerC
 def parse_args(args) -> Namespace:
     """Parse args from command line"""
     parser = ArgumentParser(prog="segment")
+    parser.add_argument("container", type=str, help="container name")
     parser.add_argument("folder_dir", type=str, help="folder with .jpg images")
     parsed_args = parser.parse_args(args)
 
@@ -15,7 +16,7 @@ def parse_args(args) -> Namespace:
 def main():
     """main entry"""
     args = parse_args(argv[1:])
-    commander = FigsplitDockerCommand("exciting_galois")
+    commander = FigsplitDockerCommand(args.container)
     commander.execute(args.folder_dir)
 
 
