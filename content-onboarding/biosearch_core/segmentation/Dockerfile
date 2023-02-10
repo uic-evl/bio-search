@@ -105,7 +105,7 @@ WORKDIR /home/jovyan
 
 # Install integration and Figsplit
 RUN python -m pip install jupyter-matlab-proxy && git clone https://github.com/KasraNezamabadi/figsplit_wrapper
-COPY figsplit.sh /workspace/figsplit.sh
+COPY figsplit.sh /home/jovyan/figsplit.sh
 
 # Make JupyterLab the default environment
 ENV JUPYTER_ENABLE_LAB="yes"
