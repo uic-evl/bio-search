@@ -26,7 +26,7 @@ class FigsplitDockerCommand:
             # output = subprocess.run(
             #     [self.command, str(img_path)], capture_output=True, check=True
             # )
-            p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+            p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             out, err = p.communicate()
             print("out", out)
             print("err", err)
