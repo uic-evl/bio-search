@@ -25,6 +25,7 @@ def parse_args(args) -> Namespace:
     """Parse args from command line"""
     parser = ArgumentParser(prog="segment")
     parser.add_argument("container", type=str, help="container name")
+    parser.add_argument("env", type=str, help="docker or pod")
     parser.add_argument("base_dir", type=str, help="base directory in local env")
     parser.add_argument("folder_dir", type=str, help="relative target dir")
 
@@ -36,9 +37,11 @@ def parse_args(args) -> Namespace:
 def main():
     """main entry"""
     args = parse_args(argv[1:])
+    if args.env not in ["docker", "pod"]:
+        raise Exception("Environment should be 'docker' or 'pod'")
 
     setup_logger(Path(args.base_dir) / args.folder_dir)
-    commander = FigsplitCommand(args.container)
+    commander = FigsplitCommand(args.container, container_type=args.env)
     _ = commander.execute(args.base_dir, args.folder_dir)
 
 

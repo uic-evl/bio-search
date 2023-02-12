@@ -35,7 +35,7 @@ class FigsplitCommand:
             try:
                 subprocess.check_call(cmd)
             except subprocess.CalledProcessError:
-                message = f"{folder_name},{img_name},{cmd}"
+                message = f"{folder_name},{img_name}"
                 logging.error(message, exc_info=True)
                 return False
         return True
