@@ -29,6 +29,7 @@ def parse_args(args) -> Namespace:
     parser.add_argument("container", type=str, help="container name")
     parser.add_argument("env", type=str, help="docker or pod")
     parser.add_argument("base_dir", type=str, help="base directory in local env")
+    parser.add_argument("num_workers", type=int)
 
     parsed_args = parser.parse_args(args)
 
