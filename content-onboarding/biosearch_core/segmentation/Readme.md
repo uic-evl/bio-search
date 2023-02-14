@@ -5,8 +5,15 @@ https://github.com/KasraNezamabadi/figsplit_wrapper
 
 ## Building a docker image for Figsplit
 
+Dependencies:
+
+- MATLAB
+- Image Processing Toolbox
+- Signal Processing Toolbox
+- Computer Vision Toolbox
+
 ```bash
-docker build --build-arg MATLAB_PRODUCT_LIST="MATLAB Image_Processing_Toolbox Computer_Vision_Toolbox" --build-arg LICENSE_SERVER=PORT@LICENSE_SERVER -t figsplit:1.0 .
+docker build --build-arg MATLAB_PRODUCT_LIST="MATLAB Image_Processing_Toolbox Computer_Vision_Toolbox Signal_Processing_Toolbox" --build-arg LICENSE_SERVER=PORT@LICENSE_SERVER -t figsplit:1.0 .
 
 docker run -ti --rm  -p 8888:8888 --user root -e NB_GID=100 -e GEN_CERT=yes -e GRANT_SUDO=yes -v IMAGE_FOLDER:/mnt figsplit:1.0 start.sh bash
 

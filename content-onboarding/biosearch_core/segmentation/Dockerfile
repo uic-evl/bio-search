@@ -63,6 +63,7 @@ RUN wget ${MATLAB_DEPS_REQUIREMENTS_FILE} -O ${MATLAB_DEPS_REQUIREMENTS_FILE_NAM
   tmux \
   git \
   vim \
+  htop \
   && apt-get clean \
   && apt-get -y autoremove \
   && rm -rf /var/lib/apt/lists/* ${MATLAB_DEPS_REQUIREMENTS_FILE_NAME}
