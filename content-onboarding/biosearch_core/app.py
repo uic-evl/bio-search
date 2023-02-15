@@ -42,7 +42,7 @@ def hello():
 @app.route(ROOT + "/document/<doc_id>", methods=["GET"])
 def get_document_db(doc_id: int):
     """test function"""
-    document_id = escape(doc_id)
+    document_id = int(escape(doc_id))
     controller = SearchController(conn_params)
     document = controller.fetch_surrogate_data(document_id)
     return document
