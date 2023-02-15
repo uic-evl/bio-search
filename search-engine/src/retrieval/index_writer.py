@@ -52,7 +52,7 @@ class Indexer:
     def index_from_dataframe(self, dataframe, ft_provider: CordReader, split_term=" "):
         """index elements in dataframe"""
         fields = {
-            "docId": StringField.TYPE_STORED,
+            "doc_id": StringField.TYPE_STORED,
             "source": StringField.TYPE_STORED,
             "title": TextField.TYPE_STORED,
             "abstract": TextField.TYPE_STORED,
@@ -107,7 +107,13 @@ class Indexer:
                             document.add(
                                 Field("caption", caption["text"], TextField.TYPE_STORED)
                             )
-                            document.add(Field("fig_id", caption["figId"], StringField.TYPE_STORED))
+                            document.add(
+                                Field(
+                                    "fig_id",
+                                    caption["figure_id"],
+                                    StringField.TYPE_STORED,
+                                )
+                            )
                     else:
                         document.add(Field(key, row[key] if row[key] else "", val))
                 writer.addDocument(document)

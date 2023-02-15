@@ -30,6 +30,24 @@ class BoundingBoxMapper:
         self.mapping = {}
         self.errors = []
 
+    def _extract_from_txt(self, parent_path, lines: List[str]):
+        mult_factor = 1
+        if "*" in lines[0]:
+            # avoid the first two lines when the values need scaling
+            mult_factor = float(lines[0].strip().split(" ")[0])
+            lines = lines[2:]
+        for idx, line in enumerate(lines):
+            values = findall(r"\d+\.\d+", line)
+            values = [mult_factor * float(x) for x in values]
+            key = f"{parent_path}/{str(idx+1).zfill(3)}.jpg"
+            self.mapping[key] = values
+
+    def _extract_from_csv(self, parent_path, lines: List[str]):
+        for idx, line in enumerate(lines):
+            values = line.split(",")
+            key = f"{parent_path}/{str(idx+1).zfill(3)}.jpg"
+            self.mapping[key] = values
+
     def load(self, subfig_paths: List[str]) -> Dict:
         """Load the bounding boxes from the artifacts created by FigSplit."""
         # bboxes is stored in the parent figure file
@@ -37,7 +55,10 @@ class BoundingBoxMapper:
 
         for parent_path in figure_paths:
             filename = f"{Path(parent_path).name}.jpg.txt"
+            filename_aux = f"{Path(parent_path).name}.csv"
             lines = None
+
+            read_from = None
             try:
                 if self.base_path:
                     bboxes_path = self.base_path / parent_path / filename
@@ -45,17 +66,21 @@ class BoundingBoxMapper:
                     bboxes_path = Path(parent_path) / filename
                 with open(bboxes_path, "r", encoding="utf8") as file:
                     lines = file.readlines()
+                    read_from = "txt"
             except FileNotFoundError:
-                self.errors.append(parent_path)
-                return
+                try:
+                    if self.base_path:
+                        bboxes_path = self.base_path / parent_path / filename_aux
+                    else:
+                        bboxes_path = Path(parent_path) / filename_aux
+                    with open(bboxes_path, "r", encoding="utf8") as file:
+                        lines = file.readlines()
+                        read_from = "csv"
+                except FileNotFoundError:
+                    self.errors.append(parent_path)
+                    return
 
-            mult_factor = 1
-            if "*" in lines[0]:
-                # avoid the first two lines when the values need scaling
-                mult_factor = float(lines[0].strip().split(" ")[0])
-                lines = lines[2:]
-            for idx, line in enumerate(lines):
-                values = findall(r"\d+\.\d+", line)
-                values = [mult_factor * float(x) for x in values]
-                key = f"{parent_path}/{str(idx+1).zfill(3)}.jpg"
-                self.mapping[key] = values
+            if read_from == "txt":
+                self._extract_from_txt(parent_path, lines)
+            else:
+                self._extract_from_csv(parent_path, lines)

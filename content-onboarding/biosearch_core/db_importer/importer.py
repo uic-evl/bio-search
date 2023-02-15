@@ -5,6 +5,7 @@ from pathlib import Path
 from os import listdir
 from typing import List, Dict, Tuple
 from shutil import move, rmtree
+from tqdm import tqdm
 import logging
 import json
 from psycopg import Cursor, connect
@@ -55,7 +56,7 @@ class Validator:
             return False
         return True
 
-    def _has_extration_data(self, folder: Path) -> bool:
+    def _has_extraction_data(self, folder: Path) -> bool:
         metadata_file = f"{folder.name}.json"
         if not (folder / metadata_file).exists():
             self.violation_reasons_["to_extract"].append(str(folder))
@@ -83,7 +84,10 @@ class Validator:
                             fig_folder,
                         )
                         return False
-                    if not (fig_folder / f"{fig_path.name}.txt").exists():
+
+                    txt_file = fig_folder / f"{fig_path.name}.txt"
+                    csv_file = fig_folder / f"{fig_path.stem}.csv"
+                    if not (txt_file.exists() or csv_file.exists()):
                         self.violation_reasons_["to_segment"].append(str(folder))
                         logging.info(
                             "%s,TO_SEGMENT,missing segment data %s",
@@ -98,7 +102,7 @@ class Validator:
         folder_path = Path(folder)
         if not self._has_valid_pdfs(folder_path):
             return False
-        return self._has_extration_data(folder_path) and self._has_extracted_figures(
+        return self._has_extraction_data(folder_path) and self._has_extracted_figures(
             folder_path
         )
 
@@ -123,7 +127,7 @@ class ImportManager:
         """Return folders to skip because they do not meet import requirements
         and return the constrains not met"""
         skipping = []
-        for folder in folders:
+        for folder in tqdm(folders):
             if not self.validator.is_valid_folder(folder):
                 skipping.append(folder)
         return skipping
@@ -169,7 +173,7 @@ class ImportManager:
     ) -> Tuple[List[DBFigure], List[str]]:
         """Inspect every folder and collect figures and subfigures"""
         figures = []
-        for folder in paths_to_import:
+        for folder in tqdm(paths_to_import):
             folder_path = Path(folder)
             doc_id = pmc_to_id[folder_path.stem]
             figures += self.fetch_folder_figures(folder_path, doc_id, self.project)
@@ -181,7 +185,7 @@ class ImportManager:
         """Fetch subfigures and bounding boxes information"""
         subfigures = []
 
-        for figure in figures:
+        for figure in tqdm(figures):
             figure_folder = Project.import_dir(self.dir) / figure.uri[:-4]
             subfig_paths = self._fetch_content(figure_folder, ".jpg")
 
