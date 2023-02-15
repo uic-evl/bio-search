@@ -146,7 +146,7 @@ class Reader:
                 captions = self.get_highlighted_captions(hit_doc)
 
                 result = SearchResult(
-                    id=hit_doc.get("docId"),
+                    id=hit_doc.get("doc_id"),
                     title=title,
                     abstract=abstract,
                     publish_date=hit_doc.get("publish"),
