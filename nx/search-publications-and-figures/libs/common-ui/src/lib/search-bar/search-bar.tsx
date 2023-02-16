@@ -108,87 +108,95 @@ export function SearchBar({
 
   return (
     <Box>
-      <Flex w="full">
-        <Box w="25%">
-          <FormControl id="search">
-            <FormLabel mb={0} fontSize={10}>
-              SEARCH
-            </FormLabel>
-            <Input
-              type="text"
-              value={keyword}
-              onChange={e => setKeyword(e.target.value)}
-              size={'md'}
-              placeholder={keywordPlaceholderValue}
-            />
-          </FormControl>
-        </Box>
-        <Box w="75%">
-          <Flex ml={2}>
-            <FormControl id="start-date" ml={2} w="110px">
+      <form
+        onSubmit={e => {
+          e.preventDefault()
+          onClick()
+        }}
+      >
+        <Flex w="full">
+          <Box w="25%">
+            <FormControl id="search">
               <FormLabel mb={0} fontSize={10}>
-                FROM
+                SEARCH
               </FormLabel>
               <Input
-                type="number"
-                value={startYear}
-                onChange={e => setStartYear(parseInt(e.target.value))}
+                type="text"
+                value={keyword}
+                onChange={e => setKeyword(e.target.value)}
                 size={'md'}
+                placeholder={keywordPlaceholderValue}
               />
             </FormControl>
+          </Box>
+          <Box w="75%">
+            <Flex ml={2}>
+              <FormControl id="start-date" ml={2} w="110px">
+                <FormLabel mb={0} fontSize={10}>
+                  FROM
+                </FormLabel>
+                <Input
+                  type="number"
+                  value={startYear}
+                  onChange={e => setStartYear(parseInt(e.target.value))}
+                  size={'md'}
+                />
+              </FormControl>
 
-            <FormControl id="end-date" ml={2} w="110px">
-              <FormLabel mb={0} fontSize={10}>
-                TO
-              </FormLabel>
-              <Input
-                type="number"
-                value={endYear}
-                onChange={e => setEndYear(parseInt(e.target.value))}
-                size={'md'}
-              />
-            </FormControl>
-            <FormControl id="modalities" ml={2}>
-              <FormLabel mb={0} fontSize={10}>
-                WITH MODALITIES:
-              </FormLabel>
-              <ColorMultiSelect
-                name="modalities"
-                options={options}
-                colorsMapper={colorsMapper}
-                values={modalities}
-                setValues={setModalities}
-              />
-            </FormControl>
-            <Spacer />
-            <Button
-              isLoading={isLoading}
-              colorScheme={'blue'}
-              w="200px"
-              size="md"
-              ml={2}
-              mt={4}
-              onClick={onClick}
-            >
-              Search
-            </Button>
-          </Flex>
-        </Box>
-      </Flex>
-      <Flex dir="row" w="full" ml={4}>
-        <chakra.p mr={2}>Try these queries:</chakra.p>
-        {sampleQueries.map(el => (
-          <SampleQuery
-            key={`sample-${el}`}
-            query={el}
-            onSearch={onSearch}
-            setKeyword={setKeyword}
-            setStartYear={setStartYear}
-            setEndYear={setEndYear}
-            setModalities={setModalities}
-          />
-        ))}
-      </Flex>
+              <FormControl id="end-date" ml={2} w="110px">
+                <FormLabel mb={0} fontSize={10}>
+                  TO
+                </FormLabel>
+                <Input
+                  type="number"
+                  value={endYear}
+                  onChange={e => setEndYear(parseInt(e.target.value))}
+                  size={'md'}
+                />
+              </FormControl>
+              <FormControl id="modalities" ml={2}>
+                <FormLabel mb={0} fontSize={10}>
+                  WITH MODALITIES:
+                </FormLabel>
+                <ColorMultiSelect
+                  name="modalities"
+                  options={options}
+                  colorsMapper={colorsMapper}
+                  values={modalities}
+                  setValues={setModalities}
+                />
+              </FormControl>
+              <Spacer />
+              <Button
+                type="submit"
+                isLoading={isLoading}
+                colorScheme={'blue'}
+                w="200px"
+                size="md"
+                ml={2}
+                mt={4}
+                onClick={onClick}
+              >
+                Search
+              </Button>
+            </Flex>
+          </Box>
+        </Flex>
+        <Flex dir="row" w="full" ml={4}>
+          <chakra.p mr={2}>Try these queries:</chakra.p>
+          {sampleQueries.map(el => (
+            <SampleQuery
+              key={`sample-${el}`}
+              query={el}
+              onSearch={onSearch}
+              setKeyword={setKeyword}
+              setStartYear={setStartYear}
+              setEndYear={setEndYear}
+              setModalities={setModalities}
+            />
+          ))}
+        </Flex>
+      </form>
     </Box>
   )
 }

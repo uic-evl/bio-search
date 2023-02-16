@@ -91,12 +91,13 @@ const Search = () => {
             {query: 'disease', label: 'disease', modalities: []},
             {
               query: 'title:kinase AND abstract:transcription',
-              label: 'kinase in title and transcription in abstract',
+              label: 'title:kinase AND abstract:transcription',
               modalities: [],
             },
             {
               query: 'full_text:auditory AND full_text:cortex',
-              label: 'auditory and cortex in full text with microscopy images',
+              label:
+                'full_text:auditory AND full_text:cortex with modalities: mic.flu',
               modalities: [
                 {label: 'fluorescence microscopy', value: 'mic.flu'},
               ],
