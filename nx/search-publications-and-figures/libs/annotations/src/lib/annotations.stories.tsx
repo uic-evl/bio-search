@@ -16,7 +16,7 @@ const Template: ComponentStory<typeof Annotations> = args => (
 
 export const Primary = Template.bind({})
 Primary.args = {
-  padding: 8,
+  padding: 0,
   imageSrc:
     'https://upload.wikimedia.org/wikipedia/commons/1/18/Dog_Breeds.jpg',
 }

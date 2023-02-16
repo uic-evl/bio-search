@@ -82,7 +82,7 @@ const Search = () => {
         </Flex>
         <SearchBar
           defaultStartYear={2000}
-          defaultEndYear={2020}
+          defaultEndYear={2022}
           options={ddlSearchOptions}
           colorsMapper={colorsMapper}
           onSearch={handleSearch}

@@ -55,7 +55,7 @@ const SampleQuery = ({
   const handleOnClick = () => {
     setKeyword(query.query)
     setStartYear(2000)
-    setEndYear(2020)
+    setEndYear(2022)
     setModalities(query.modalities)
     const queryModalities = query.modalities.map(el => el.value)
     onSearch(query.query, startDate, endDate, queryModalities)
