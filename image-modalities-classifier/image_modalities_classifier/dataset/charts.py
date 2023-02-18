@@ -90,7 +90,7 @@ def main():
             widths.append(width)
             heights.append(height)
 
-        str_rel_img_paths = [str(Path(chart_icpr2020_path) / i / i) for j in images]
+        str_rel_img_paths = [str(Path(chart_icpr2020_path) / i / j) for j in images]
         df_actual = pd.DataFrame(
             {
                 "img": images,
