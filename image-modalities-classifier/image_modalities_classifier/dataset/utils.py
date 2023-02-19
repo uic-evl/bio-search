@@ -52,7 +52,7 @@ def df_from_disk_no_captions(
     img_names = [
         x
         for x in listdir(dir_path)
-        if x.lower().endswith((".jpg", ".png", ".jpeg")) and "gradcam" not in x
+        if x.lower().endswith((".jpg", ".png", ".jpeg", ".bmp")) and "gradcam" not in x
     ]
     widths = []
     heights = []
