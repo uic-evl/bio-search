@@ -16,14 +16,14 @@ mapper = {
     "GSYS": "gra.oth",
     # molecular
     "GCHE": "mol.che",
-    "GGEN": "mol.pro",
+    "GGEN": "mol.dna",
     # microscopy
-    "DMEL": "mic.elec",
+    "DMEL": "mic.ele.sca",
     "DMFL": "mic.flu",
     "DMLI": "mic.lig",
-    "DMTR": "mic.elec.tra",
+    "DMTR": "mic.ele.tra",
     # radiology
-    "DMRAN": "rad.ang",
+    "DRAN": "rad.ang",
     "DRCT": "rad.cmp",
     "DRMR": "rad.cmp",
     "DRPE": "rad.cmp",

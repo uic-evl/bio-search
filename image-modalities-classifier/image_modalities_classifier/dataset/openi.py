@@ -29,7 +29,7 @@ def main():
     df_ultrasound = df_from_disk_no_captions(
         "/media/cumulus/curation_data",
         "subfigure-classification/OPENI_ULTRASOUND",
-        "rad.ult",
+        "rad.uls",
         "ultrasound",
         "open-i",
     )
