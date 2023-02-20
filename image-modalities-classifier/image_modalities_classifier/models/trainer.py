@@ -12,7 +12,7 @@ is an integer.
 
 from pathlib import Path
 from os import makedirs, listdir, cpu_count
-from typing import Tuple, List
+from typing import Tuple, List, Optional
 from tqdm import tqdm
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
@@ -106,6 +106,7 @@ class ModalityModelTrainer:
         use_pseudo: bool = False,
         mean: List[float] = None,
         std: List[float] = None,
+        patience: Optional[int] = None,
     ):
         self.data_path = Path(dataset_filepath)
         self.base_img_dir = Path(base_img_dir)
@@ -120,6 +121,7 @@ class ModalityModelTrainer:
         self.batch_size = batch_size
         self.mean = torch.Tensor(mean) if mean is not None else torch.Tensor()
         self.std = torch.Tensor(std) if mean is not None else torch.Tensor()
+        self.patience = patience
 
         self.label_col = label_col
         self.artifacts_dir = output_dir
@@ -237,13 +239,16 @@ class ModalityModelTrainer:
         # Callbacks
         metric_monitor = "val_loss"
         lr_monitor = LearningRateMonitor(logging_interval="epoch")
-        early_stop_callback = EarlyStopping(
-            monitor=metric_monitor,
-            min_delta=0.0,
-            patience=5,
-            verbose=True,
-            mode="min",
-        )
+
+        early_stop_callback = None
+        if self.patience:
+            early_stop_callback = EarlyStopping(
+                monitor=metric_monitor,
+                min_delta=0.0,
+                patience=5,
+                verbose=True,
+                mode="min",
+            )
 
         cp_name = f"{self.model_name}_{self.classifier}_{self.version}"
         checkpoint_callback = ModelCheckpoint(
@@ -268,6 +273,7 @@ class ModalityModelTrainer:
             class_weights=datamodule.class_weights,
             mean_dataset=list(self.mean.numpy()),
             std_dataset=list(self.std.numpy()),
+            patience=self.patience,
         )
         # if self.version > 1:
         #     # model = ResNetClass.load_from_checkpoint(self.output_dir/f'{self.classifier}_{self.version}.{self.extension}')
@@ -281,7 +287,11 @@ class ModalityModelTrainer:
         #     model.load_state_dict(checkpoint["state_dict"])
 
         max_epochs = 100 if self.epochs == 0 else self.epochs
-        callbacks = [lr_monitor, checkpoint_callback, early_stop_callback]
+        callbacks = (
+            [lr_monitor, checkpoint_callback, early_stop_callback]
+            if early_stop_callback
+            else [lr_monitor, checkpoint_callback]
+        )
         trainer = Trainer(
             accelerator="gpu" if torch.cuda.is_available() else "cpu",
             devices=self.gpus,

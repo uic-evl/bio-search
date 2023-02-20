@@ -16,6 +16,26 @@ from sklearn.metrics import (
     # ConfusionMatrixDisplay,
 )
 
+from image_modalities_classifier.models.t_resnet import IResnet
+
+
+model_dict = {
+    "resnet18": IResnet,
+    "resnet34": IResnet,
+    "resnet50": IResnet,
+    "resnet101": IResnet,
+    "resnet152": IResnet,
+}
+
+
+def create_model(model_name, model_hparams):
+    if model_name in model_dict:
+        return model_dict[model_name](**model_hparams)
+    else:
+        assert (
+            False
+        ), f'Unknown model name "{model_name}". Available models are: {str(model_dict.keys())}'
+
 
 class Resnet(pl.LightningModule):
     """Lightning ResNet wrapper with support to ResNet18, 34, 50, 101, 152"""
@@ -34,6 +54,7 @@ class Resnet(pl.LightningModule):
         class_weights: Optional[List[float]] = None,
         mean_dataset: Optional[List[float]] = None,
         std_dataset: Optional[List[float]] = None,
+        patience: Optional[int] = None,
     ):
         super().__init__()
         self.save_hyperparameters(
@@ -48,9 +69,15 @@ class Resnet(pl.LightningModule):
             "mode_scheduler",
             "mean_dataset",
             "std_dataset",
+            "patience",
         )
-        self.model = self._get_resnet_model()
-        self.set_fine_tuning()
+
+        model_params = {
+            "name": self.hparams.name,
+            "num_classes": self.hparams.num_classes,
+            "fine_tuned_from": self.hparams.fine_tuned_from,
+        }
+        self.model = create_model(name, model_params)
 
         loss_weight = (
             torch.Tensor(self.hparams.class_weights).to("cuda")
@@ -75,7 +102,7 @@ class Resnet(pl.LightningModule):
         self.log("train_loss", loss, on_step=False, on_epoch=True)
         return loss
 
-    def validation_step(self, batch, batch_idx) -> float:
+    def validation_step(self, batch, batch_idx):
         # batch_idx needs to be as a parameter to match signature
         imgs, labels = batch
         preds = self.model(imgs)
@@ -83,7 +110,6 @@ class Resnet(pl.LightningModule):
         acc = (preds.argmax(dim=-1) == labels).float().mean()
         self.log("val_acc", acc, on_step=False, on_epoch=True)
         self.log("val_loss", loss, on_step=False, on_epoch=True)
-        return loss
 
     def test_step(self, batch, batch_idx):
         # batch_idx needs to be as a parameter to match signature
@@ -121,14 +147,14 @@ class Resnet(pl.LightningModule):
 
     def configure_optimizers(self):
         if self.hparams.mode_scheduler is None:
-            optimizer = torch.optim.Adam(self.parameters(), lr=self.hparams.lr)
+            optimizer = torch.optim.AdamW(self.parameters(), lr=self.hparams.lr)
             return optimizer
 
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.hparams.lr)
+        optimizer = torch.optim.AdamW(self.parameters(), lr=self.hparams.lr)
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
             optimizer,
             mode=self.hparams.mode_scheduler,
-            patience=3,  # Patience for the Scheduler
+            patience=5,  # Patience for the Scheduler
             verbose=True,
         )
         return {
@@ -136,58 +162,6 @@ class Resnet(pl.LightningModule):
             "lr_scheduler": scheduler,
             "monitor": self.hparams.metric_monitor,
         }
-
-    def _get_resnet_model(self):
-        if self.hparams.name == "resnet18":
-            if self.hparams.pretrained:
-                model = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
-            else:
-                model = models.resnet18(weights=None)
-        elif self.hparams.name == "resnet34":
-            if self.hparams.pretrained:
-                model = models.resnet34(weights=models.ResNet34_Weights.DEFAULT)
-            else:
-                model = models.resnet34(weights=None)
-        elif self.hparams.name == "resnet50":
-            if self.hparams.pretrained:
-                model = models.resnet50(weights=models.ResNet50_Weights.DEFAULT)
-            else:
-                model = models.resnet50(weights=None)
-        elif self.hparams.name == "resnet101":
-            if self.hparams.pretrained:
-                model = models.resnet101(weights=models.ResNet101_Weights.DEFAULT)
-            else:
-                model = models.resnet101(weights=None)
-        elif self.hparams.name == "resnet152":
-            if self.hparams.pretrained:
-                model = models.resnet152(weights=models.ResNet152_Weights.DEFAULT)
-            else:
-                model = models.resnet152(weights=None)
-        else:
-            raise Exception(f"{self.hparams.name} model not supported")
-        # retarget the number of classes
-
-        num_ftrs = model.fc.in_features
-        model.fc = nn.Linear(num_ftrs, self.hparams.num_classes)
-        return model
-
-    def set_fine_tuning(self):
-        """Freeze the layers to update"""
-        # by default set all to false
-        for param in self.model.parameters():
-            param.requires_grad = False
-        # case for retraining everything
-        if self.hparams.fine_tuned_from == "whole":
-            for param in self.model.parameters():
-                param.requires_grad = True
-            return
-
-        # always train parameters in the fully connected layer
-        for param in self.model.fc.parameters():
-            param.requires_grad = True
-        # TODO: this seems like a mistake
-        if self.hparams.fine_tuned_from == "fc":
-            return
 
     def feature_extraction(self):
         features = nn.Sequential(*list(self.model.children())[:-1])

@@ -42,6 +42,7 @@ def train(
     pseudo: bool,
     mean: Optional[List[float]],
     std: Optional[List[float]],
+    patience: Optional[int],
 ):
     """Train the model"""
     dataset_path = find_latest_dataset(workspace, taxonomy, classifier)
@@ -61,6 +62,7 @@ def train(
         mean=mean,
         std=std,
         remove_small=False,
+        patience=patience,
     )
     trainer.run()
 
@@ -107,6 +109,7 @@ def parse_args(args) -> Namespace:
     parser.add_argument("--epochs", "-e", type=int, default=1)
     parser.add_argument("--pseudo", dest="pseudo", action="store_true")
     parser.add_argument("--no-pseudo", dest="pseudo", action="store_false")
+    parser.add_argument("--patience", type=int, default=None)
     parser.add_argument(
         "--mean", "-m", type=float, nargs="+", default=None, help="Dataset mean"
     )
@@ -148,6 +151,7 @@ def main():
             args.pseudo,
             args.mean,
             args.std,
+            args.patience,
         )
     # pylint: disable=broad-except
     except Exception:
