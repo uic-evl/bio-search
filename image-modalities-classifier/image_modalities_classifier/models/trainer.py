@@ -183,7 +183,7 @@ class ModalityModelTrainer:
             return
 
         print("calculating dataset stats")
-        basic_transforms = ModalityTransforms.basic_transforms()
+        basic_transforms = ModalityTransforms.basic_transforms(self.model_name)
         train_df = self.data[self.data[self.partition_col] == "TRAIN"]
 
         train_dataset = ImageDataset(
@@ -201,6 +201,7 @@ class ModalityModelTrainer:
 
     def _create_data_module(self, train_mean, train_std):
         datamodule = ImageDataModule(
+            model_name=self.model_name,
             batch_size=self.batch_size,
             label_encoder=self.encoder,
             data_path=str(self.data_path),

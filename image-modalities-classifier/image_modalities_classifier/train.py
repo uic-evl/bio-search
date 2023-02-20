@@ -43,6 +43,7 @@ def train(
     mean: Optional[List[float]],
     std: Optional[List[float]],
     patience: Optional[int],
+    pretrained: bool = False,
 ):
     """Train the model"""
     dataset_path = find_latest_dataset(workspace, taxonomy, classifier)
@@ -63,6 +64,8 @@ def train(
         std=std,
         remove_small=False,
         patience=patience,
+        pretrained=pretrained,
+        batch_size=32,
     )
     trainer.run()
 
@@ -155,6 +158,7 @@ def main():
             args.mean,
             args.std,
             args.patience,
+            args.pretrained,
         )
     # pylint: disable=broad-except
     except Exception:

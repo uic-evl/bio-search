@@ -17,6 +17,7 @@ from sklearn.metrics import (
 )
 
 from image_modalities_classifier.models.t_resnet import IResnet
+from image_modalities_classifier.models.efficient import EfficientNet
 
 
 model_dict = {
@@ -25,6 +26,10 @@ model_dict = {
     "resnet50": IResnet,
     "resnet101": IResnet,
     "resnet152": IResnet,
+    "efficientnet-b0": EfficientNet,
+    "efficientnet-b1": EfficientNet,
+    "efficientnet-b4": EfficientNet,
+    "efficientnet-b5": EfficientNet,
 }
 
 
@@ -76,7 +81,7 @@ class Resnet(pl.LightningModule):
             "name": self.hparams.name,
             "num_classes": self.hparams.num_classes,
             "fine_tuned_from": self.hparams.fine_tuned_from,
-            "pretrainer": self.hparams.pretrained,
+            "pretrained": self.hparams.pretrained,
         }
         self.model = create_model(name, model_params)
 
@@ -152,17 +157,21 @@ class Resnet(pl.LightningModule):
             return optimizer
 
         optimizer = torch.optim.AdamW(self.parameters(), lr=self.hparams.lr)
-        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-            optimizer,
-            mode=self.hparams.mode_scheduler,
-            patience=5,  # Patience for the Scheduler
-            verbose=True,
+        # scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+        #     optimizer,
+        #     mode=self.hparams.mode_scheduler,
+        #     patience=5,  # Patience for the Scheduler
+        #     verbose=True,
+        # )
+        scheduler = torch.optim.lr_scheduler.MultiStepLR(
+            optimizer, milestones=[20, 50, 75], gamma=0.1
         )
-        return {
-            "optimizer": optimizer,
-            "lr_scheduler": scheduler,
-            "monitor": self.hparams.metric_monitor,
-        }
+        # return {
+        #     "optimizer": optimizer,
+        #     "lr_scheduler": scheduler,
+        #     "monitor": self.hparams.metric_monitor,
+        # }
+        return [optimizer], [scheduler]
 
     def feature_extraction(self):
         features = nn.Sequential(*list(self.model.children())[:-1])
