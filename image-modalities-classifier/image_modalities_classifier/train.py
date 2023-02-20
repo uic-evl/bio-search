@@ -60,6 +60,7 @@ def train(
         use_pseudo=pseudo,
         mean=mean,
         std=std,
+        remove_small=False,
     )
     trainer.run()
 

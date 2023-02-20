@@ -192,6 +192,8 @@ class ModalityModelTrainer:
         mean, std = calc_ds_stats(train_dataset, batch_size=self.batch_size)
         self.mean = mean
         self.std = std
+        print("mean", self.mean)
+        print("std", self.std)
 
     def _create_data_module(self, train_mean, train_std):
         datamodule = ImageDataModule(
