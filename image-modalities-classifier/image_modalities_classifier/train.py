@@ -110,13 +110,16 @@ def parse_args(args) -> Namespace:
     parser.add_argument("--pseudo", dest="pseudo", action="store_true")
     parser.add_argument("--no-pseudo", dest="pseudo", action="store_false")
     parser.add_argument("--patience", type=int, default=None)
+    parser.add_argument("--pretrained", dest="pretrained", action="store_true")
+    parser.add_argument("--no-pretrained", dest="pretrained", action="store_false")
     parser.add_argument(
         "--mean", "-m", type=float, nargs="+", default=None, help="Dataset mean"
     )
     parser.add_argument(
         "--std", "-s", type=float, nargs="+", default=None, help="Dataset std"
     )
-    parser.set_defaults(feature=False)
+    parser.set_defaults(pseudo=False)
+    parser.set_defaults(pretrained=False)
 
     return parser.parse_args(args)
 

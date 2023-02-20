@@ -76,6 +76,7 @@ class Resnet(pl.LightningModule):
             "name": self.hparams.name,
             "num_classes": self.hparams.num_classes,
             "fine_tuned_from": self.hparams.fine_tuned_from,
+            "pretrainer": self.hparams.pretrained,
         }
         self.model = create_model(name, model_params)
 

@@ -107,6 +107,7 @@ class ModalityModelTrainer:
         mean: List[float] = None,
         std: List[float] = None,
         patience: Optional[int] = None,
+        pretrained: bool = False,
     ):
         self.data_path = Path(dataset_filepath)
         self.base_img_dir = Path(base_img_dir)
@@ -122,6 +123,7 @@ class ModalityModelTrainer:
         self.mean = torch.Tensor(mean) if mean is not None else torch.Tensor()
         self.std = torch.Tensor(std) if mean is not None else torch.Tensor()
         self.patience = patience
+        self.pretrained = pretrained
 
         self.label_col = label_col
         self.artifacts_dir = output_dir
@@ -265,7 +267,7 @@ class ModalityModelTrainer:
             self.encoder.classes_,
             num_classes,
             name=self.model_name,
-            pretrained=True,
+            pretrained=self.pretrained,
             fine_tuned_from="whole",
             lr=self.learning_rate,
             metric_monitor=metric_monitor,
