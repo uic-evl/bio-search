@@ -44,6 +44,7 @@ def train(
     std: Optional[List[float]],
     patience: Optional[int],
     pretrained: bool = False,
+    batch_size: int = 32,
 ):
     """Train the model"""
     dataset_path = find_latest_dataset(workspace, taxonomy, classifier)
@@ -65,7 +66,7 @@ def train(
         remove_small=False,
         patience=patience,
         pretrained=pretrained,
-        batch_size=32,
+        batch_size=batch_size,
     )
     trainer.run()
 
@@ -109,6 +110,7 @@ def parse_args(args) -> Namespace:
     parser.add_argument("--num_workers", "-w", type=int, default=4)
     parser.add_argument("--taxonomy", "-t", type=str, default="cord19")
     parser.add_argument("--project", "-p", type=str, default="biocuration")
+    parser.add_argument("--batch_size, " - "bs", type=int, default=32)
     parser.add_argument("--epochs", "-e", type=int, default=1)
     parser.add_argument("--pseudo", dest="pseudo", action="store_true")
     parser.add_argument("--no-pseudo", dest="pseudo", action="store_false")
@@ -159,6 +161,7 @@ def main():
             args.std,
             args.patience,
             args.pretrained,
+            args.batch_size,
         )
     # pylint: disable=broad-except
     except Exception:
