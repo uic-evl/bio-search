@@ -5,7 +5,8 @@ import torch
 from torch import nn
 from torchvision import models
 import pytorch_lightning as pl
-from pl_bolts.optimizers.lr_scheduler import LinearWarmupCosineAnnealingLR
+
+# from pl_bolts.optimizers.lr_scheduler import LinearWarmupCosineAnnealingLR
 
 # import matplotlib.pyplot as plt
 from sklearn.metrics import (
