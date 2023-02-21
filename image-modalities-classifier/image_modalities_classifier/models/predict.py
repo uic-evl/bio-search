@@ -13,7 +13,7 @@ from pandas import DataFrame
 from sklearn.preprocessing import LabelEncoder
 from image_modalities_classifier.dataset.transforms import ModalityTransforms
 from image_modalities_classifier.dataset.image_dataset import EvalImageDataset
-from image_modalities_classifier.models.resnet import Resnet
+from image_modalities_classifier.models.modality_module import ModalityModule
 
 
 @dataclass
@@ -29,13 +29,14 @@ class SingleModalityPredictor:
     """Instantiates a trained model to predict a modality for a single classifier"""
 
     def __init__(self, model_path: str, config: RunConfig):
-        self.model = Resnet.load_from_checkpoint(model_path)
+        self.model = ModalityModule.load_from_checkpoint(model_path)
         self.mean = self.model.hparams["mean_dataset"]
         self.std = self.model.hparams["mean_dataset"]
         self.classes = self.model.hparams["classes"]
+        self.name = self.model.hparams["name"]
         self.config = config
 
-        transforms_manager = ModalityTransforms(self.mean, self.std)
+        transforms_manager = ModalityTransforms(self.name, self.mean, self.std)
         self.transforms = transforms_manager.test_transforms()
 
         self.decoder = LabelEncoder()

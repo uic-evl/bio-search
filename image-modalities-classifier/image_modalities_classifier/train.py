@@ -4,10 +4,14 @@ from os import listdir
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
 from typing import Optional, List
+from pytorch_lightning import seed_everything
 
 import logging
 
 from image_modalities_classifier.models.trainer import ModalityModelTrainer
+
+
+SEED = 443
 
 
 def find_latest_dataset(workspace: str, taxonomy: str, classifier: str) -> str:
@@ -67,6 +71,7 @@ def train(
         patience=patience,
         pretrained=pretrained,
         batch_size=batch_size,
+        seed=SEED,
     )
     trainer.run()
 
@@ -144,6 +149,8 @@ def main():
 
     verify_stats("mean", args.mean)
     verify_stats("std", args.std)
+
+    seed_everything(SEED)
 
     try:
         train(

@@ -30,7 +30,7 @@ from image_modalities_classifier.dataset.utils import remove_small_classes
 from image_modalities_classifier.dataset.image_dataset import ImageDataset
 from image_modalities_classifier.dataset.image_datamodule import ImageDataModule
 from image_modalities_classifier.dataset.transforms import ModalityTransforms
-from image_modalities_classifier.models.resnet import Resnet
+from image_modalities_classifier.models.modality_module import ModalityModule
 
 
 ENCODED_COL_NAME = "enc_label"
@@ -141,6 +141,8 @@ class ModalityModelTrainer:
         self.output_dir: Path = None
         self.version = None
 
+        seed_everything(self.seed)
+
     def _prepare_data(self):
         print("preparing data")
         self.data = pd.read_parquet(self.data_path, engine="pyarrow")
@@ -216,7 +218,6 @@ class ModalityModelTrainer:
         )
         datamodule.prepare_data()
         datamodule.setup("fit")
-        datamodule.set_seed()
         return datamodule
 
     def _append_logger_name(self, cp_name: str, run_name: str):
@@ -229,7 +230,6 @@ class ModalityModelTrainer:
         Logging the data
         https://github.com/Lightning-AI/lightning/issues/14054
         """
-        seed_everything(self.seed)
         self._prepare_data()
         self._create_artifacts_folder()
         self._calculate_dataset_stats()
@@ -264,7 +264,7 @@ class ModalityModelTrainer:
         checkpoint_callback.FILE_EXTENSION = self.extension
 
         num_classes = len(self.encoder.classes_)
-        model = Resnet(
+        model = ModalityModule(
             self.encoder.classes_,
             num_classes,
             name=self.model_name,
@@ -305,6 +305,7 @@ class ModalityModelTrainer:
             num_sanity_val_steps=0,
         )
         trainer.fit(model, datamodule)
+        trainer.test(ckpt_path="best", dataloaders=datamodule.val_dataloader())
 
         wandb.finish()
         self._append_logger_name(cp_name, run.name)

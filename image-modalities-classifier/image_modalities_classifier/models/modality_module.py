@@ -3,8 +3,9 @@
 from typing import Optional, List, Dict, Any
 import torch
 from torch import nn
-from torchvision import models
 import pytorch_lightning as pl
+from torchmetrics import F1Score, Precision, Recall
+import wandb
 
 # from pl_bolts.optimizers.lr_scheduler import LinearWarmupCosineAnnealingLR
 
@@ -44,7 +45,7 @@ def create_model(model_name, model_hparams):
         ), f'Unknown model name "{model_name}". Available models are: {str(model_dict.keys())}'
 
 
-class Resnet(pl.LightningModule):
+class ModalityModule(pl.LightningModule):
     """Lightning ResNet wrapper with support to ResNet18, 34, 50, 101, 152"""
 
     # pylint: disable=unused-argument
@@ -122,36 +123,66 @@ class Resnet(pl.LightningModule):
     def test_step(self, batch, batch_idx):
         # batch_idx needs to be as a parameter to match signature
         imgs, labels = batch
-        preds = self.model(imgs)
-        # loss = self.loss(y_hat, y_true)
-        # _, preds = torch.max(y_hat, dim=1)
-        acc = (preds.argmax(dim=-1) == labels).float().mean()
-        self.log("test_acc", acc, on_step=False, on_epoch=True)
-        # return {"loss": loss, "test_preds": preds, "test_trues": y_true}
+        out = self.model(imgs)
+        loss = self.loss(out, labels)
 
-    # def test_epoch_end(self, outputs):
-    #     avg_loss = torch.stack([x["loss"] for x in outputs]).mean()
-    #     y_preds = torch.stack([vec.float() for x in outputs for vec in x["test_preds"]])
-    #     y_trues = torch.stack([vec.float() for x in outputs for vec in x["test_trues"]])
-    #     accuracy = 100 * torch.sum(y_preds == y_trues.data) / (y_trues.shape[0] * 1.0)
+        preds = out.argmax(dim=-1)
+        return {"loss": loss, "test_preds": preds, "test_trues": labels}
 
-    #     # fig, axis = plt.subplots(figsize=(4, 4))
-    #     # cm = confusion_matrix(y_trues.cpu(), y_preds.cpu())
-    #     # disp = ConfusionMatrixDisplay(confusion_matrix=cm)
-    #     # if self.logger:
-    #     #     self.logger.experiment.log({"confusion_matrix": fig})
+    def test_epoch_end(self, outputs):
+        preds = torch.stack([vec for x in outputs for vec in x["test_preds"]])
+        target = torch.stack([vec for x in outputs for vec in x["test_trues"]])
 
-    #     test_f1 = f1_score(y_trues.cpu(), y_preds.cpu(), average="macro")
-    #     balanced_acc = balanced_accuracy_score(y_trues.cpu(), y_preds.cpu())
-    #     recall = recall_score(y_trues.cpu(), y_preds.cpu(), average="macro")
-    #     precision = precision_score(y_trues.cpu(), y_preds.cpu(), average="macro")
+        params = {"task": "multiclass", "num_classes": self.hparams.num_classes}
+        # macro
+        macro_params = {**params, "average": "macro"}
+        f1_metric = F1Score(**macro_params).to(self.device)
+        recall = Recall(**macro_params).to(self.device)
+        precision = Precision(**macro_params).to(self.device)
+        f1_macro = f1_metric(preds, target)  # pylint: disable=not-callable
+        recall_macro = recall(preds, target)  # pylint: disable=not-callable
+        prec_macro = precision(preds, target)  # pylint: disable=not-callable
+        # micro
+        micro_params = {**params, "average": "micro"}
+        f1_metric = F1Score(**micro_params).to(self.device)
+        recall = Recall(**micro_params).to(self.device)
+        precision = Precision(**micro_params).to(self.device)
+        f1_micro = f1_metric(preds, target)  # pylint: disable=not-callable
+        recall_micro = recall(preds, target)  # pylint: disable=not-callable
+        prec_micro = precision(preds, target)  # pylint: disable=not-callable
+        # weighted
+        weighted_params = {**params, "average": "weighted"}
+        f1_metric = F1Score(**weighted_params).to(self.device)
+        recall = Recall(**weighted_params).to(self.device)
+        precision = Precision(**weighted_params).to(self.device)
+        f1_weighted = f1_metric(preds, target)  # pylint: disable=not-callable
+        recall_weighted = recall(preds, target)  # pylint: disable=not-callable
+        prec_weighted = precision(preds, target)  # pylint: disable=not-callable
 
-    #     self.log("test_acc", accuracy)
-    #     self.log("test_loss", avg_loss)
-    #     self.log("macro_f1", test_f1)
-    #     self.log("balanced_acc", balanced_acc)
-    #     self.log("recall", recall)
-    #     self.log("precision", precision)
+        self.log("test_macro_f1", f1_macro)
+        self.log("test_micro_f1", f1_micro)
+        self.log("test_weighted_f1", f1_weighted)
+
+        self.log("test_macro_recall", recall_macro)
+        self.log("test_micro_recall", recall_micro)
+        self.log("test_weighted_recall", recall_weighted)
+
+        self.log("test_macro_precision", prec_macro)
+        self.log("test_micro_precision", prec_micro)
+        self.log("test_weighted_precision", prec_weighted)
+
+        y_true = target.cpu().numpy()
+        preds = preds.cpu().numpy()
+        self.logger.experiment.log(
+            {
+                "conf_mat": wandb.plot.confusion_matrix(
+                    probs=None,
+                    y_true=y_true,
+                    preds=preds,
+                    class_names=self.hparams.classes,
+                )
+            }
+        )
 
     def configure_optimizers(self):
         if self.hparams.mode_scheduler is None:
@@ -188,6 +219,7 @@ class Resnet(pl.LightningModule):
             mode=self.hparams.mode_scheduler,
             patience=5,  # Patience for the Scheduler
             verbose=True,
+            eps=1e-4,
         )
         # scheduler = torch.optim.lr_scheduler.MultiStepLR(
         #     optimizer, milestones=[20, 50, 75], gamma=0.1

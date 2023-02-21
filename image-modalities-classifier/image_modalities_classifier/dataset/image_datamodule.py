@@ -2,7 +2,6 @@
 
 from pathlib import Path
 import pytorch_lightning as pl
-from pytorch_lightning import seed_everything
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import LabelEncoder
@@ -67,10 +66,6 @@ class ImageDataModule(pl.LightningDataModule):
             self.data[self.label_col].values
         )
 
-    def set_seed(self):
-        """Pytorch Lightning seed everything"""
-        seed_everything(self.seed)
-
     # pylint: disable=arguments-differ
     def setup(self, stage: str):
         train_df = self.data[self.data[self.partition_col] == "TRAIN"]
@@ -96,6 +91,8 @@ class ImageDataModule(pl.LightningDataModule):
             batch_size=self.batch_size,
             shuffle=True,
             num_workers=self.num_workers,
+            pin_memory=True,
+            drop_last=True,
         )
 
     def val_dataloader(self):
@@ -114,6 +111,7 @@ class ImageDataModule(pl.LightningDataModule):
             batch_size=self.batch_size,
             shuffle=False,
             num_workers=self.num_workers,
+            drop_last=False,
         )
 
     def test_dataloader(self):
@@ -125,6 +123,7 @@ class ImageDataModule(pl.LightningDataModule):
             transforms=self.transforms.test_transforms(),
             label_col=ENCODED_LABEL_COL,
             path_col=self.path_col,
+            drop_last=False,
         )
 
         return DataLoader(
