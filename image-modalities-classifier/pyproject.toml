@@ -12,7 +12,7 @@ python = "^3.8.1"
 pandas = "1.5.3"
 scikit-learn = "1.2"
 scikit-image = "^0.19.3"
-pytorch-lightning = "1.8.0"
+pytorch-lightning = "^1.9.0"
 
 # only needed for training
 iterative-stratification = "^0.1.7"
@@ -24,7 +24,7 @@ pyarrow = "^10.0.1"
 torch = { version="^1.13.1", source="torch", optional = true }
 torchvision = { version = "^0.14.1", source="torch", optional = true }
 tqdm = "^4.64.1"
-lightning-bolts = "^0.6.0.post1"
+# lightning-bolts = "^0.6.0.post1"
 
 [[tool.poetry.source]]
 name = "torch"
