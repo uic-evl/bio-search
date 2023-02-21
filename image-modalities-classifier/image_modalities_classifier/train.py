@@ -110,7 +110,7 @@ def parse_args(args) -> Namespace:
     parser.add_argument("--num_workers", "-w", type=int, default=4)
     parser.add_argument("--taxonomy", "-t", type=str, default="cord19")
     parser.add_argument("--project", "-p", type=str, default="biocuration")
-    parser.add_argument("--batch_size" - "bs", type=int, default=32)
+    parser.add_argument("--batch_size", "-bs", type=int, default=32)
     parser.add_argument("--epochs", "-e", type=int, default=1)
     parser.add_argument("--pseudo", dest="pseudo", action="store_true")
     parser.add_argument("--no-pseudo", dest="pseudo", action="store_false")
