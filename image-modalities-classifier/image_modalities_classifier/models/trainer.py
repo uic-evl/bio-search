@@ -248,7 +248,7 @@ class ModalityModelTrainer:
             early_stop_callback = EarlyStopping(
                 monitor=metric_monitor,
                 min_delta=0.0,
-                patience=5,
+                patience=self.patience,
                 verbose=True,
                 mode="min",
             )
