@@ -48,3 +48,4 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 train_image_modality_model = 'image_modalities_classifier.train:main'
+train_model = 'image_modalities_classifier.train:main'
