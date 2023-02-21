@@ -9,10 +9,10 @@ input_sizes = {
     "resnet50": {"resize": 256, "crop": 224},
     "resnet101": {"resize": 256, "crop": 224},
     "resnet152": {"resize": 256, "crop": 224},
-    "efficientnet-b0": {"resize": 224, "crop": 224},
-    "efficientnet-b1": {"resize": 240, "crop": 240},
-    "efficientnet-b4": {"resize": 380, "crop": 380},
-    "efficientnet-b5": {"resize": 456, "crop": 456},
+    "efficientnet-b0": {"resize": 256, "crop": 224},
+    "efficientnet-b1": {"resize": 272, "crop": 240},
+    "efficientnet-b4": {"resize": 412, "crop": 380},
+    "efficientnet-b5": {"resize": 482, "crop": 456},
 }
 
 
@@ -42,8 +42,8 @@ class ModalityTransforms:
         train_transforms = [
             transforms.ToPILImage(),
             transforms.Resize((self.resize_size, self.resize_size)),
-            transforms.RandomHorizontalFlip(p=0.5),
-            transforms.RandomRotation(15),
+            transforms.RandomHorizontalFlip(p=0.2),
+            # transforms.RandomRotation(15),
             transforms.CenterCrop((self.crop_size, self.crop_size)),
             transforms.ToTensor(),
             transforms.Normalize(self.mean, self.std),
@@ -55,7 +55,8 @@ class ModalityTransforms:
 
         val_transforms = [
             transforms.ToPILImage(),
-            transforms.Resize((self.crop_size, self.crop_size)),
+            transforms.Resize((self.resize_size, self.resize_size)),
+            transforms.CenterCrop((self.crop_size, self.crop_size)),
             transforms.ToTensor(),
             transforms.Normalize(self.mean, self.std),
         ]

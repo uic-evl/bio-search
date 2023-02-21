@@ -5,6 +5,7 @@ import torch
 from torch import nn
 from torchvision import models
 import pytorch_lightning as pl
+from pl_bolts.optimizers.lr_scheduler import LinearWarmupCosineAnnealingLR
 
 # import matplotlib.pyplot as plt
 from sklearn.metrics import (
@@ -156,22 +157,45 @@ class Resnet(pl.LightningModule):
             optimizer = torch.optim.AdamW(self.parameters(), lr=self.hparams.lr)
             return optimizer
 
-        optimizer = torch.optim.AdamW(self.parameters(), lr=self.hparams.lr)
-        # scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-        #     optimizer,
-        #     mode=self.hparams.mode_scheduler,
-        #     patience=5,  # Patience for the Scheduler
-        #     verbose=True,
-        # )
-        scheduler = torch.optim.lr_scheduler.MultiStepLR(
-            optimizer, milestones=[20, 50, 75], gamma=0.1
+        weight_decay = 1e-5
+        if self.hparams.name in ["efficientnet-b4", "efficientnet-b5"]:
+            weight_decay = 5e-6
+
+        # if "efficient" in self.hparams.name:
+        #     # https://catalog.ngc.nvidia.com/orgs/nvidia/resources/efficientnet_for_pytorch
+        #     weight_decay = 1e-5
+        #     if self.hparams.name in ["efficientnet-b4", "efficientnet-b5"]:
+        #         weight_decay = 5e-6
+
+        #     optimizer = torch.optim.RMSprop(
+        #         self.parameters(),
+        #         lr=self.hparams.lr,
+        #         momentum=0.9,
+        #         weight_decay=weight_decay,
+        #     )
+        #     scheduler = LinearWarmupCosineAnnealingLR(
+        #         optimizer, warmup_epochs=10, max_epochs=100
+        #     )
+        #     return [optimizer], [scheduler]
+
+        optimizer = torch.optim.AdamW(
+            self.parameters(), lr=self.hparams.lr, weight_decay=weight_decay
         )
-        # return {
-        #     "optimizer": optimizer,
-        #     "lr_scheduler": scheduler,
-        #     "monitor": self.hparams.metric_monitor,
-        # }
-        return [optimizer], [scheduler]
+
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+            optimizer,
+            mode=self.hparams.mode_scheduler,
+            patience=5,  # Patience for the Scheduler
+            verbose=True,
+        )
+        # scheduler = torch.optim.lr_scheduler.MultiStepLR(
+        #     optimizer, milestones=[20, 50, 75], gamma=0.1
+        # )
+        return {
+            "optimizer": optimizer,
+            "lr_scheduler": scheduler,
+            "monitor": self.hparams.metric_monitor,
+        }
 
     def feature_extraction(self):
         features = nn.Sequential(*list(self.model.children())[:-1])

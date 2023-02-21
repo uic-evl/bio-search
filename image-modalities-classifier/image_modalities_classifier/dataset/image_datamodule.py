@@ -23,6 +23,7 @@ class ImageDataModule(pl.LightningDataModule):
 
     def __init__(
         self,
+        model_name: str,
         label_encoder: LabelEncoder,
         batch_size: int,
         data_path: str,
@@ -52,7 +53,7 @@ class ImageDataModule(pl.LightningDataModule):
         self.label_col = label_col
         self.path_col = path_col
 
-        self.transforms = ModalityTransforms(train_mean, train_std)
+        self.transforms = ModalityTransforms(model_name, train_mean, train_std)
 
     def prepare_data(self):
         path = Path(self.data_path)
