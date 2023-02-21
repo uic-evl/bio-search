@@ -7,30 +7,30 @@ import wandb
 from image_modalities_classifier.train import train
 
 means_per_clf_name = {
-    "higher-modality": [],
+    "higher-modality": [0.7562, 0.7535, 0.7540],
     "microscopy": [0.4951, 0.4829, 0.4857],
     "electron": [0.5759, 0.5745, 0.5730],
     "radiology": [0.4981, 0.4983, 0.4984],
-    "photography": [],
-    "graphics": [],
+    "photography": [0.5442, 0.4407, 0.4029],
+    "graphics": [0.9248, 0.9202, 0.9211],
     "experimental": [0.8608, 0.8608, 0.8612],
-    "gel": [],
-    "molecular": [],
+    "gel": [0.7912, 0.7917, 0.7922],
+    "molecular": [0.8662, 0.8683, 0.8588],
 }
 
 stds_per_clf_name = {
-    "higher-modality": [],
+    "higher-modality": [0.3078, 0.3037, 0.3088],
     "microscopy": [0.3524, 0.3438, 0.3545],
     "electron": [0.2657, 0.2672, 0.2677],
     "radiology": [0.2521, 0.2521, 0.2521],
-    "photography": [],
-    "graphics": [],
+    "photography": [0.2892, 0.2658, 0.2690],
+    "graphics": [0.2078, 0.2006, 0.2128],
     "experimental": [0.2348, 0.2346, 0.2345],
-    "gel": [],
-    "molecular": [],
+    "gel": [0.2566, 0.2563, 0.2558],
+    "molecular": [0.2439, 0.2386, 0.2547],
 }
 
-sweep_configuration = {
+sweep_configuration_efficientnet = {
     "method": "grid",
     "metric": {"goal": "minimize", "name": "val_loss"},
     "parameters": {
@@ -38,15 +38,20 @@ sweep_configuration = {
         "epochs": {"values": [100]},
         "lr": {"values": [0.016, 1e-3]},
         "pretrained": {"values": [True, False]},
-        "model": {
-            "values": [
-                "resnet18",
-                "resnet34",
-                "resnet50",
-                "efficientnet-b0",
-                "efficientnet-b1",
-            ]
-        },
+        "model": {"values": ["efficientnet-b0", "efficientnet-b1"]},
+        "patience": {"values": [20]},
+    },
+}
+
+sweep_configuration_resnet = {
+    "method": "grid",
+    "metric": {"goal": "minimize", "name": "val_loss"},
+    "parameters": {
+        "batch_size": {"values": [32]},
+        "epochs": {"values": [100]},
+        "lr": {"values": [0.016, 1e-3]},
+        "pretrained": {"values": [True, False]},
+        "model": {"values": ["resnet18", "resnet34", "resnet50"]},
         "patience": {"values": [20]},
     },
 }
@@ -108,9 +113,6 @@ def execute_sweeps(
     num_workers: int,
 ):
     """Load sweep config and run agent"""
-    project = f"biocuration-{clf_name}"
-    sweep_id = wandb.sweep(sweep_configuration, project=project)
-
     # make partial to only depend on wandb.config attributes
     sweep_iteration = partial(
         train_iteration,
@@ -120,7 +122,12 @@ def execute_sweeps(
         base_img_dir,
         num_workers,
     )
-    wandb.agent(sweep_id, function=sweep_iteration)
+
+    project = f"biocuration-{clf_name}"
+    sweep_eff_id = wandb.sweep(sweep_configuration_efficientnet, project=project)
+    wandb.agent(sweep_eff_id, function=sweep_iteration)
+    sweep_res_id = wandb.sweep(sweep_configuration_resnet, project=project)
+    wandb.agent(sweep_res_id, function=sweep_iteration)
 
 
 def parse_args(args) -> Namespace:
