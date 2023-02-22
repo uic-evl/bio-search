@@ -1,6 +1,7 @@
 from sys import argv
 from pathlib import Path
 import logging
+from typing import Optional
 from functools import partial
 from argparse import ArgumentParser, Namespace
 import wandb
@@ -34,11 +35,20 @@ sweep_configuration_efficientnet = {
     "method": "grid",
     "metric": {"goal": "minimize", "name": "val_loss"},
     "parameters": {
-        "batch_size": {"values": [128]},
+        "batch_size": {"values": [32]},
         "epochs": {"values": [100]},
-        "lr": {"values": [0.016, 1e-3]},
-        "pretrained": {"values": [True, False]},
-        "model": {"values": ["efficientnet-b0", "efficientnet-b1"]},
+        "lr": {"values": [1e-3]},
+        "pretrained": {"values": [True]},
+        "model": {
+            "values": [
+                "efficientnet-b0",
+                "efficientnet-b1",
+                "resnet18",
+                "resnet34",
+                "resnet50",
+                "resnet101",
+            ]
+        },
         "patience": {"values": [20]},
     },
 }
@@ -49,7 +59,7 @@ sweep_configuration_resnet = {
     "parameters": {
         "batch_size": {"values": [32]},
         "epochs": {"values": [100]},
-        "lr": {"values": [0.016, 1e-3]},
+        "lr": {"values": [1e-3]},
         "pretrained": {"values": [True, False]},
         "model": {"values": ["resnet18", "resnet34", "resnet50"]},
         "patience": {"values": [20]},
@@ -78,6 +88,9 @@ def train_iteration(
     taxonomy: str,
     base_img_dir: str,
     num_workers: int,
+    gpus: int,
+    precision: int,
+    strategy: Optional[str],
 ):
     """Function to invoke on each sweep iteration"""
     wandb.init()
@@ -98,6 +111,9 @@ def train_iteration(
             patience=wandb.config.patience,
             pretrained=wandb.config.pretrained,
             batch_size=wandb.config.batch_size,
+            gpus=gpus,
+            precision=precision,
+            strategy=strategy,
         )
     # pylint: disable=broad-except
     except Exception:
@@ -111,6 +127,9 @@ def execute_sweeps(
     taxonomy: str,
     base_img_dir: str,
     num_workers: int,
+    gpus: int,
+    precision: int,
+    strategy: Optional[str],
 ):
     """Load sweep config and run agent"""
     # make partial to only depend on wandb.config attributes
@@ -121,13 +140,16 @@ def execute_sweeps(
         taxonomy,
         base_img_dir,
         num_workers,
+        gpus,
+        precision,
+        strategy,
     )
 
     project = f"biocuration-{clf_name}"
     sweep_eff_id = wandb.sweep(sweep_configuration_efficientnet, project=project)
     wandb.agent(sweep_eff_id, function=sweep_iteration)
-    sweep_res_id = wandb.sweep(sweep_configuration_resnet, project=project)
-    wandb.agent(sweep_res_id, function=sweep_iteration)
+    # sweep_res_id = wandb.sweep(sweep_configuration_resnet, project=project)
+    # wandb.agent(sweep_res_id, function=sweep_iteration)
 
 
 def parse_args(args) -> Namespace:
@@ -138,6 +160,9 @@ def parse_args(args) -> Namespace:
     parser.add_argument("base_img_dir", type=str)
     parser.add_argument("--num_workers", "-w", type=int, default=4)
     parser.add_argument("--taxonomy", "-t", type=str, default="cord19")
+    parser.add_argument("--gpus", type=int, default=1)
+    parser.add_argument("--precision", type=int, default=32)
+    parser.add_argument("--strategy", type=str, default=None)
 
     return parser.parse_args(args)
 
@@ -152,6 +177,9 @@ def main():
         taxonomy=args.taxonomy,
         base_img_dir=args.base_img_dir,
         num_workers=args.num_workers,
+        gpus=args.gpus,
+        precision=args.precision,
+        strategy=args.strategy,
     )
 
 

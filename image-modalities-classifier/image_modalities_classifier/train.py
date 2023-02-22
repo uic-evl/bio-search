@@ -49,6 +49,9 @@ def train(
     patience: Optional[int],
     pretrained: bool = False,
     batch_size: int = 32,
+    gpus: int = 1,
+    precision: int = 32,
+    strategy: str = None,
 ):
     """Train the model"""
     dataset_path = find_latest_dataset(workspace, taxonomy, classifier)
@@ -72,6 +75,7 @@ def train(
         pretrained=pretrained,
         batch_size=batch_size,
         seed=SEED,
+        gpus=gpus,
     )
     trainer.run()
 
@@ -128,6 +132,9 @@ def parse_args(args) -> Namespace:
     parser.add_argument(
         "--std", "-s", type=float, nargs="+", default=None, help="Dataset std"
     )
+    parser.add_argument("--gpus", type=int, default=1)
+    parser.add_argument("--precision", type=int, default=32)
+    parser.add_argument("--strategy", type=str, default=None)
     parser.set_defaults(pseudo=False)
     parser.set_defaults(pretrained=False)
 
@@ -169,6 +176,9 @@ def main():
             args.patience,
             args.pretrained,
             args.batch_size,
+            args.gpus,
+            args.precision,
+            args.strategy,
         )
     # pylint: disable=broad-except
     except Exception:
