@@ -108,6 +108,8 @@ class ModalityModelTrainer:
         std: List[float] = None,
         patience: Optional[int] = None,
         pretrained: bool = False,
+        precision: int = 32,
+        strategy: Optional[str] = None,
     ):
         self.data_path = Path(dataset_filepath)
         self.base_img_dir = Path(base_img_dir)
@@ -118,7 +120,11 @@ class ModalityModelTrainer:
         self.model_name = model_name
         self.epochs = epochs
         self.learning_rate = learning_rate
+
         self.gpus = gpus
+        self.precision = precision
+        self.strategy = strategy
+
         self.batch_size = batch_size
         self.mean = torch.Tensor(mean) if mean is not None else torch.Tensor()
         self.std = torch.Tensor(std) if mean is not None else torch.Tensor()
@@ -303,6 +309,8 @@ class ModalityModelTrainer:
             deterministic=False,
             logger=wandb_logger,
             num_sanity_val_steps=0,
+            strategy=self.strategy,
+            precision=self.precision,
         )
         trainer.fit(model, datamodule)
         trainer.test(ckpt_path="best", dataloaders=datamodule.val_dataloader())
