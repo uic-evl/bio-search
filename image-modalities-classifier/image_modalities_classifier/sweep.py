@@ -93,7 +93,9 @@ def train_iteration(
     strategy: Optional[str],
 ):
     """Function to invoke on each sweep iteration"""
-    wandb.init()
+    project = f"biocuration-{clf_name}"
+
+    wandb.init(project=project)
     try:
         train(
             classifier=clf_name,
@@ -101,7 +103,7 @@ def train_iteration(
             taxonomy=taxonomy,
             model=wandb.config.model,
             base_img_dir=base_img_dir,
-            project=f"biocuration-{clf_name}",
+            project=project,
             learning_rate=wandb.config.lr,
             num_workers=num_workers,
             epochs=wandb.config.epochs,

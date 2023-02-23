@@ -11,9 +11,8 @@ is an integer.
 
 With multi-gpu:
 Use a group name for the DDP run and instantiate using the wandblogger.
-Using run = wandb.init(project=project, .., group=group) creates a job per GPU
-and only one logs the charts. In addition, the run that logs only appears at 
-the end of the training.
+wand.init() is required so that we can call wandb.plot.confusionmatrix on the
+lightning module. It's started from train.py or sweep.py
 
 """
 
@@ -252,13 +251,9 @@ class ModalityModelTrainer:
         # start wandb for logging stats
         group = None
         if self.strategy == "ddp":
-            now = datetime.now().strftime("%m%d%H%M%S")
+            now = datetime.now().strftime("%m-%d-%H-%M-%S")
             group = f"ddp-{now}"
-        # run = wandb.init(
-        #     project=self.project, tags=[self.classifier, self.model_name], group=group
-        # )
-        # test
-        group = None
+
         wandb_logger = WandbLogger(
             project=self.project, group=group, tags=[self.classifier, self.model_name]
         )
