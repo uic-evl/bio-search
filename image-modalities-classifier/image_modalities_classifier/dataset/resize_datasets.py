@@ -14,6 +14,11 @@ from image_modalities_classifier.dataset.utils import scale_dataset
 
 MAX_SIZE = 400
 
+# "/home/jtt/Documents/datasets/curation_data/x_rays/kaggle_xrays_covid19_pneumonia",
+# "/home/jtt/Documents/datasets/curation_data/ct_scans/COVID-CT",
+# "/home/jtt/Documents/datasets/curation_data/ct_scans/kaggle_sars_cov2",
+# "/home/jtt/Documents/datasets/curation_data/xrays/images",
+
 input_paths = [
     "/home/jtt/Documents/datasets/curation_data/x_rays/kaggle_xrays_covid19_pneumonia",
     "/home/jtt/Documents/datasets/curation_data/ct_scans/COVID-CT",

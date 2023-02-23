@@ -58,7 +58,7 @@ def df_from_disk_no_captions(
     widths = []
     heights = []
 
-    for img_name in img_names:
+    for img_name in tqdm(img_names):
         img = Image.open(dir_path / img_name)
         width, height = img.size
         widths.append(width)
@@ -103,7 +103,7 @@ def df_from_disk_with_mapper(
         ]
         all_img_names += img_names
 
-        for img_name in img_names:
+        for img_name in tqdm(img_names):
             img = Image.open(dir_path / label_cat / img_name)
             width, height = img.size
             widths.append(width)

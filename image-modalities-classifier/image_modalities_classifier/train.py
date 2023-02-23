@@ -2,11 +2,10 @@
 from sys import argv
 from os import listdir
 from argparse import ArgumentParser, Namespace
+import logging
 from pathlib import Path
 from typing import Optional, List
 from pytorch_lightning import seed_everything
-
-import logging
 
 from image_modalities_classifier.models.trainer import ModalityModelTrainer
 
@@ -76,6 +75,8 @@ def train(
         batch_size=batch_size,
         seed=SEED,
         gpus=gpus,
+        precision=precision,
+        strategy=strategy,
     )
     trainer.run()
 
@@ -133,7 +134,7 @@ def parse_args(args) -> Namespace:
         "--std", "-s", type=float, nargs="+", default=None, help="Dataset std"
     )
     parser.add_argument("--gpus", type=int, default=1)
-    parser.add_argument("--precision", type=int, default=32)
+    parser.add_argument("--precision", type=int, default=16)
     parser.add_argument("--strategy", type=str, default=None)
     parser.set_defaults(pseudo=False)
     parser.set_defaults(pretrained=False)

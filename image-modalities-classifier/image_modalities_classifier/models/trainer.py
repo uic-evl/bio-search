@@ -306,7 +306,7 @@ class ModalityModelTrainer:
             devices=self.gpus,
             max_epochs=max_epochs,
             callbacks=callbacks,
-            deterministic=False,
+            deterministic=True,
             logger=wandb_logger,
             num_sanity_val_steps=0,
             strategy=self.strategy,
