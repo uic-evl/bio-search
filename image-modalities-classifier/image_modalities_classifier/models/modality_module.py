@@ -173,9 +173,10 @@ class ModalityModule(pl.LightningModule):
 
         y_true = target.cpu().numpy()
         preds = preds.cpu().numpy()
+
         self.logger.experiment.log(
             {
-                "conf_mat": wandb.plot.confusion_matrix(
+                "conf_mat": self.logger.experiment.plot.confusion_matrix(
                     probs=None,
                     y_true=y_true,
                     preds=preds,
