@@ -336,7 +336,15 @@ class ModalityModelTrainer:
             precision=self.precision,
         )
         trainer.fit(model, datamodule)
-        trainer.test(ckpt_path="best", dataloaders=datamodule.val_dataloader())
+
+        # for multi-gpu, using the trainer for test complains about a DistributedLoader
+        tester = Trainer(
+            accelerator="gpu" if torch.cuda.is_available() else "cpu",
+            devices=1,
+            num_nodes=1,
+        )
+        ckpt_path = self.output_dir / cp_name
+        tester.test(ckpt_path=ckpt_path, dataloaders=datamodule.val_dataloader())
 
         wandb.finish()
         self._append_logger_name(cp_name, wandb_logger.name)
