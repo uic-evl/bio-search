@@ -247,10 +247,12 @@ class ModalityModelTrainer:
         if self.strategy == "ddp":
             now = datetime.now().strftime("%m%d%H%M%S")
             group = f"ddp-{now}"
-        run = wandb.init(
-            project=self.project, tags=[self.classifier, self.model_name], group=group
+        # run = wandb.init(
+        #     project=self.project, tags=[self.classifier, self.model_name], group=group
+        # )
+        wandb_logger = WandbLogger(
+            project=self.project, group=group, tags=[self.classifier, self.model_name]
         )
-        wandb_logger = WandbLogger(project=self.project, group=group)
 
         # Callbacks
         metric_monitor = "val_loss"
@@ -328,5 +330,5 @@ class ModalityModelTrainer:
         trainer.test(ckpt_path="best", dataloaders=datamodule.val_dataloader())
 
         wandb.finish()
-        self._append_logger_name(cp_name, run.name)
+        self._append_logger_name(cp_name, wandb_logger.name)
         return f"{cp_name}{self.extension}"
