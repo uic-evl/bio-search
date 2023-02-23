@@ -107,8 +107,8 @@ class ModalityModule(pl.LightningModule):
         loss = self.loss(preds, labels)
         acc = (preds.argmax(dim=-1) == labels).float().mean()
 
-        self.log("train_acc", acc, on_step=False, on_epoch=True)
-        self.log("train_loss", loss, on_step=False, on_epoch=True)
+        self.log("train_acc", acc, on_step=False, on_epoch=True, sync_dist=True)
+        self.log("train_loss", loss, on_step=False, on_epoch=True, sync_dist=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
@@ -117,8 +117,8 @@ class ModalityModule(pl.LightningModule):
         preds = self.model(imgs)
         loss = self.loss(preds, labels)
         acc = (preds.argmax(dim=-1) == labels).float().mean()
-        self.log("val_acc", acc, on_step=False, on_epoch=True)
-        self.log("val_loss", loss, on_step=False, on_epoch=True)
+        self.log("val_acc", acc, on_step=False, on_epoch=True, sync_dist=True)
+        self.log("val_loss", loss, on_step=False, on_epoch=True, sync_dist=True)
 
     def test_step(self, batch, batch_idx):
         # batch_idx needs to be as a parameter to match signature
