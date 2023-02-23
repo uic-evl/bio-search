@@ -250,7 +250,7 @@ class ModalityModelTrainer:
         run = wandb.init(
             project=self.project, tags=[self.classifier, self.model_name], group=group
         )
-        wandb_logger = WandbLogger(project=self.project)
+        wandb_logger = WandbLogger(project=self.project, group=group)
 
         # Callbacks
         metric_monitor = "val_loss"
@@ -308,6 +308,11 @@ class ModalityModelTrainer:
             if early_stop_callback
             else [lr_monitor, checkpoint_callback]
         )
+
+        strategy = self.strategy
+        if self.strategy is not None and self.strategy == "ddp":
+            strategy = "ddp_find_unused_parameters_false"
+
         trainer = Trainer(
             accelerator="gpu" if torch.cuda.is_available() else "cpu",
             devices=self.gpus,
@@ -316,7 +321,7 @@ class ModalityModelTrainer:
             deterministic=True,
             logger=wandb_logger,
             num_sanity_val_steps=0,
-            strategy=self.strategy,
+            strategy=strategy,
             precision=self.precision,
         )
         trainer.fit(model, datamodule)
