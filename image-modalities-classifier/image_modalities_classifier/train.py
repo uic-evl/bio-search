@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Optional, List
 from pytorch_lightning import seed_everything
 
+import wandb
 from image_modalities_classifier.models.trainer import ModalityModelTrainer
 
 
@@ -161,6 +162,7 @@ def main():
     seed_everything(SEED)
 
     try:
+        wandb.init(project=args.project)
         train(
             args.workspace,
             args.taxonomy,
