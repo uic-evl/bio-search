@@ -1,12 +1,13 @@
 "Utilities for the dataset module"
 
-from os import listdir, path
+from os import listdir, path, makedirs
 from pathlib import Path
 from typing import Dict
 from pandas import DataFrame
 from skimage import io
 from skimage.color import gray2rgb
 from PIL import Image
+from tqdm import tqdm
 import matplotlib.pyplot as plt
 
 
@@ -97,7 +98,8 @@ def df_from_disk_with_mapper(
         img_names = [
             x
             for x in listdir(dir_path / label_cat)
-            if x.lower().endswith((".jpg", ".png", ".jpeg")) and "gradcam" not in x
+            if x.lower().endswith((".jpg", ".png", ".jpeg", ".bmp"))
+            and "gradcam" not in x
         ]
         all_img_names += img_names
 
@@ -126,3 +128,48 @@ def df_from_disk_with_mapper(
     dframe["source"] = source
     dframe["is_gt"] = True
     return dframe
+
+
+def resize_img_and_save(input_img_path: str, output_folder: str, max_size: int) -> None:
+    """Resize input image proportionally based on max size and save output
+    image in output_folder in JPEG format
+    """
+    img_path = Path(input_img_path)
+    img = Image.open(img_path)
+    width, height = img.size
+
+    out_fig_path = Path(output_folder) / f"{img_path.stem}.jpg"
+    if width > max_size or height > max_size:
+        ratio = min(max_size / width, max_size / height)
+        new_width = width * ratio
+        new_height = height * ratio
+        img.thumbnail((new_width, new_height), Image.Resampling.LANCZOS)
+
+    img = img.convert("RGB")
+    img.save(out_fig_path, "JPEG")
+
+
+def scale_dataset(input_path: str, output_path: str, max_size: int) -> None:
+    """Scale the images in the dataset because figures from publications are not
+    that big. This method does not check recursively inside folders in input_path.
+    """
+    input_dataset_path = Path(input_path)
+    output_dataset_path = Path(output_path)
+
+    if not input_dataset_path.exists():
+        raise FileNotFoundError(input_path)
+    if not output_dataset_path.exists():
+        makedirs(output_dataset_path)
+
+    img_names = [
+        el
+        for el in listdir(input_dataset_path)
+        if el.lower().endswith((".jpg", ".png", ".jpeg", ".bmp"))
+        and "gradcam" not in el
+    ]
+    for img_name in tqdm(img_names):
+        resize_img_and_save(
+            str(input_dataset_path / img_name),
+            str(output_dataset_path),
+            max_size=max_size,
+        )
