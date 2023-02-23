@@ -12,6 +12,7 @@ is an integer.
 
 from pathlib import Path
 from os import makedirs, listdir, cpu_count
+from datetime import datetime
 from typing import Tuple, List, Optional
 from tqdm import tqdm
 import pandas as pd
@@ -242,7 +243,13 @@ class ModalityModelTrainer:
         datamodule = self._create_data_module(self.mean, self.std)
 
         # start wandb for logging stats
-        run = wandb.init(project=self.project, tags=[self.classifier, self.model_name])
+        group = None
+        if self.strategy == "ddp":
+            now = datetime.now().strftime("%m%d%H%M%S")
+            group = f"ddp-{now}"
+        run = wandb.init(
+            project=self.project, tags=[self.classifier, self.model_name], group=group
+        )
         wandb_logger = WandbLogger(project=self.project)
 
         # Callbacks
