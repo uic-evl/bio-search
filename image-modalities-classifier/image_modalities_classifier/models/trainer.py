@@ -8,6 +8,13 @@ load the latest existing model and increments the version number. The versioning
 syntax is very simple <taxonomy_name>_<classifier>_<version>, where version
 is an integer.
 
+
+With multi-gpu:
+Use a group name for the DDP run and instantiate using the wandblogger.
+Using run = wandb.init(project=project, .., group=group) creates a job per GPU
+and only one logs the charts. In addition, the run that logs only appears at 
+the end of the training.
+
 """
 
 from pathlib import Path
@@ -250,6 +257,8 @@ class ModalityModelTrainer:
         # run = wandb.init(
         #     project=self.project, tags=[self.classifier, self.model_name], group=group
         # )
+        # test
+        group = None
         wandb_logger = WandbLogger(
             project=self.project, group=group, tags=[self.classifier, self.model_name]
         )

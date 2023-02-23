@@ -159,17 +159,17 @@ class ModalityModule(pl.LightningModule):
         recall_weighted = recall(preds, target)  # pylint: disable=not-callable
         prec_weighted = precision(preds, target)  # pylint: disable=not-callable
 
-        self.log("test_macro_f1", f1_macro)
-        self.log("test_micro_f1", f1_micro)
-        self.log("test_weighted_f1", f1_weighted)
+        self.log("test_macro_f1", f1_macro, sync_dist=True)
+        self.log("test_micro_f1", f1_micro, sync_dist=True)
+        self.log("test_weighted_f1", f1_weighted, sync_dist=True)
 
-        self.log("test_macro_recall", recall_macro)
-        self.log("test_micro_recall", recall_micro)
-        self.log("test_weighted_recall", recall_weighted)
+        self.log("test_macro_recall", recall_macro, sync_dist=True)
+        self.log("test_micro_recall", recall_micro, sync_dist=True)
+        self.log("test_weighted_recall", recall_weighted, sync_dist=True)
 
-        self.log("test_macro_precision", prec_macro)
-        self.log("test_micro_precision", prec_micro)
-        self.log("test_weighted_precision", prec_weighted)
+        self.log("test_macro_precision", prec_macro, sync_dist=True)
+        self.log("test_micro_precision", prec_micro, sync_dist=True)
+        self.log("test_weighted_precision", prec_weighted, sync_dist=True)
 
         y_true = target.cpu().numpy()
         preds = preds.cpu().numpy()
