@@ -166,6 +166,7 @@ def scale_dataset(input_path: str, output_path: str, max_size: int) -> None:
         for el in listdir(input_dataset_path)
         if el.lower().endswith((".jpg", ".png", ".jpeg", ".bmp"))
         and "gradcam" not in el
+        and not el.startswith(".")
     ]
     for img_name in tqdm(img_names):
         resize_img_and_save(
