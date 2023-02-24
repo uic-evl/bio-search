@@ -168,7 +168,7 @@ def main():
         if args.strategy == "ddp":
             now = datetime.now().strftime("%m-%d-%H-%M-%S")
             group = f"ddp-{now}"
-        tags = [classifier_name, args.models]
+        tags = [classifier_name, args.model]
 
         wandb.init(project=args.project, group=group, tags=tags)
         train(
