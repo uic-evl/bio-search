@@ -250,7 +250,7 @@ class ModalityModelTrainer:
         wandb_logger = WandbLogger(project=self.project, config={})
         if not isinstance(wandb_logger.experiment.config, dict):
             wandb.init(config={}, mode="disabled")
-        assert isinstance(wandb.config, dict)
+        # assert isinstance(wandb.config, dict)
 
         # Callbacks
         metric_monitor = "val_loss"
