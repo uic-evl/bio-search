@@ -8,28 +8,31 @@ from datetime import datetime
 import wandb
 from image_modalities_classifier.train import train
 
+# big hm [0.7562, 0.7535, 0.7540]
+# [0.3078, 0.3037, 0.3088]
+
 # mean grpahics 400 0.9248, 0.9202, 0.9211
 # std graphics 400 0.2077, 0.2006, 0.2128
 
 means_per_clf_name = {
-    "higher-modality": [0.7562, 0.7535, 0.7540],
+    "higher-modality": [0.7687, 0.7660, 0.7663],
     "microscopy": [0.4951, 0.4829, 0.4857],
     "electron": [0.5759, 0.5745, 0.5730],
     "radiology": [0.4981, 0.4983, 0.4984],
     "photography": [0.5442, 0.4407, 0.4029],
-    "graphics": [0.9248, 0.9202, 0.9211],
+    "graphics": [0.9218, 0.9174, 0.9180],
     "experimental": [0.8608, 0.8608, 0.8612],
     "gel": [0.7912, 0.7917, 0.7922],
     "molecular": [0.8662, 0.8683, 0.8588],
 }
 
 stds_per_clf_name = {
-    "higher-modality": [0.3078, 0.3037, 0.3088],
+    "higher-modality": [0.3024, 0.2991, 0.3034],
     "microscopy": [0.3524, 0.3438, 0.3545],
     "electron": [0.2657, 0.2672, 0.2677],
     "radiology": [0.2521, 0.2521, 0.2521],
     "photography": [0.2892, 0.2658, 0.2690],
-    "graphics": [0.2078, 0.2006, 0.2128],
+    "graphics": [0.2046, 0.1995, 0.2094],
     "experimental": [0.2348, 0.2346, 0.2345],
     "gel": [0.2566, 0.2563, 0.2558],
     "molecular": [0.2439, 0.2386, 0.2547],
@@ -45,15 +48,15 @@ sweep_configuration_efficientnet = {
         "pretrained": {"values": [True]},
         "model": {
             "values": [
-                "efficientnet-b0",
                 "efficientnet-b1",
                 "resnet18",
-                "resnet34",
-                "resnet50",
-                "resnet101",
+                # "resnet18",
+                # "resnet34",
+                # "resnet50",
+                # "resnet101",
             ]
         },
-        "patience": {"values": [20]},
+        "patience": {"values": [10]},
     },
 }
 
@@ -97,7 +100,7 @@ def train_iteration(
     strategy: Optional[str],
 ):
     """Function to invoke on each sweep iteration"""
-    project = f"biocuration-{clf_name}"
+    project = "biocuration"
 
     # start wandb for logging stats
     group = None
@@ -157,7 +160,7 @@ def execute_sweeps(
         strategy,
     )
 
-    project = f"biocuration-{clf_name}"
+    project = "biocuration"
     sweep_eff_id = wandb.sweep(sweep_configuration_efficientnet, project=project)
     wandb.agent(sweep_eff_id, function=sweep_iteration)
     # sweep_res_id = wandb.sweep(sweep_configuration_resnet, project=project)
