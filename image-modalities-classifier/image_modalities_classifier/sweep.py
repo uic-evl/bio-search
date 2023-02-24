@@ -8,6 +8,9 @@ from datetime import datetime
 import wandb
 from image_modalities_classifier.train import train
 
+# mean grpahics 400 0.9248, 0.9202, 0.9211
+# std graphics 400 0.2077, 0.2006, 0.2128
+
 means_per_clf_name = {
     "higher-modality": [0.7562, 0.7535, 0.7540],
     "microscopy": [0.4951, 0.4829, 0.4857],
