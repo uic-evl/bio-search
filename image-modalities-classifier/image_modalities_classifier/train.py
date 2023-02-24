@@ -168,7 +168,7 @@ def main():
         if args.strategy == "ddp":
             # now = datetime.now().strftime("%m-%d-%H-%M-%S")
             # now won't work because the threads calculate diff times
-            group = f"ddp"
+            group = "ddp"
         tags = [classifier_name, args.model]
 
         wandb.init(project=args.project, group=group, tags=tags)
