@@ -100,9 +100,9 @@ def train_iteration(
     group = None
     if strategy == "ddp":
         group = "ddp"
-    tags = [clf_name, wandb.config.model]
 
-    wandb.init(project=project, group=group, tags=tags)
+    run = wandb.init(project=project, group=group)
+    run.tags = [clf_name, wandb.config.model]
     try:
         train(
             classifier=clf_name,
