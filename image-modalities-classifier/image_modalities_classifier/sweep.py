@@ -99,8 +99,7 @@ def train_iteration(
     # start wandb for logging stats
     group = None
     if strategy == "ddp":
-        now = datetime.now().strftime("%m-%d-%H-%M-%S")
-        group = f"ddp-{now}"
+        group = "ddp"
     tags = [clf_name, wandb.config.model]
 
     wandb.init(project=project, group=group, tags=tags)
