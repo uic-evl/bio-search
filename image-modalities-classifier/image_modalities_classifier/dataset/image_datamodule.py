@@ -123,7 +123,6 @@ class ImageDataModule(pl.LightningDataModule):
             transforms=self.transforms.test_transforms(),
             label_col=ENCODED_LABEL_COL,
             path_col=self.path_col,
-            drop_last=False,
         )
 
         return DataLoader(
@@ -131,4 +130,5 @@ class ImageDataModule(pl.LightningDataModule):
             batch_size=self.batch_size,
             shuffle=False,
             num_workers=self.num_workers,
+            drop_last=False,
         )
