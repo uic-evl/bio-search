@@ -4,6 +4,7 @@ import logging
 from typing import Optional
 from functools import partial
 from argparse import ArgumentParser, Namespace
+from datetime import datetime
 import wandb
 from image_modalities_classifier.train import train
 
@@ -95,7 +96,14 @@ def train_iteration(
     """Function to invoke on each sweep iteration"""
     project = f"biocuration-{clf_name}"
 
-    wandb.init(project=project)
+    # start wandb for logging stats
+    group = None
+    if strategy == "ddp":
+        now = datetime.now().strftime("%m-%d-%H-%M-%S")
+        group = f"ddp-{now}"
+    tags = [clf_name, wandb.config.model]
+
+    wandb.init(project=project, group=group, tags=tags)
     try:
         train(
             classifier=clf_name,

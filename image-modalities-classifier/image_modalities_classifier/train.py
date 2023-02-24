@@ -1,6 +1,7 @@
 """ Entry script for training modality models """
 from sys import argv
 from os import listdir
+from datetime import datetime
 from argparse import ArgumentParser, Namespace
 import logging
 from pathlib import Path
@@ -162,7 +163,14 @@ def main():
     seed_everything(SEED)
 
     try:
-        wandb.init(project=args.project)
+        # start wandb for logging stats
+        group = None
+        if args.strategy == "ddp":
+            now = datetime.now().strftime("%m-%d-%H-%M-%S")
+            group = f"ddp-{now}"
+        tags = [classifier_name, args.models]
+
+        wandb.init(project=args.project, group=group, tags=tags)
         train(
             args.workspace,
             args.taxonomy,
