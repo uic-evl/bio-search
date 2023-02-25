@@ -20,10 +20,7 @@ MAX_SIZE = 400
 # "/home/jtt/Documents/datasets/curation_data/xrays/images",
 
 input_paths = [
-    "/home/jtt/Documents/datasets/curation_data/x_rays/kaggle_xrays_covid19_pneumonia",
-    "/home/jtt/Documents/datasets/curation_data/ct_scans/COVID-CT",
-    "/home/jtt/Documents/datasets/curation_data/ct_scans/kaggle_sars_cov2",
-    "/home/jtt/Documents/datasets/curation_data/xrays/images",
+    "/home/jtt/Documents/datasets/curation_data/chart_synthetic_1/train",
 ]
 
 

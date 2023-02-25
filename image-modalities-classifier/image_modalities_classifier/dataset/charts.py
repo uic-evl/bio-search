@@ -50,8 +50,8 @@ def load_synthetic_data(base_path: Path, chart_synthetic_path: str) -> pd.DataFr
 
         if not json_file_route.exists():
             continue
-        image_name = json_file.replace("json", "png")
-        img_path = base_path / chart_synthetic_path / "train" / image_name
+        image_name = json_file.replace("json", "jpg")  # jpeg for 400, png for original
+        img_path = base_path / chart_synthetic_path / "train_400" / image_name
 
         if not img_path.exists():
             print("does not exist", img_path)
@@ -59,7 +59,7 @@ def load_synthetic_data(base_path: Path, chart_synthetic_path: str) -> pd.DataFr
 
         originals.append(original_mod)
         imgs.append(image_name)
-        img_paths.append(str(Path(chart_synthetic_path) / "train" / image_name))
+        img_paths.append(str(Path(chart_synthetic_path) / "train_400" / image_name))
         labels.append(mapper_chart_synthetic[original_mod])
 
         img = Image.open(img_path)
@@ -123,7 +123,7 @@ def main():
     df_icpr = load_icpr_data(base_path, chart_icpr2020_path)
 
     df = pd.concat([df_synthetic, df_icpr])
-    df.to_parquet("./chart_synth.parquet")
+    df.to_parquet("./chart_synth_400.parquet")
 
 
 if __name__ == "__main__":
