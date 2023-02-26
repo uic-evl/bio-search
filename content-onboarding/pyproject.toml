@@ -11,7 +11,7 @@ pyarrow = "^10.0.1"
 Pillow = "^9.4.0"
 psycopg = {extras = ["binary"], version = "^3.1.8"}
 python-dotenv = "^0.21.1"
-image_modalities_classifier = { git = "https://github.com/uic-evl/bio-search.git", subdirectory="image-modalities-classifier" }
+image_modalities_classifier = { git = "https://github.com/uic-evl/bio-search.git", subdirectory="image-modalities-classifier", branch="search_engine_captions", extras=["torch"] }
 
 # optional due to its dependency on CUDA (11.6)
 torch = { version="^1.13.1", source="torch", optional = true }

@@ -33,10 +33,11 @@ class PredictManager:
     def fetch_subfigures_from_db(self, cursor: Cursor) -> List[Tuple]:
         """Fetch not predicted subfigures from db"""
         # pylint: disable=consider-using-f-string
+        # TODO: Use a flag to indicate whether to update everything or only new images
         query = """
           SELECT id, uri 
           FROM {schema}.figures
-          WHERE status={status} AND fig_type={type}
+          WHERE fig_type={type} AND status={status}
         """.format(
             schema=self.schema,
             status=SubFigureStatus.NOT_PREDICTED.value,
