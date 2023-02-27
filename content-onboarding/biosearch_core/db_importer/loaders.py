@@ -5,7 +5,11 @@ from abc import ABC, abstractmethod
 from typing import List, Dict
 from datetime import datetime
 from pathlib import Path
+import numpy as np
 import csv
+import json
+import requests
+from time import sleep
 from biosearch_core.data.document import DbDocument
 
 # pylint: disable=too-few-public-methods
@@ -89,3 +93,77 @@ class Cord19Loader(Loader):
                 )
                 documents.append(document)
         return documents
+
+
+class GDXLoader(Loader):
+    """Loader for the GDX2000 collection"""
+
+    def get_metadata(self, pmid, gxd_entry, pubmed_dict):
+        """Parse entries from our metadata and the data queried from PubMed"""
+
+        data = pubmed_dict["result"][id]
+
+        authors = [x["name"] for x in data["authors"]]
+        publication_date = datetime.strptime(data["sortpubdate"][:10], "%Y/%m/%d")
+        journal = data["fulljournalname"]
+        import_date = datetime.now()
+
+        pmcid = None
+        doi = None
+        for articleid in data["articleids"]:
+            if articleid["idtype"] == "pmcid":
+                pmcid = articleid["value"]
+            elif articleid["idtype"] == "pmc":
+                pmcid = articleid["value"]
+            if articleid["idtype"] == "doi":
+                doi = articleid["value"]
+        uri = f"{gxd_entry['jaxid']}/{gxd_entry['jaxid']}.pdf"
+
+        return DbDocument(
+            title=gxd_entry["title"],
+            abstract=gxd_entry["abstract"],
+            authors=authors,
+            modalities=None,
+            publication_date=publication_date,
+            pmcid=pmcid,
+            pubmed_id=pmid,
+            license=None,
+            journal=journal,
+            doi=doi,
+            cord_uid=gxd_entry["jaxid"],
+            repository="pubmed",
+            uri=uri,
+            status="IMPORTED",
+            project="gxd",
+            notes=None,
+            import_date=import_date,
+        )
+
+    def load(self, csv_path: str, pdf_paths: List[str]) -> List[DbDocument]:
+        # TODO rename csv_path to doc_path, here is a json object
+
+        with open(csv_path, "r", encoding="utf-8") as f_in:
+            gdx = json.loads(f_in.read())
+        gdx_pubmed_ids = [x["pmid"] for x in gdx]
+        gdx = {x["pmid"]: x for x in gdx}
+
+        # split to query NCBI
+        n_splits = len(gdx_pubmed_ids) // 100
+        id_splits = np.array_split(gdx_pubmed_ids, n_splits)
+
+        documents = []
+
+        for split in id_splits:
+            concat_pmids = ",".join(split)
+            # pylint: disable=missing-timeout
+            res_pubmedids = requests.get(
+                f"https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id={concat_pmids}&retmode=json"
+            )
+            for pmid in split:
+                document = self.get_metadata(pmid, gdx[pmid], res_pubmedids.json())
+                documents.append(document)
+            sleep(2.5)
+        pdfs = (Path(el).stem for el in pdf_paths)
+        # only use pdfs with jaxid from gdx2000
+        filtered_documents = [el for el in documents if el.cord_uid in pdfs]
+        return filtered_documents
