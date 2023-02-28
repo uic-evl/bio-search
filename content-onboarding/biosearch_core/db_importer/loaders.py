@@ -24,6 +24,12 @@ class Loader(ABC):
 class Cord19Loader(Loader):
     """Loader implementation for COR19"""
 
+    def __init__(self) -> None:
+        super().__init__()
+        self.prefix = "PMC"
+        self.folder_name = "pmcid"
+        self.lookup_id = "pmcid"
+
     def _read_publication_date(self, row):
         # publish time can be empty or be a YYYY-MM-DD or YYYY
         if len(row["publish_time"]) == 0:
@@ -90,6 +96,7 @@ class Cord19Loader(Loader):
                     project="cord19",
                     notes=None,
                     import_date=import_date,
+                    otherid=None,
                 )
                 documents.append(document)
         return documents
@@ -98,10 +105,16 @@ class Cord19Loader(Loader):
 class GDXLoader(Loader):
     """Loader for the GDX2000 collection"""
 
+    def __init__(self) -> None:
+        super().__init__()
+        self.prefix = None
+        self.folder_name = "cord_uid"
+        self.lookup_id = "otherid"
+
     def get_metadata(self, pmid, gxd_entry, pubmed_dict):
         """Parse entries from our metadata and the data queried from PubMed"""
 
-        data = pubmed_dict["result"][id]
+        data = pubmed_dict["result"][pmid]
 
         authors = [x["name"] for x in data["authors"]]
         publication_date = datetime.strptime(data["sortpubdate"][:10], "%Y/%m/%d")
@@ -137,6 +150,7 @@ class GDXLoader(Loader):
             project="gxd",
             notes=None,
             import_date=import_date,
+            otherid=gxd_entry["jaxid"],
         )
 
     def load(self, csv_path: str, pdf_paths: List[str]) -> List[DbDocument]:
@@ -156,6 +170,9 @@ class GDXLoader(Loader):
         for split in id_splits:
             concat_pmids = ",".join(split)
             # pylint: disable=missing-timeout
+            # print(
+            #     f"https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id={concat_pmids}&retmode=json"
+            # )
             res_pubmedids = requests.get(
                 f"https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id={concat_pmids}&retmode=json"
             )
@@ -163,7 +180,9 @@ class GDXLoader(Loader):
                 document = self.get_metadata(pmid, gdx[pmid], res_pubmedids.json())
                 documents.append(document)
             sleep(2.5)
-        pdfs = (Path(el).stem for el in pdf_paths)
+        pdfs = {Path(el).stem for el in pdf_paths}
         # only use pdfs with jaxid from gdx2000
+        print(list(pdfs)[:5])
+        # print(documents[:5])
         filtered_documents = [el for el in documents if el.cord_uid in pdfs]
         return filtered_documents

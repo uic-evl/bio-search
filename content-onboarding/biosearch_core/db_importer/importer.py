@@ -3,7 +3,7 @@ them in the database"""
 
 from pathlib import Path
 from os import listdir
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Optional
 from shutil import move, rmtree
 from tqdm import tqdm
 import logging
@@ -228,13 +228,15 @@ class ImportManager:
                 figure.num_panes += 1
         return subfigures
 
-    def _get_paths_to_import(self):
+    def _get_paths_to_import(self, prefix: Optional[str]):
         import_dir = Project.import_dir(self.dir)
-        return [
-            str(import_dir / doc)
-            for doc in listdir(import_dir)
-            if doc.startswith("PMC")
-        ]
+        if prefix is not None:
+            return [
+                str(import_dir / doc)
+                for doc in listdir(import_dir)
+                if doc.startswith(prefix)
+            ]
+        return [str(import_dir / doc) for doc in listdir(import_dir)]
 
     def _move(self, folders: List[str], target: Path, ok_if_exists: bool):
         for folder in folders:
@@ -262,7 +264,7 @@ class ImportManager:
         """Massive import of documents to database"""
         schema = self.params.schema
         # pylint: disable=line-too-long
-        sql = f"COPY {schema}.documents (title, authors, abstract, publication_date, pmcid, pubmed_id, journal, repository, project, license, status, uri, doi, notes, import_date) FROM STDIN"
+        sql = f"COPY {schema}.documents (title, authors, abstract, publication_date, pmcid, pubmed_id, journal, repository, project, license, status, uri, doi, notes, import_date, otherid) FROM STDIN"
         with cursor.copy(sql) as copy:
             for doc in documents:
                 copy.write_row(doc.to_tuple())
@@ -271,7 +273,7 @@ class ImportManager:
         """Massive import of figures to database"""
         schema = self.params.schema
         # pylint: disable=line-too-long
-        sql = f"COPY {schema}.figures (name,caption,num_panes,fig_type,doc_id,status,uri,parent_id,width,height,coordinates,last_update_by,owner,migration_key,notes,label,source,page) FROM STDIN"
+        sql = f"COPY {schema}.figures (name,caption,num_panes,fig_type,doc_id,status,uri,parent_id,width,height,coordinates,last_update_by,owner,migration_key,notes,label,source,page,ground_truth) FROM STDIN"
         with cursor.copy(sql) as copy:
             for elem in figures:
                 copy.write_row(elem.to_tuple())
@@ -288,11 +290,14 @@ class ImportManager:
         rows = cursor.fetchall()
         return {r[1]: r[0] for r in rows}
 
-    def _build_pmc_to_id_mapper(self, cursor: Cursor) -> Dict[str, str]:
+    def _build_pmc_to_id_mapper(
+        self, cursor: Cursor, folder_field: str
+    ) -> Dict[str, str]:
         """Get a dictionary [pmcid, doc_id] to match figures to their corresponding
         source documents"""
         schema = self.params.schema
-        sql = f"select id, pmcid from {schema}.documents where status='IMPORTED' and pmcid != ''"
+        # field is text
+        sql = f"select id, {folder_field} from {schema}.documents where status='IMPORTED' and {folder_field} != ''"
         cursor.execute(sql)
         rows = cursor.fetchall()
         return {r[1]: r[0] for r in rows}
@@ -303,7 +308,7 @@ class ImportManager:
 
         # prepare the paths to explore
         logging.info("Starting import - validating data ######################")
-        paths_to_import = self._get_paths_to_import()
+        paths_to_import = self._get_paths_to_import(prefix=loader.prefix)
         logging.info("\tAvailable paths: %d", len(paths_to_import))
         path_to_remove = self.validate_pdf_folders(paths_to_import)
         logging.info("\tInvalid file paths: %d", len(path_to_remove))
@@ -315,7 +320,9 @@ class ImportManager:
         logging.info("  %d documents found in metadata", len(documents))
 
         import_dir = Project.import_dir(self.dir)
-        paths_in_metadata = [str(import_dir / doc.pmcid) for doc in documents]
+        paths_in_metadata = [
+            str(import_dir / doc.folder_name(loader.folder_name)) for doc in documents
+        ]
         paths_to_remove = list(set(paths_to_import).difference(paths_in_metadata))
         self.validator.violation_reasons_["not_in_metadata"] = paths_to_remove
         paths_to_import = paths_in_metadata
@@ -338,7 +345,7 @@ class ImportManager:
                 try:
                     logging.info("Inserting documents")
                     self._insert_documents_to_db(cursor, documents)
-                    pmc_to_id = self._build_pmc_to_id_mapper(cursor)
+                    pmc_to_id = self._build_pmc_to_id_mapper(cursor, loader.lookup_id)
 
                     logging.info("Inserting figures")
                     figures = self.fetch_figures(paths_to_import, pmc_to_id)

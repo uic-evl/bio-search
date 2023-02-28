@@ -57,6 +57,7 @@ class DBFigure:
     notes: str = field(init=False, default=None)
     label: str = field(init=False, default=None)
     page: Optional[int]
+    ground_truth: str = field(init=False, default=None)
 
     def __post_init__(self):
         self.last_update_by = datetime.now()
@@ -82,4 +83,5 @@ class DBFigure:
             self.label,
             self.source,
             self.page,
+            self.ground_truth,
         )

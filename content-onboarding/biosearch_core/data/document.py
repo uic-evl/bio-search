@@ -35,6 +35,7 @@ class DbDocument:
     uri: Optional[str] = field(default=None)
     doi: Optional[str] = field(default=None)
     notes: Optional[str] = field(default=None)
+    otherid: Optional[str] = field(default=None)
 
     def to_tuple(self):
         """Return data as tuple to insert in database"""
@@ -54,7 +55,18 @@ class DbDocument:
             self.doi,
             self.notes,
             self.import_date,
+            self.otherid,
         )
+
+    def folder_name(self, field_name: str) -> str:
+        """Aux function to manage different fields for the name of a folder.
+        Ideally, I would use a key value and make it scriptable, but I don't know
+        if dataclasses support that"""
+        if field_name == "cord_uid":
+            return self.cord_uid
+        if field_name == "pmcid":
+            return self.pmcid
+        return None
 
 
 @dataclass

@@ -6,7 +6,7 @@ from argparse import ArgumentParser, Namespace
 from pathlib import Path
 import logging
 from biosearch_core.db_importer.importer import ImportManager
-from biosearch_core.db_importer.loaders import Cord19Loader
+from biosearch_core.db_importer.loaders import Cord19Loader, GDXLoader
 from biosearch_core.db.model import params_from_env
 
 
@@ -49,7 +49,13 @@ def main():
 
     conn_params = params_from_env(args.db)
     manager = ImportManager(args.projects_dir, args.project, conn_params)
-    loader = Cord19Loader()
+
+    if args.loader == "cord19":
+        loader = Cord19Loader()
+    elif args.loader == "gdx":
+        loader = GDXLoader()
+    else:
+        raise ValueError(f"{args.loader} loader not supported")
     manager.import_content(args.metadata, loader)
 
 
