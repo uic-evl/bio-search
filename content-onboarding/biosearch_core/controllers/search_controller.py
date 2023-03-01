@@ -69,4 +69,5 @@ class SearchController:
             "number_figures": surrogate_info.num_figures,
             "pages": pages,
             "pmcid": surrogate_info.pmcid,
+            "otherid": surrogate_info.otherid,
         }

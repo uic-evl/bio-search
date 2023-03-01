@@ -79,6 +79,7 @@ class DocSurrogate:
     journal: str
     num_figures: int
     pmcid: str
+    otherid: str
 
 
 @dataclass
@@ -110,7 +111,7 @@ class DocumentModel:
     ) -> DocSurrogate:
         """Retrieve document surrogate details"""
         query = """
-            SELECT d.id, d.title, d.authors, d.journal, COUNT(f.id), d.pmcid
+            SELECT d.id, d.title, d.authors, d.journal, COUNT(f.id), d.pmcid, d.otherid
             FROM {schema}.documents d, {schema}.figures f
             WHERE d.id = {doc_id} 
                   AND f.doc_id = d.id 
@@ -130,8 +131,9 @@ class DocumentModel:
                 journal=rows[0][3],
                 num_figures=rows[0][4],
                 pmcid=rows[0][5],
+                otherid=rows[0][6],
             )
-        raise Exception(f"No data found for document {doc_id}")
+        raise ValueError(f"No data found for document {doc_id}")
 
     @staticmethod
     def fetch_subfigures(cursor: Cursor, doc_id: int, schema: str) -> List[Subfigure]:
