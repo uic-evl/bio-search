@@ -30,7 +30,7 @@ class BoundingBoxMapper:
         self.mapping = {}
         self.errors = []
 
-    def _extract_from_txt(self, parent_path, lines: List[str]):
+    def _extract_from_txt(self, parent_path, lines: List[str], prefix: str = None):
         mult_factor = 1
         if "*" in lines[0]:
             # avoid the first two lines when the values need scaling
@@ -39,16 +39,22 @@ class BoundingBoxMapper:
         for idx, line in enumerate(lines):
             values = findall(r"\d+\.\d+", line)
             values = [mult_factor * float(x) for x in values]
-            key = f"{parent_path}/{str(idx+1).zfill(3)}.jpg"
+            if prefix is not None:
+                key = f"{parent_path}/{prefix}_{str(idx+1).zfill(3)}.jpg"
+            else:
+                key = f"{parent_path}/{str(idx+1).zfill(3)}.jpg"
             self.mapping[key] = values
 
-    def _extract_from_csv(self, parent_path, lines: List[str]):
+    def _extract_from_csv(self, parent_path, lines: List[str], prefix: str = None):
         for idx, line in enumerate(lines):
             values = line.split(",")
-            key = f"{parent_path}/{str(idx+1).zfill(3)}.jpg"
+            if prefix is not None:
+                key = f"{parent_path}/{prefix}_{str(idx+1).zfill(3)}.jpg"
+            else:
+                key = f"{parent_path}/{str(idx+1).zfill(3)}.jpg"
             self.mapping[key] = values
 
-    def load(self, subfig_paths: List[str]) -> Dict:
+    def load(self, subfig_paths: List[str], prefix: str = None) -> Dict:
         """Load the bounding boxes from the artifacts created by FigSplit."""
         # bboxes is stored in the parent figure file
         figure_paths = list(set(f"{Path(x).parent}" for x in subfig_paths))
@@ -81,6 +87,6 @@ class BoundingBoxMapper:
                     return
 
             if read_from == "txt":
-                self._extract_from_txt(parent_path, lines)
+                self._extract_from_txt(parent_path, lines, prefix=prefix)
             else:
-                self._extract_from_csv(parent_path, lines)
+                self._extract_from_csv(parent_path, lines, prefix=prefix)
