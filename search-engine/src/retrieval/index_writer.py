@@ -64,6 +64,7 @@ class Indexer:
             "modalities": StringField.TYPE_STORED,
             "num_figures": StringField.TYPE_STORED,
             "captions": StringField.TYPE_STORED,
+            "otherid": StringField.TYPE_STORED,
         }
 
         if ft_provider:
