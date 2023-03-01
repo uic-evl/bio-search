@@ -8,6 +8,7 @@ declare global {
       NX_PDFS_ENDPOINT: string
       NX_FIGURES_ENDPOINT: string
       NX_COLLECTION: string
+      NX_FULL_TEXT: string
     }
   }
 }

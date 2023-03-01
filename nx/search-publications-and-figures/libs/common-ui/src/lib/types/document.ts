@@ -6,6 +6,7 @@ export interface Document {
   pages: Page[]
   pmcid: string
   cord_uid?: string
+  otherid: string
   bboxes?: {[id: string]: {[id: string]: number[]}}
 }
 

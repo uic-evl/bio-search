@@ -33,9 +33,10 @@ const Search = ({logout}: SearchProps) => {
     el => !el.includes('.'),
   )
 
-  const getPageUrl = (_document: Document, page: Page) => {
-    // gdx docs can ignore any doc prop to determine the page location
-    return `${PDFS_BASE_URL}/${page.page_url}`
+  const getPageUrl = (document: Document, page: Page) => {
+    const paddedPage = page.page.toString().padStart(6, '0')
+    const pageUrl = `${PDFS_BASE_URL}/${document.otherid}/${document.otherid}-${paddedPage}.png`
+    return pageUrl
   }
 
   const handleSearch = async (
@@ -99,7 +100,14 @@ const Search = ({logout}: SearchProps) => {
           colorsMapper={colorsMapper}
           onSearch={handleSearch}
           keywordPlaceholderValue="e.g. disease"
-          sampleKeywords={['disease', 'kinase']}
+          sampleQueries={[
+            {query: 'disease', label: 'disease', modalities: []},
+            {
+              query: 'title:kinase AND abstract:transcription',
+              label: 'title:kinase AND abstract:transcription',
+              modalities: [],
+            },
+          ]}
           isLoading={isLoading}
         />
         <Box w="full" mt={2}>

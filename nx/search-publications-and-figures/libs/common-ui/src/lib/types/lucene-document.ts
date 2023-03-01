@@ -15,4 +15,5 @@ export interface LuceneDocument {
   modalities_count: {[id: string]: number}
   full_text: string | null
   captions: LuceneCaption[]
+  otherid: string
 }

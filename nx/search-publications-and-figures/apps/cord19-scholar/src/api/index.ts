@@ -5,6 +5,7 @@ import {
 } from '@search-publications-and-figures/common-ui'
 
 const SEARCH_API_ENDPOINT = process.env.NX_SEARCH_API
+const FULL_TEXT = process.env.NX_FULL_TEXT
 
 export const search = async (
   keywords: string,
@@ -15,7 +16,8 @@ export const search = async (
   modalities: string[],
 ): Promise<LuceneDocument[]> => {
   const termsQuery = keywords || '*'
-  let queryString = `?highlight=true&ft=true&q=${termsQuery}&max_docs=${maxDocs}`
+  let queryString = `?highlight=true&ft=${FULL_TEXT}&q=${termsQuery}&max_docs=${maxDocs}`
+  // let queryString = `?highlight=true&ft=true&q=${termsQuery}&max_docs=${maxDocs}`
   if (startDate) {
     queryString += `&from=${startDate}`
     if (endDate) {

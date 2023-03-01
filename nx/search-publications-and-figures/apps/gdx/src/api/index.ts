@@ -6,12 +6,7 @@ import {
   Subfigure,
 } from '@search-publications-and-figures/common-ui'
 import {LuceneDocument} from '@search-publications-and-figures/common-ui'
-import {
-  reverseNamesMapper,
-  namesMapper,
-  codeMapper,
-  colorsMapper,
-} from '../utils/mapper'
+import {colorsMapper} from '../utils/mapper'
 
 const SEARCH_API_ENDPOINT = process.env.NX_SEARCH_API
 const APP_API_ENDPOINT = process.env.NX_APP_API
@@ -38,30 +33,19 @@ export const search = async (
       queryString += `&to=${endDate}`
     }
   }
-
   if (modalities.length > 0) {
-    const mappedModalities = modalities.map(el => namesMapper[el])
-    const joinedMods = mappedModalities.join(';')
+    const joinedMods = modalities.join(';')
     queryString += `&modalities=${joinedMods}`
   }
   queryString += `&ds=${collection}`
 
   const url = `${SEARCH_API_ENDPOINT}/search/${queryString}`
-  const payload: LuceneDocument[] = await run(url, 'get', {
+  const payload = await run(url, 'get', {
     data: undefined,
     token: undefined,
     params: undefined,
   })
-
-  payload.forEach(el => {
-    const newMapping: Record<string, number> = {}
-    Object.keys(el.modalities_count).forEach(key => {
-      newMapping[reverseNamesMapper[key]] = el.modalities_count[key]
-    })
-    el.modalities_count = newMapping as unknown as {[id: string]: number}
-  })
-
-  return payload
+  return payload as LuceneDocument[]
 }
 
 export const getPageFigureDetails = async (
@@ -69,7 +53,7 @@ export const getPageFigureDetails = async (
   preferredOrder: string[],
 ): Promise<Document> => {
   const url = `${SEARCH_API_ENDPOINT}/document/${documentId}`
-  const document: Document = await run(url, 'get', {
+  const payload: Document = await run(url, 'get', {
     data: undefined,
     token: undefined,
     params: undefined,
@@ -77,47 +61,47 @@ export const getPageFigureDetails = async (
 
   // match the GDX structure to TS types
 
-  const {cord_uid, bboxes} = document
-  if (bboxes) {
-    document.pages.forEach((page: Page) => {
-      const pageNumber = page.page
-      page.figures.forEach((figure: Figure, idx: number) => {
-        figure.url = `${cord_uid}/${pageNumber}_${idx + 1}.jpg`
-        const newSubfigures = figure.subfigures.map((sf: Subfigure) => {
-          const {name} = sf
-          return {
-            bbox: name ? bboxes[`${pageNumber}_${idx + 1}`][name] : null,
-            type: codeMapper[sf.type],
-            color: colorsMapper[codeMapper[sf.type]],
-          }
-        })
-        figure.subfigures = newSubfigures
-      })
-    })
-  }
-
-  // TODO: the sorting can be done on the web server, meanwhile here
   if (preferredOrder.length > 0) {
-    document.pages.forEach(page => {
+    payload.pages.forEach(page => {
       let score = 0
       page.figures.forEach(figure => {
+        let figurePriority = 0
         figure.subfigures.forEach(subfigure => {
-          if (preferredOrder.includes(subfigure.type)) {
-            score += 1
-          }
+          preferredOrder.forEach(prioritized_type => {
+            if (
+              prioritized_type === subfigure.type ||
+              subfigure.type.includes(prioritized_type)
+            ) {
+              score += 1
+              figurePriority += 1
+            }
+          })
+          // if (preferredOrder.includes(subfigure.type)) {
+          //   score += 1
+          //   figurePriority += 1
+          // }
         })
+        figure.priority = figurePriority
       })
       page.priority = score
     })
 
-    document.pages = document.pages.sort((page1, page2) => {
+    payload.pages.forEach(page => {
+      page.figures = page.figures.sort((fig1, fig2) => {
+        const b = fig2.priority ? fig2.priority : 0
+        const a = fig1.priority ? fig1.priority : 0
+        return b - a
+      })
+    })
+
+    payload.pages = payload.pages.sort((page1, page2) => {
       const b = page2.priority ? page2.priority : 0
       const a = page1.priority ? page1.priority : 0
       return b - a
     })
   }
 
-  return document
+  return payload
 }
 
 export const login = async (username: string, password: string) => {

@@ -49,7 +49,9 @@ export function SimpleResultCard({
   const authors = (authorsStr: string) => {
     const authorsList = authorsStr.split(';')
     const formattedList = authorsList.map(el => {
-      const idx = el.indexOf(',')
+      let splitter = ','
+      if (!el.includes(',')) splitter = ' '
+      const idx = el.indexOf(splitter)
       return el.substring(idx + 2, idx + 3) + ' ' + el.substring(0, idx)
     })
     const authorsOutput = formattedList.join(', ')

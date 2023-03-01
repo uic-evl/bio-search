@@ -29,8 +29,13 @@ const Search = () => {
   )
 
   const getPageUrl = (document: Document, page: Page) => {
+    let folderName = document.pmcid
+    if (COLLECTION === 'gdx') {
+      folderName = document.otherid
+    }
+
     const paddedPage = page.page.toString().padStart(6, '0')
-    const pageUrl = `${PDFS_BASE_URL}/${document.pmcid}/${document.pmcid}-${paddedPage}.png`
+    const pageUrl = `${PDFS_BASE_URL}/${folderName}/${folderName}-${paddedPage}.png`
     return pageUrl
   }
 
