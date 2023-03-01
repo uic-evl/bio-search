@@ -180,7 +180,7 @@ class ImportManager:
         return figures
 
     def fetch_subfigures(
-        self, figures: List[DBFigure], url_to_id: Dict[str, str]
+        self, figures: List[DBFigure], url_to_id: Dict[str, str], loader
     ) -> List[DBFigure]:
         """Fetch subfigures and bounding boxes information"""
         subfigures = []
@@ -190,7 +190,9 @@ class ImportManager:
             subfig_paths = self._fetch_content(figure_folder, ".jpg")
 
             bbox_reader = BoundingBoxMapper()
-            bbox_reader.load(subfig_paths)
+            # doc_name/fig_name
+            prefix = figure.uri.split("/")[1][:-4] if loader.subfig_prefix else None
+            bbox_reader.load(subfig_paths, prefix=prefix)
             for subfig_path in subfig_paths:
                 try:
                     coordinates = bbox_reader.mapping[subfig_path]
@@ -353,7 +355,7 @@ class ImportManager:
 
                     logging.info("Inserting subfigures")
                     url_to_id = self._build_uri_to_id_mapper(cursor)
-                    subfigures = self.fetch_subfigures(figures, url_to_id)
+                    subfigures = self.fetch_subfigures(figures, url_to_id, loader)
                     self._insert_figures_to_db(cursor, subfigures)
 
                     logging.info("Moving: %d", len(paths_to_import))

@@ -29,6 +29,7 @@ class Cord19Loader(Loader):
         self.prefix = "PMC"
         self.folder_name = "pmcid"
         self.lookup_id = "pmcid"
+        self.subfig_prefix = False
 
     def _read_publication_date(self, row):
         # publish time can be empty or be a YYYY-MM-DD or YYYY
@@ -110,6 +111,7 @@ class GDXLoader(Loader):
         self.prefix = None
         self.folder_name = "cord_uid"
         self.lookup_id = "otherid"
+        self.subfig_prefix = True
 
     def get_metadata(self, pmid, gxd_entry, pubmed_dict):
         """Parse entries from our metadata and the data queried from PubMed"""
