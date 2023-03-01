@@ -32,3 +32,4 @@ class LuceneDocument:  # pylint: disable=too-many-instance-attributes
     modalities: str
     url: str
     captions: Optional[List[LuceneCaption]]
+    otherid: str

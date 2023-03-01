@@ -22,6 +22,7 @@ class SearchResult:
     authors: str
     captions: List[LuceneCaption]
     modalities_count: dict = field(init=False, default_factory=dict)
+    otherid: str
 
 
 class SearchResultEncoder(json.JSONEncoder):

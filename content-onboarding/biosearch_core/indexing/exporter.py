@@ -26,7 +26,7 @@ class IndexManager:
         # TODO separate the query aggregation to get documents without images,
         # or see how to do a full outer with groupby
         query = """
-                  SELECT d.id, d.repository as source_x, d.title, d.abstract, d.publication_date as publish_time, d.journal, d.authors, d.doi, d.pmcid, COUNT(f.name) as number_figures, array_agg(f.label)
+                  SELECT d.id, d.repository as source_x, d.title, d.abstract, d.publication_date as publish_time, d.journal, d.authors, d.doi, d.pmcid, COUNT(f.name) as number_figures, array_agg(f.label), d.otherid
                   FROM {schema}.documents d, {schema}.figures f
                   WHERE d.project='{project}' and d.uri is not NULL and f.doc_id=d.id and f.fig_type={fig_type}
                   GROUP BY d.id
@@ -93,6 +93,7 @@ class IndexManager:
                             num_figures=document[9],
                             modalities=modalities,
                             captions=captions,
+                            otherid=document[11],
                         )
                     )
         return lucene_docs

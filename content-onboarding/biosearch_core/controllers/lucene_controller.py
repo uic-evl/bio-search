@@ -157,6 +157,7 @@ class Reader:
                     journal=hit_doc.get("journal"),
                     authors=hit_doc.get("authors"),
                     captions=captions,
+                    otherid=hit_doc.get("otherid"),
                 )
                 results.append(result)
             return results
