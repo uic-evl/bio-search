@@ -14,7 +14,7 @@ def setup_logger(workspace: str):
     """configure logger"""
     logger_dir = Path(workspace) / "logs"
     if not logger_dir.exists:
-        raise Exception("workspace does not exist")
+        raise FileNotFoundError("workspace does not exist")
 
     logging.basicConfig(
         filename=str(logger_dir / "predict_labes.log"),
