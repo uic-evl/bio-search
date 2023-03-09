@@ -1,4 +1,10 @@
-import {PropsWithChildren, SyntheticEvent, ChangeEventHandler} from 'react'
+import {
+  PropsWithChildren,
+  SyntheticEvent,
+  ChangeEventHandler,
+  Dispatch,
+  SetStateAction,
+} from 'react'
 import {Box, Flex, Text, Spacer, Select, Button} from '@chakra-ui/react'
 
 /** Components for the headers of panels */
@@ -57,7 +63,7 @@ interface HeaderSelectProps {
   placeholder?: string
   value: string
   options: Array<string>
-  onChangeFn: (arg: string | null) => void
+  onChangeFn: Dispatch<SetStateAction<string>>
 }
 
 const optionStyle = {background: '#2A342D', color: 'white'}
@@ -79,7 +85,7 @@ export const HeaderSelect = (props: HeaderSelectProps) => (
       placeholder={props.placeholder}
       onChangeFn={(e: SyntheticEvent) => {
         const value = (e.target as HTMLInputElement).value
-        props.onChangeFn(value === '' ? null : value)
+        props.onChangeFn(value)
       }}
     >
       {props.options.map(t => (
@@ -93,7 +99,7 @@ interface BoxHeaderAndOptionsProps {
   title: string
   options: Array<string>
   value: string
-  onChangeFn: (arg: string | null) => void
+  onChangeFn: Dispatch<SetStateAction<string>>
 }
 
 export const BoxHeaderAndOptions = ({
@@ -109,7 +115,13 @@ export const BoxHeaderAndOptions = ({
   </PanelHeader>
 )
 
-export const ActionButton = (props: PropsWithChildren) => (
+interface ActionButtonProps {
+  disabled: boolean
+  isLoading: boolean
+  onClick: () => void
+}
+
+export const ActionButton = (props: PropsWithChildren<ActionButtonProps>) => (
   <Button
     {...props}
     bg="none"

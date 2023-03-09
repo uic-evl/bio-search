@@ -1,7 +1,5 @@
 import {useEffect, useState} from 'react'
-import ChartContainer, {
-  useChartContext,
-} from '../chart-container/chart-container'
+import {useChartContext} from '../chart-container/chart-container'
 import {colorsMapper} from '../../utils/mapper'
 import {TreeData, Dimensions} from '../../types'
 import useTaxonomyTree from '../use-taxonomy-tree/use-taxonomy-tree'
@@ -66,7 +64,7 @@ h ${-props.leftContainerWidth / 2 - props.rowHeight / 4}
 v ${-d.y + d.parent.y + props.nodeRadius}`
 
   return (
-    <ChartContainer ml={0} mr={20} mt={5} mb={0} useZoom={false}>
+    <>
       {data ? (
         <>
           <g>
@@ -112,7 +110,7 @@ v ${-d.y + d.parent.y + props.nodeRadius}`
           </g>
         </>
       ) : null}
-    </ChartContainer>
+    </>
   )
 }
 

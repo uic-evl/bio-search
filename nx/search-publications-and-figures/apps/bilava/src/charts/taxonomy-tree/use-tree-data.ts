@@ -14,8 +14,8 @@ export const useTreeData = (taxonomy: string) => {
       } catch (e) {
         console.log(e)
       }
-      loadTreeData()
     }
+    loadTreeData()
   }, [taxonomy])
 
   return treeData
