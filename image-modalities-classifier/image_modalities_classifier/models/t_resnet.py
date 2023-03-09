@@ -1,5 +1,6 @@
 import torch.nn as nn
 from torchvision import models
+from image_modalities_classifier.models.identity import Identity
 
 
 class IResnet(nn.Module):
@@ -69,3 +70,9 @@ class IResnet(nn.Module):
 
     def forward(self, x):
         return self.model(x)
+
+    def feature_extractor(self):
+        """Retrieve the backbone that gets features before FC"""
+        model = self.model
+        model.fc = Identity()
+        return model

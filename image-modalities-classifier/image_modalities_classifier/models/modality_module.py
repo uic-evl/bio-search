@@ -231,6 +231,5 @@ class ModalityModule(pl.LightningModule):
             "monitor": self.hparams.metric_monitor,
         }
 
-    def feature_extraction(self):
-        features = nn.Sequential(*list(self.model.children())[:-1])
-        return features
+    def feature_extractor(self):
+        return self.model.feature_extractor()

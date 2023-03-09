@@ -1,5 +1,6 @@
 import torch.nn as nn
 from torchvision import models
+from image_modalities_classifier.models.identity import Identity
 
 
 class EfficientNet(nn.Module):
@@ -58,3 +59,10 @@ class EfficientNet(nn.Module):
 
     def forward(self, x):
         return self.model(x)
+
+    def feature_extractor(self):
+        """Retrieva the backbone that gets features before FC"""
+        # TODO: should be a deepcopy
+        model = self.model
+        model.classifier = Identity()
+        return model

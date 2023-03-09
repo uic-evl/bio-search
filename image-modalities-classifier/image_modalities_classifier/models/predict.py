@@ -8,7 +8,7 @@ from torch.cuda import empty_cache
 # pylint: disable=no-name-in-module
 from torch import no_grad, max as torch_max
 from torch.utils.data import DataLoader
-from numpy import ndarray, hstack
+from numpy import ndarray, hstack, vstack
 from pandas import DataFrame
 from sklearn.preprocessing import LabelEncoder
 from image_modalities_classifier.dataset.transforms import ModalityTransforms
@@ -88,6 +88,21 @@ class SingleModalityPredictor:
         if as_classes:
             return self._as_classes(predictions)
         return predictions
+
+    def features(self, data: DataFrame, base_img_dir: str, path_col: str = "img_path"):
+        """Extract features from layer before FC"""
+        loader = self._get_dataloader(data, base_img_dir, path_col=path_col)
+        feature_extractor = self.model.feature_extractor()
+        feature_extractor.to(self.config.device)
+        feature_extractor.eval()
+        features = []
+        with no_grad():
+            for batch_imgs in loader:
+                data = batch_imgs.to(self.config.device)
+                batch_features = feature_extractor(data).cpu()
+                features.append(batch_features)
+        del feature_extractor
+        return vstack(features)
 
     def free(self):
         """Remove model from gpu"""
