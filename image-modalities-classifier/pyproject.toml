@@ -17,11 +17,13 @@ pytorch-lightning = "^1.9.0"
 # only needed for training
 iterative-stratification = "^0.1.7"
 matplotlib = "^3.6.3"
-wandb = "^0.13.9"
 pyarrow = "^10.0.0"
 tqdm = "^4.64.1"
 torch="^1.13.1"
 torchvision="^0.14.1"
+
+# made extra for compatibility with rapids on biosearch-core
+wandb = { version="^0.13.9", optional=true }
 
 # optional due to its dependency on CUDA (11.6)
 # torch = { version="^1.13.1", source="torch", optional = true }
@@ -41,8 +43,9 @@ pylint = "^2.15.10"
 ipykernel = "^6.20.2"
 ipywidgets = "^8.0.4"
 
-#[tool.poetry.extras]
+[tool.poetry.extras]
 #torch = ["torch", "torchvision"]
+wandb = ["wandb"]
 
 [build-system]
 requires = ["poetry-core"]
