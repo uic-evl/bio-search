@@ -134,6 +134,16 @@ def update_dataframe(
     return dataframe
 
 
+def fetch_split_set(classifier_long_name: str, parquets_dir: str) -> Dict:
+    """Get a dictioanary of img_path to split_set"""
+    parquets_dir = Path(parquets_dir)
+    parquet_file = f"{parquets_dir.stem}_{classifier_long_name}_v1.parquet"
+    df_clf = pd.read_parquet(parquets_dir / parquet_file)
+    df_clf = df_clf[["img_path", "split_set"]]
+    df_clf = df_clf.set_index("img_path")
+    return df_clf.to_dict("index")
+
+
 def fetch_from_db(
     conn: Connection, classifier: str, schemas: List[str]
 ) -> pd.DataFrame:
@@ -154,12 +164,13 @@ def fetch_from_db(
     for schema in schemas:
         label = "ground_truth" if schema == "training" else "label"
         # pylint: disable=consider-using-f-string
-        query = """
-                SELECT id, name, uri, width, height, source, status FROM {schema}.figures 
-                WHERE {label} like '{classifier}%'
-                """.format(
-            schema=schema, classifier=classifier, label=label
+        query = (
+            f"SELECT id, name, uri, width, height, source, status FROM {schema}.figures"
         )
+        if classifier != "higher-modality":
+            query += f" WHERE {label} like '{classifier}.%'"
+        # there should be a dot after the classifier short name to not search
+        # on parent's data
         df_schema = sqlio.read_sql_query(query, conn)
         df_schema["schema"] = schema
 
