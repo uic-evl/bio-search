@@ -5,23 +5,28 @@ description = ""
 authors = ["Juan Trelles <juantrelles@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.11"
-pandas = "^1.5.3"
-pyarrow = "^10.0.1"
-Pillow = "^9.4.0"
+python = ">=3.10,<3.11"
+# pandas = "^1.5.3"
+# pyarrow = "^10.0.1"
+# Pillow = "^9.4.0"
 psycopg = {extras = ["binary"], version = "^3.1.8"}
 python-dotenv = "^0.21.1"
 tqdm = "^4.64.1"
 flask = "^2.2.2"
 flask-cors = "^3.0.10"
-umap-learn=">0.4.0"
-# cudf-cu11 = { url="https://pypi.nvidia.com" }
-# dask-cudf-cu11 = { url="https://pypi.ngc.nvidia.com" }
-# cuml-cu11 = { url="https://pypi.ngc.nvidia.com" }
-image_modalities_classifier = { git = "https://github.com/uic-evl/bio-search.git", subdirectory="image-modalities-classifier", branch="search_engine_captions", extras=["torch"] }
-
+umap-learn="^0.5.3"
+cudf-cu11 = { version="^23.02", source="rapids" }
+dask-cudf-cu11 = { version="^23.02", source="rapids" }
+cuml-cu11 = { version="^23.02", source="rapids" }
 torch="^1.13.1"
 torchvision="^0.14.1"
+image_modalities_classifier = { git = "https://github.com/uic-evl/bio-search.git", subdirectory="image-modalities-classifier", branch="search_engine_captions"} #, extras=["torch"] }
+
+[[tool.poetry.source]]
+name="rapids"
+url="https://pypi.nvidia.com"
+default=false
+secondary=false
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
