@@ -21,7 +21,7 @@ pyarrow = "^10.0.0"
 tqdm = "^4.64.1"
 torch="^1.13.1"
 torchvision="^0.14.1"
-wandb = "^0.13.9"
+wandb = "^0.13.11"
 
 # made extra for compatibility with rapids on biosearch-core
 # wandb = { version="^0.13.9", optional=true }
