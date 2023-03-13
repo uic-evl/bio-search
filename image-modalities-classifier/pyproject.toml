@@ -8,7 +8,7 @@ packages = [{include = "image_modalities_classifier"}]
 
 [tool.poetry.dependencies]
 # needed always: training + inference
-python = "^3.8.1"
+python = ">=3.10,<3.11"
 pandas = "1.5.3"
 scikit-learn = "1.2"
 scikit-image = "^0.19.3"
@@ -21,10 +21,10 @@ pyarrow = "^10.0.0"
 tqdm = "^4.64.1"
 torch="^1.13.1"
 torchvision="^0.14.1"
-wandb = "^0.13.11"
 
 # made extra for compatibility with rapids on biosearch-core
-# wandb = { version="^0.13.9", optional=true }
+# wandb and rapids have incompatible protobuff requirements
+wandb = { version="^0.13.11", optional=true }
 
 # optional due to its dependency on CUDA (11.6)
 # torch = { version="^1.13.1", source="torch", optional = true }
@@ -44,9 +44,9 @@ pylint = "^2.15.10"
 ipykernel = "^6.20.2"
 ipywidgets = "^8.0.4"
 
-# [tool.poetry.extras]
+[tool.poetry.extras]
 #torch = ["torch", "torchvision"]
-# wandb = ["wandb"]
+wandb = ["wandb"]
 
 [build-system]
 requires = ["poetry-core"]

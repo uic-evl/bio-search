@@ -1,11 +1,10 @@
 """ Resnet wrapper """
 
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Callable
 import torch
 from torch import nn
 import pytorch_lightning as pl
 from torchmetrics import F1Score, Precision, Recall
-import wandb
 
 # from pl_bolts.optimizers.lr_scheduler import LinearWarmupCosineAnnealingLR
 
@@ -63,6 +62,7 @@ class ModalityModule(pl.LightningModule):
         mean_dataset: Optional[List[float]] = None,
         std_dataset: Optional[List[float]] = None,
         patience: Optional[int] = None,
+        log_confusion_matrix: Optional[Callable] = None,
     ):
         super().__init__()
         self.save_hyperparameters(
@@ -94,6 +94,7 @@ class ModalityModule(pl.LightningModule):
             else None
         )
         self.loss = nn.CrossEntropyLoss(weight=loss_weight)
+        self.log_confusion_matrix = log_confusion_matrix
 
     # pylint: disable=arguments-differ
     def forward(self, imgs):
@@ -174,16 +175,19 @@ class ModalityModule(pl.LightningModule):
         y_true = target.cpu().numpy()
         preds = preds.cpu().numpy()
 
-        self.logger.experiment.log(
-            {
-                "conf_mat": wandb.plot.confusion_matrix(
-                    probs=None,
-                    y_true=y_true,
-                    preds=preds,
-                    class_names=self.hparams.classes,
-                )
-            }
-        )
+        # move wandb out of the dependency by passing the logging function
+        # as a callable, due to its incompatibility with protobuff and rapids
+        if self.log_confusion_matrix:
+            self.logger.experiment.log(
+                {
+                    "conf_mat": self.log_confusion_matrix(
+                        probs=None,
+                        y_true=y_true,
+                        preds=preds,
+                        class_names=self.hparams.classes,
+                    )
+                }
+            )
 
     def configure_optimizers(self):
         if self.hparams.mode_scheduler is None:

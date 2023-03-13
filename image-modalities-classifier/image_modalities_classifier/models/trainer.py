@@ -287,6 +287,7 @@ class ModalityModelTrainer:
             mean_dataset=list(self.mean.numpy()),
             std_dataset=list(self.std.numpy()),
             patience=self.patience,
+            log_confusion_matrix=wandb.plot.confusion_matrix,
         )
         # if self.version > 1:
         #     # model = ResNetClass.load_from_checkpoint(self.output_dir/f'{self.classifier}_{self.version}.{self.extension}')
