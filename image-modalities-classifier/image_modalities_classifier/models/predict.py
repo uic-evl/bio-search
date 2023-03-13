@@ -12,6 +12,7 @@ import torch.nn.functional as nnf
 from numpy import ndarray, hstack, vstack
 from pandas import DataFrame
 from sklearn.preprocessing import LabelEncoder
+from tqdm import tqdm
 from image_modalities_classifier.dataset.transforms import ModalityTransforms
 from image_modalities_classifier.dataset.image_dataset import EvalImageDataset
 from image_modalities_classifier.models.modality_module import ModalityModule
@@ -63,7 +64,7 @@ class SingleModalityPredictor:
         self.model.eval()
         predictions = []
         with no_grad():
-            for batch_imgs in dataloader:
+            for batch_imgs in tqdm(dataloader):
                 data = batch_imgs.to(self.config.device)
                 batch_outputs = self.model(data)
                 _, batch_predictions = torch_max(batch_outputs, dim=1)
@@ -78,7 +79,7 @@ class SingleModalityPredictor:
         probabilities = []
         predictions = []
         with no_grad():
-            for batch_imgs in dataloader:
+            for batch_imgs in tqdm(dataloader):
                 data = batch_imgs.to(self.config.device)
                 batch_outputs = self.model(data)
 
@@ -134,7 +135,7 @@ class SingleModalityPredictor:
         feature_extractor.eval()
         features = []
         with no_grad():
-            for batch_imgs in loader:
+            for batch_imgs in tqdm(loader):
                 data = batch_imgs.to(self.config.device)
                 batch_features = feature_extractor(data).cpu()
                 features.append(batch_features)
