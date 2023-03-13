@@ -89,6 +89,7 @@ def parse_args(args) -> Namespace:
     parser.add_argument("bilava_dir", type=str, help="bilava folder")
     parser.add_argument("parquets_dir", type=str)
     parser.add_argument("db", type=str, help="path to .env with db conn")
+    parser.add_argument("--batch_size", type=int, default=32)
     parsed_args = parser.parse_args(args)
 
     return parsed_args
@@ -101,6 +102,7 @@ def onboard_per_classifier(
     parquets_dir: str,
     schemas_2_img_dir: Dict[str, str],
     schemas: List[str],
+    batch_size: int,
 ):
     processed_df = process_figures.onboard_to_df(
         conn_params,
@@ -109,6 +111,7 @@ def onboard_per_classifier(
         parquets_dir,
         schemas_2_img_dir,
         schemas,
+        batch_size=batch_size,
     )
     return processed_df
 
@@ -137,6 +140,7 @@ def main():
                 args.parquets_dir,
                 schemas_2_base_img_dir,
                 ["training", "cord19"],
+                args.batch_size,
             )
         # pylint: disable=bare-except,broad-exception-caught
         except Exception:

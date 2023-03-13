@@ -198,6 +198,7 @@ def onboard_to_df(
     train_parquets_dir: str,
     schemas_2_base_image_dir: Dict[str, str],
     schemas: List[str],
+    batch_size=32,
 ) -> pd.DataFrame:
     """Retrieve the starting data for bi-lava features table. Data comes from initial
     labeled datasets and from unlabeled data processed from pipeline. The processsed
@@ -244,6 +245,7 @@ def onboard_to_df(
         workdir,
         df_db_figures,
         schemas_2_base_image_dir,
+        batch_size=batch_size,
     )
 
     return df_processed
