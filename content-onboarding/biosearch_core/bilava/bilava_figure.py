@@ -15,8 +15,8 @@ class BilavaFigure:
     prediction: str
     name: str
     uri: str
-    width: float
-    height: float
+    width: int
+    height: int
     source: str
     status: int
     split_set: str
