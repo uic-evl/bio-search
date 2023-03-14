@@ -72,7 +72,7 @@ schemas_2_base_img_dir = {
 
 def setup_logger(workspace: str):
     """configure logger"""
-    logger_dir = Path(workspace) / "logs"
+    logger_dir = Path(workspace)
     makedirs(logger_dir, exist_ok=True)
 
     logging.basicConfig(
@@ -124,6 +124,7 @@ def onboard_to_df(args: Namespace, workdir: Path):
 
     # pylint: disable=consider-iterating-dictionary, consider-using-dict-items
     for clf_key in classifiers.keys():
+        print(clf_key)
         meta = classifiers[clf_key]
         clf = Classifier(
             long_name=meta["longname"],
