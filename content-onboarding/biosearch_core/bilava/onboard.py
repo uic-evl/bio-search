@@ -90,6 +90,7 @@ def parse_args(args) -> Namespace:
     parser.add_argument("parquets_dir", type=str)
     parser.add_argument("db", type=str, help="path to .env with db conn")
     parser.add_argument("--batch_size", type=int, default=32)
+    parser.add_argument("--workdir", type=str, default=None)
     parsed_args = parser.parse_args(args)
 
     return parsed_args
@@ -116,13 +117,10 @@ def onboard_per_classifier(
     return processed_df
 
 
-def main():
-    args = parse_args(argv[1:])
-    setup_logger(str(Path(args.bilava_dir) / "logs"))
+def onboard_to_df(args: Namespace, workdir: Path):
     conn_params = params_from_env(args.db)
-
-    workdir = Path(args.bilava_dir) / datetime.datetime.now().strftime("%Y%M%D%h%m%s")
-    makedirs(workdir)
+    num_files_required = len(classifiers)
+    num_processed = 0
 
     # pylint: disable=consider-iterating-dictionary, consider-using-dict-items
     for clf_key in classifiers.keys():
@@ -133,6 +131,12 @@ def main():
             model_path=meta["model"],
         )
         try:
+            expected_file_name = f"{clf.long_name}.parquet"
+            if (workdir / expected_file_name).exists():
+                num_processed += 1
+                continue
+
+            print("fake onboard")
             onboard_per_classifier(
                 conn_params,
                 str(workdir),
@@ -142,9 +146,49 @@ def main():
                 ["training", "cord19"],
                 args.batch_size,
             )
+            num_processed += 1
         # pylint: disable=bare-except,broad-exception-caught
         except Exception:
             logging.error("Error %s", clf.long_name, exc_info=True)
+    return num_processed == num_files_required
+
+
+def onboard_to_db(args: Namespace, workdir: Path):
+    conn_params = params_from_env(args.db)
+    data_files = []
+    # pylint: disable=consider-iterating-dictionary, consider-using-dict-items
+    for clf_key in classifiers.keys():
+        meta = classifiers[clf_key]
+        clf = Classifier(
+            long_name=meta["longname"],
+            short_name=meta["shortname"],
+            model_path=meta["model"],
+        )
+        data_files.append(f"{clf.long_name}.parquet")
+        data_files = [str(workdir / el) for el in data_files]
+        process_figures.onboard_to_db(conn_params, data_files, "training")
+
+
+def main():
+    args = parse_args(argv[1:])
+    setup_logger(str(Path(args.bilava_dir) / "logs"))
+
+    if args.workdir is not None and not Path(args.workdir).exists():
+        logging.error("workdir %s does not exist", args.workdir)
+
+    if args.workdir is None:
+        str_now = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        workdir = Path(args.bilava_dir) / str_now
+        makedirs(workdir)
+    else:
+        workdir = Path(args.workdir)
+
+    files_ready = onboard_to_df(args, workdir)
+    if not files_ready:
+        logging.info("Missing parquets, ending onboard")
+
+    onboard_to_db(args, workdir)
+    print("import done")
 
 
 if __name__ == "__main__":

@@ -59,4 +59,5 @@ class BilavaFigure:
             self.hit_pca,
             self.hit_tsne,
             self.hit_umap,
+            self.status,
         )

@@ -3,10 +3,12 @@ metrics for bilava's strategy"""
 
 from os import cpu_count, remove
 from typing import List, Dict
+import logging
 from pathlib import Path
 import pandas as pd
 import pandas.io.sql as sqlio
 import numpy as np
+from tqdm import tqdm
 from psycopg import Connection, connect
 from image_modalities_classifier.models.predict import (
     RunConfig,
@@ -176,10 +178,10 @@ def fetch_from_db(
     for schema in schemas:
         label = "ground_truth" if schema == "training" else "label"
         # pylint: disable=consider-using-f-string
-        query = """SELECT id, name, uri, width, height, source, status 
+        query = """SELECT id, name, uri, width, height, source, status, {label} as label
                   FROM {schema}.figures WHERE fig_type={fig_type}
                 """.format(
-            schema=schema, fig_type=FigureType.SUBFIGURE.value
+            schema=schema, fig_type=FigureType.SUBFIGURE.value, label=label
         )
         if classifier_short_name != "":  # root has no short-name
             query += f" AND {label} like '{classifier_short_name}.%'"
@@ -251,37 +253,58 @@ def onboard_to_df(
     return df_processed
 
 
-def onboard_bilava_training_and_unlabeled_data_to_db(
-    conn_params: ConnectionParams, input_df: pd.DataFrame
+def onboard_to_db(
+    conn_params: ConnectionParams, input_df_paths: List[str], bilava_schema: str
 ):
     """Second step for onboarding training and unlabeled data for the first time.
     Import the data from a dataframe to database."""
+
     figures = []
-    for _, row in input_df.iterrows():
-        bilava_figure = BilavaFigure(
-            id=row["id"],
-            schema=row["schema"],
-            classifier=row["classifier"],
-            label=row["label"],
-            prediction=row["prediction"],
-            name=row["name"],
-            uri=row["uri"],
-            width=row["width"],
-            height=row["height"],
-            source=row["source"],
-            status=row["status"],
-            split_set=row["split_set"],
-            x_pca=row["x_pca"],
-            y_pca=row["y_pca"],
-            x_tsne=row["x_tsne"],
-            y_tsne=row["y_tsne"],
-            x_umap=row["x_umap"],
-            y_umap=row["y_umap"],
-            pred_probs=row["probs"],
-            margin_sample=row["margin_sample"],
-            entropy=row["entropy"],
-            hit_pca=row["hit_pca"],
-            hit_umap=row["hit_umap"],
-            hit_tsne=row["hit_tsne"],
-        )
-        figures.append(bilava_figure)
+    for input_df_path in input_df_paths:
+        classifier = Path(input_df_path).stem
+        input_df = pd.read_parquet(input_df_path)
+
+        for _, row in tqdm(input_df.iterrows()):
+            bilava_figure = BilavaFigure(
+                id=row["id"],
+                schema=row["schema"],
+                classifier=classifier,
+                label=row["label"],
+                prediction=row["prediction"],
+                name=row["name"],
+                uri=row["uri"],
+                width=row["width"],
+                height=row["height"],
+                source=row["source"],
+                status=row["status"],
+                split_set=row["split_set"],
+                x_pca=row["x_pca"],
+                y_pca=row["y_pca"],
+                x_tsne=row["x_tsne"],
+                y_tsne=row["y_tsne"],
+                x_umap=row["x_umap"],
+                y_umap=row["y_umap"],
+                pred_probs=row["probs"],
+                margin_sample=row["margin_sample"],
+                entropy=row["entropy"],
+                hit_pca=row["hit_pca"],
+                hit_umap=row["hit_umap"],
+                hit_tsne=row["hit_tsne"],
+            )
+            figures.append(bilava_figure)
+
+    # pylint: disable=not-context-manager
+    with connect(conninfo=conn_params.conninfo(), autocommit=False) as conn:
+        with conn.cursor() as cursor:
+            try:
+                logging.info("Inserting figures to db")
+                sql = f"COPY {bilava_schema}.features (id, schema, classifier, label, prediction, name, width, height, source, split_set, x_pca, y_pca, x_tsne, y_tsne, x_umap, y_umap, pred_probs, ms, en, hit_pca, hit_tsne, hit_umap, status) FROM STDIN"
+                with cursor.copy(sql) as copy:
+                    for bilava_figure in figures:
+                        copy.write_row(bilava_figure.to_tuple())
+
+            # pylint: disable=broad-except
+            except Exception as exc:
+                print("Error inserting content", exc)
+                logging.error("Error inserting content", exc_info=True)
+                conn.rollback()
