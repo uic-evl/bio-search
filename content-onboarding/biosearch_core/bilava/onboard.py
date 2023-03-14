@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import List, Dict
 import datetime
 import logging
+from tqdm import tqdm
 
 from biosearch_core.bilava import process_figures
 from biosearch_core.bilava.classifier import Classifier
@@ -123,7 +124,7 @@ def onboard_to_df(args: Namespace, workdir: Path):
     num_processed = 0
 
     # pylint: disable=consider-iterating-dictionary, consider-using-dict-items
-    for clf_key in classifiers.keys():
+    for clf_key in tqdm(classifiers.keys()):
         print(clf_key)
         meta = classifiers[clf_key]
         clf = Classifier(
@@ -158,7 +159,7 @@ def onboard_to_db(args: Namespace, workdir: Path):
     conn_params = params_from_env(args.db)
     data_files = []
     # pylint: disable=consider-iterating-dictionary, consider-using-dict-items
-    for clf_key in classifiers.keys():
+    for clf_key in tqdm(classifiers.keys()):
         meta = classifiers[clf_key]
         clf = Classifier(
             long_name=meta["longname"],
