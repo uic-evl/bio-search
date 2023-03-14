@@ -222,8 +222,10 @@ def onboard_to_df(
     """
 
     # match the split set for the training images
+    print("reading split sets from parquet")
     img_path_2_split_set = fetch_split_set(classifier.long_name, train_parquets_dir)
     # pylint: disable=not-context-manager
+    print("reading data from database")
     with connect(conninfo=conn_params.conninfo(), autocommit=False) as conn:
         df_db_figures = fetch_from_db(conn, classifier.short_name, schemas)
     # for the starting condition, the data processed from raw papers have only
@@ -234,11 +236,13 @@ def onboard_to_df(
         else "UNL",
         axis=1,
     )
+    print("removing duplicates")
     # remove duplicated uri, most likely from training data
     df_db_figures = df_db_figures.set_index("uri")
     df_db_figures = df_db_figures[~df_db_figures.index.duplicated()]
     df_db_figures = df_db_figures.reset_index()
 
+    print("starting features calculation")
     df_processed = calc_features_and_dim_values(
         classifier.model_path,
         classifier.long_name,
