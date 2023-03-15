@@ -1,4 +1,4 @@
-import {useState, useEffect, useMemo} from 'react'
+import {useState, useEffect, useMemo, useRef} from 'react'
 import {Box} from '@chakra-ui/react'
 import {BufferAttribute, Color, NoBlending, ShaderMaterial} from 'three'
 import {Canvas, ThreeEvent} from '@react-three/fiber'
@@ -6,6 +6,7 @@ import {OrbitControls} from '@react-three/drei'
 import {ScatterDot} from '../../types'
 import {extent} from 'd3-array'
 import {colorsMapper} from '../../utils/mapper'
+import SelectionBox from './selection-box'
 
 const fragmentShader = `
 varying vec3 vInsideColor;
@@ -79,8 +80,8 @@ interface CanvasPoint {
 export function ThreeScatterplot(props: ThreeScatterplotProps) {
   const [cameraWidth, setCameraWidth] = useState<number | null>(null)
   const [cameraHeight, setCameraHeight] = useState<number | null>(null)
-  const [mouseClicked, setMouseClicked] = useState<boolean>(false)
   const [pointStart, setPointStart] = useState<CanvasPoint | null>(null)
+  const [selection, setSelection] = useState<number[]>([])
 
   const padding = 50
   const dpr = Math.min(window.devicePixelRatio, 2)
@@ -100,6 +101,51 @@ export function ThreeScatterplot(props: ThreeScatterplotProps) {
 
     if (e.altKey) {
       setPointStart({x: e.unprojectedPoint.x, y: e.unprojectedPoint.y})
+    }
+  }
+
+  const onPointerMove = (e: ThreeEvent<PointerEvent>) => {
+    // don't do anything else if we are just panning
+    if (e.ctrlKey) return
+    if ((1 && e.buttons) === 0) return
+    if (!pointStart) return
+
+    if (e.altKey) {
+      e.stopPropagation()
+
+      const selectionBox = []
+      selectionBox.length = 3 * 5
+
+      selectionBox[0] = pointStart.x
+      selectionBox[1] = pointStart.y
+      selectionBox[2] = 3
+
+      selectionBox[3] = e.unprojectedPoint.x
+      selectionBox[4] = pointStart.y
+      selectionBox[5] = 3
+
+      selectionBox[6] = e.unprojectedPoint.x
+      selectionBox[7] = e.unprojectedPoint.y
+      selectionBox[8] = 3
+
+      selectionBox[9] = pointStart.x
+      selectionBox[10] = e.unprojectedPoint.y
+      selectionBox[11] = 3
+
+      // to close polygon
+      selectionBox[12] = pointStart.x
+      selectionBox[13] = pointStart.y
+      selectionBox[14] = 3
+
+      setSelection(selectionBox)
+    }
+  }
+
+  const onPointerUp = (e: ThreeEvent<PointerEvent>) => {
+    // don't do anything else if we are just panning
+    if (e.ctrlKey) return
+    if (e.altKey) {
+      // TOOD: search
     }
   }
 
@@ -166,16 +212,18 @@ export function ThreeScatterplot(props: ThreeScatterplotProps) {
             maxDistance={350}
             enableRotate={false}
           />
+          {/* plane to track selection events */}
           <mesh
             position={[0, 0, -1]}
             scale={[cameraWidth * 2, cameraHeight * 2, 1]}
-            onPointerDown={e =>
-              onPointerDown(e as unknown as ThreeEvent<PointerEvent>)
-            }
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
           >
-            <planeBufferGeometry />
+            <planeGeometry />
             <meshBasicMaterial color="green" />
           </mesh>
+          {/* scatterplot dots on scene */}
           <points
             material={pointsMaterial}
             onClick={e => {
@@ -197,6 +245,7 @@ export function ThreeScatterplot(props: ThreeScatterplotProps) {
               />
             </bufferGeometry>
           </points>
+          <SelectionBox points={selection} />
         </Canvas>
       ) : null}
     </Box>
