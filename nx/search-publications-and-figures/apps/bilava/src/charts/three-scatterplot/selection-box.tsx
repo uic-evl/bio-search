@@ -27,6 +27,7 @@ const SelectionBox = ({points}: SelectionBoxProps) => {
         'position',
         new Float32BufferAttribute(points, 3, false),
       )
+      refSelection.current.frustumCulled = false
       refSelection.current.geometry.attributes.position.needsUpdate = true
     }
   })

@@ -13,8 +13,12 @@ export interface Dimensions {
 }
 
 export interface ScatterDot {
-  x: number
-  y: number
-  lbl: string
-  pred: string
+  id: number // TODO database, shit i need the schema and classifier too...
+  x: number // projected x coordinate
+  y: number // projected y coordinate
+  lbl: string // label
+  prd: string // prediction
+  uri: string // relative url to image
+  hit: number // neighborhood hit
+  ss: string // split set
 }

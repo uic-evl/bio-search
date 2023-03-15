@@ -64,7 +64,7 @@ void main() {
 const xAccessor = (d: ScatterDot) => d.x
 const yAccessor = (d: ScatterDot) => d.y
 const labelAccessor = (d: ScatterDot) => d.lbl
-const predictionAccessor = (d: ScatterDot) => d.pred
+const predictionAccessor = (d: ScatterDot) => d.prd
 
 export interface ThreeScatterplotProps {
   data: ScatterDot[]
@@ -174,6 +174,7 @@ export function ThreeScatterplot(props: ThreeScatterplotProps) {
       strokesBuffer[i3 + 1] = strokes.g
       strokesBuffer[i3 + 2] = strokes.b
     }
+    console.log('points length', totalPoints)
     return {
       position: new BufferAttribute(positionsBuffer, 3),
       fillColor: new BufferAttribute(fillsBuffer, 3),
@@ -202,7 +203,6 @@ export function ThreeScatterplot(props: ThreeScatterplotProps) {
             position: [0, 0, 40],
           }}
           dpr={dpr}
-          color="black"
         >
           <pointLight color={'white'} position={[0, 0, 100]} />
           <OrbitControls
@@ -221,7 +221,7 @@ export function ThreeScatterplot(props: ThreeScatterplotProps) {
             onPointerUp={onPointerUp}
           >
             <planeGeometry />
-            <meshBasicMaterial color="green" />
+            <meshBasicMaterial color="black" />
           </mesh>
           {/* scatterplot dots on scene */}
           <points

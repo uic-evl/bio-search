@@ -9,25 +9,33 @@ import {
 import {useClassifiers} from './use-classifiers'
 import ThreeScatterplot from '../../charts/three-scatterplot/three-scatterplot'
 import {ScatterDot} from '../../types'
+import {fetch_projections} from '../../api'
 
-const data: ScatterDot[] = [
-  {x: 10, y: 10, lbl: 'exp.gel', pred: 'exp.gel'},
-  {x: 20, y: 20, lbl: 'exp.pla', pred: 'exp.pla'},
-]
+// const data: ScatterDot[] = [
+//   {x: 10, y: 10, lbl: 'exp.gel', prd: 'exp.gel'},
+//   {x: 20, y: 20, lbl: 'exp.pla', prd: 'exp.pla'},
+// ]
 
-/* eslint-disable-next-line */
 export interface ProjectionPanelProps {
   project: string
 }
 
 export function ProjectionPanel(props: ProjectionPanelProps) {
+  const [data, setData] = useState<ScatterDot[] | null>(null)
   const [classifier, setClassifier] = useState<string>('')
   const [projection, setProjection] = useState<string>('tsne')
-  const [partition, setPartition] = useState<string>('TRAIN')
+  const [splitSet, setSplitSet] = useState<string>('TRAIN')
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const classifiers = useClassifiers(props.project)
 
-  const handleOnLoadData = async () => {}
+  const handleOnLoadData = async () => {
+    const projections = await fetch_projections(
+      classifier,
+      projection,
+      splitSet,
+    )
+    setData(projections)
+  }
 
   return (
     <Box w="full" h="full">
@@ -37,11 +45,16 @@ export function ProjectionPanel(props: ProjectionPanelProps) {
         setClassifier={setClassifier}
         selectedProjection={projection}
         setProjection={setProjection}
-        selectedPartition={partition}
-        setPartition={setPartition}
+        selectedPartition={splitSet}
+        setPartition={setSplitSet}
         isLoading={isLoading}
         onClick={handleOnLoadData}
       />
+      <Box w="full" h="full">
+        {data ? (
+          <ThreeScatterplot data={data} width={800} height={800} />
+        ) : null}
+      </Box>
     </Box>
   )
 }
@@ -104,9 +117,6 @@ const ProjectionPanelHeader = (props: ProjectionPanelHeaderProps) => {
           </ActionButton>
         </Box>
       </PanelHeader>
-      <Box w="full" h="full">
-        <ThreeScatterplot data={data} width={500} height={500} />
-      </Box>
     </Box>
   )
 }
