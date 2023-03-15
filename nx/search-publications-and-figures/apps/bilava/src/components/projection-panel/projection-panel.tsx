@@ -7,6 +7,13 @@ import {
   PanelHeader,
 } from '../panel-header/panel-header'
 import {useClassifiers} from './use-classifiers'
+import ThreeScatterplot from '../../charts/three-scatterplot/three-scatterplot'
+import {ScatterDot} from '../../types'
+
+const data: ScatterDot[] = [
+  {x: 10, y: 10, lbl: 'exp.gel', pred: 'exp.gel'},
+  {x: 20, y: 20, lbl: 'exp.pla', pred: 'exp.pla'},
+]
 
 /* eslint-disable-next-line */
 export interface ProjectionPanelProps {
@@ -56,46 +63,51 @@ const ProjectionPanelHeader = (props: ProjectionPanelHeaderProps) => {
   const partitions = ['TRAIN', 'VAL', 'TEST', 'UNL']
 
   return (
-    <PanelHeader>
-      <HeaderTitle>Projections</HeaderTitle>
-      {props.classifiers.length > 0 ? (
+    <Box>
+      <PanelHeader>
+        <HeaderTitle>Projections</HeaderTitle>
+        {props.classifiers.length > 0 ? (
+          <HeaderSelect
+            placeholder="classifier"
+            value={props.selectedClassifier}
+            options={props.classifiers}
+            onChangeFn={props.setClassifier}
+          />
+        ) : (
+          <Spinner />
+        )}
         <HeaderSelect
-          placeholder="classifier"
-          value={props.selectedClassifier}
-          options={props.classifiers}
-          onChangeFn={props.setClassifier}
+          placeholder="projection"
+          value={props.selectedProjection}
+          options={projections}
+          onChangeFn={props.setProjection}
         />
-      ) : (
-        <Spinner />
-      )}
-      <HeaderSelect
-        placeholder="projection"
-        value={props.selectedProjection}
-        options={projections}
-        onChangeFn={props.setProjection}
-      />
-      <HeaderSelect
-        placeholder="partition"
-        value={props.selectedPartition}
-        options={partitions}
-        onChangeFn={props.setPartition}
-      />
-      <Spacer />
-      <Box>
-        <ActionButton
-          disabled={
-            !props.selectedClassifier ||
-            !props.selectedProjection ||
-            !props.selectedPartition ||
-            props.isLoading
-          }
-          onClick={props.onClick}
-          isLoading={props.isLoading}
-        >
-          Load
-        </ActionButton>
+        <HeaderSelect
+          placeholder="partition"
+          value={props.selectedPartition}
+          options={partitions}
+          onChangeFn={props.setPartition}
+        />
+        <Spacer />
+        <Box>
+          <ActionButton
+            disabled={
+              !props.selectedClassifier ||
+              !props.selectedProjection ||
+              !props.selectedPartition ||
+              props.isLoading
+            }
+            onClick={props.onClick}
+            isLoading={props.isLoading}
+          >
+            Load
+          </ActionButton>
+        </Box>
+      </PanelHeader>
+      <Box w="full" h="full">
+        <ThreeScatterplot data={data} width={500} height={500} />
       </Box>
-    </PanelHeader>
+    </Box>
   )
 }
 

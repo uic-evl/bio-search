@@ -11,3 +11,10 @@ export interface Dimensions {
   marginTop: number
   marginBottom: number
 }
+
+export interface ScatterDot {
+  x: number
+  y: number
+  lbl: string
+  pred: string
+}
