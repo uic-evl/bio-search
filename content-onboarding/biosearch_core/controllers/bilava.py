@@ -4,6 +4,7 @@ from typing import List, Literal
 import json
 import logging
 from psycopg import connect
+from psycopg.rows import dict_row
 from biosearch_core.db.model import ConnectionParams
 
 
@@ -54,7 +55,7 @@ def fetch_images(
 
     images = None
     # pylint: disable=not-context-manager
-    with connect(conninfo=conn_params.conninfo()) as conn:
+    with connect(conninfo=conn_params.conninfo(), row_factory=dict_row) as conn:
         with conn.cursor() as cursor:
             try:
                 query = """
