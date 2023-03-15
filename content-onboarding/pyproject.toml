@@ -21,6 +21,7 @@ cuml-cu11 = { version="^23.02", source="rapids" }
 torch="^1.13.1"
 torchvision="^0.14.1"
 image_modalities_classifier = { git = "https://github.com/uic-evl/bio-search.git", subdirectory="image-modalities-classifier", branch="search_engine_captions"} #, extras=["torch"] }
+rich = "^13.3.2"
 
 [[tool.poetry.source]]
 name="rapids"

@@ -159,7 +159,7 @@ def onboard_to_db(args: Namespace, workdir: Path):
     conn_params = params_from_env(args.db)
     data_files = []
     # pylint: disable=consider-iterating-dictionary, consider-using-dict-items
-    for clf_key in tqdm(classifiers.keys()):
+    for clf_key in classifiers.keys():
         meta = classifiers[clf_key]
         clf = Classifier(
             long_name=meta["longname"],
@@ -168,7 +168,7 @@ def onboard_to_db(args: Namespace, workdir: Path):
         )
         data_files.append(f"{clf.long_name}.parquet")
         data_files = [str(workdir / el) for el in data_files]
-        process_figures.onboard_to_db(conn_params, data_files, "training")
+    process_figures.onboard_to_db(conn_params, data_files, "bilava")
 
 
 def main():
