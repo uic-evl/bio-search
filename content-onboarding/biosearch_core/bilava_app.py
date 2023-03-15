@@ -49,13 +49,15 @@ def fetch_classifiers(project):
 
 @cross_origin
 @app.route(
-    ROOT + "/projections/<string:classifier>/<string:reduction>", methods=["GET"]
+    ROOT + "/projections/<string:classifier>/<string:reduction>/<string:split_set>",
+    methods=["GET"],
 )
-def fetch_projections(classifier: str, reduction: str):
+def fetch_projections(classifier: str, reduction: str, split_set: str):
     """Retrieve the projected images with 2D coordinates based on the reduction method"""
     # TODO: deal with mistakes
     classifier = escape(classifier)
     reduction = escape(reduction)
+    split_set = escape(split_set)
     conn_params = ConnectionParams(
         host=environ.get("host"),
         port=environ.get("port"),
@@ -64,4 +66,4 @@ def fetch_projections(classifier: str, reduction: str):
         password=environ.get("password"),
         schema=environ.get("schema"),
     )
-    return bilava.fetch_images(conn_params, classifier, reduction)
+    return bilava.fetch_images(conn_params, classifier, reduction, split_set)

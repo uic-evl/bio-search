@@ -46,30 +46,52 @@ def fetch_labels_list(conn_params: ConnectionParams) -> List[str]:
     return labels
 
 
+classifiers_mapper = {
+    "experimental": "exp",
+    "gel": "exp.gel",
+    "higher-modality": "",
+    "microscopy": "mic",
+    "molecular": "mol",
+    "graphics": "gra",
+    "radiology": "rad",
+    "photography": "pho",
+    "electron": "mic.ele",
+}
+
+
 def fetch_images(
     conn_params: ConnectionParams,
     classifier: str,
     reduction: Literal["pca", "umap", "tsne"],
+    split_set: Literal["TRAIN", "VAL", "TEST", "UNL", "ALL"],
 ):
     """Fetch images from database for projection view"""
 
     images = None
+    lbl_len = len(classifiers_mapper[classifier]) + 4  # . and next level
+
     # pylint: disable=not-context-manager
     with connect(conninfo=conn_params.conninfo(), row_factory=dict_row) as conn:
         with conn.cursor() as cursor:
             try:
                 query = """
-                 SELECT id, uri, label as lbl, prediction as prd, 
-                        round(x_{reduction}, 2)::float as x,
-                        round(y_{reduction}, 2)::float as y,
-                        round(hit_{reduction}, 2)::float as hit 
+                 SELECT id, uri, prediction as prd, 
+                        LEFT(label, {lbl_len}) as lbl,
+                        ROUND(x_{reduction}, 2)::float as x,
+                        ROUND(y_{reduction}, 2)::float as y,
+                        ROUND(hit_{reduction}, 2)::float as hit,
+                        split_set as ss
                  FROM {bilava_schema}.features
                  WHERE classifier = '{classifier}'
                 """.format(
                     reduction=reduction,
                     classifier=classifier,
                     bilava_schema=conn_params.schema,
+                    lbl_len=lbl_len,
                 )
+                if split_set != "ALL":
+                    query = f"{query} AND split_set='{split_set}'"
+
                 cursor.execute(query)
                 images = cursor.fetchall()
             # pylint: disable=broad-except
