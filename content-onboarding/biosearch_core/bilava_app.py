@@ -1,9 +1,9 @@
 """ Flask API for the search interface """
 
-from os import environ
+from os import environ, getcwd
 from pathlib import Path
 from dotenv import load_dotenv
-from flask import Flask
+from flask import Flask, request
 from flask_cors import CORS, cross_origin
 from markupsafe import escape
 from biosearch_core.db.model import ConnectionParams
@@ -17,6 +17,7 @@ CORS(app)
 # environmental variables
 ROOT = environ.get("FLASK_ROOT")
 PROJECTS_DIR = environ.get("PROJECTS_DIR")
+print(PROJECTS_DIR)
 print(ROOT)
 
 
@@ -44,3 +45,23 @@ def fetch_classifiers(project):
     project_dir = Path(PROJECTS_DIR) / project
 
     return bilava.fetch_classifiers(str(project_dir))
+
+
+@cross_origin
+@app.route(
+    ROOT + "/projections/<string:classifier>/<string:reduction>", methods=["GET"]
+)
+def fetch_projections(classifier: str, reduction: str):
+    """Retrieve the projected images with 2D coordinates based on the reduction method"""
+    # TODO: deal with mistakes
+    classifier = escape(classifier)
+    reduction = escape(reduction)
+    conn_params = ConnectionParams(
+        host=environ.get("host"),
+        port=environ.get("port"),
+        dbname=environ.get("dbname"),
+        user=environ.get("user"),
+        password=environ.get("password"),
+        schema=environ.get("schema"),
+    )
+    return bilava.fetch_images(conn_params, classifier, reduction)
