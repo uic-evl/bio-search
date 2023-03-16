@@ -10,6 +10,7 @@ import {useClassifiers} from './use-classifiers'
 import ThreeScatterplot from '../../charts/three-scatterplot/three-scatterplot'
 import {ScatterDot} from '../../types'
 import {fetch_projections} from '../../api'
+import {min} from 'd3-array'
 
 // const data: ScatterDot[] = [
 //   {x: 10, y: 10, lbl: 'exp.gel', prd: 'exp.gel'},
@@ -18,6 +19,18 @@ import {fetch_projections} from '../../api'
 
 export interface ProjectionPanelProps {
   project: string
+}
+
+const xAccessor = (d: ScatterDot) => d.x
+const yAccessor = (d: ScatterDot) => d.y
+
+const translateData = (data: ScatterDot[]) => {
+  /* Translate data to avoid negative positions, required by d3.density */
+  const padding = 20
+  const minX = Math.abs(min(data, xAccessor) || 0) + padding
+  const minY = Math.abs(min(data, yAccessor) || 0) + padding
+  console.log(minX, minY)
+  return data.map(el => ({...el, x: el.x + minX, y: el.y + minY}))
 }
 
 export function ProjectionPanel(props: ProjectionPanelProps) {
@@ -34,7 +47,7 @@ export function ProjectionPanel(props: ProjectionPanelProps) {
       projection,
       splitSet,
     )
-    setData(projections)
+    setData(translateData(projections))
   }
 
   return (
@@ -52,7 +65,14 @@ export function ProjectionPanel(props: ProjectionPanelProps) {
       />
       <Box w="full" h="full">
         {data ? (
-          <ThreeScatterplot data={data} width={800} height={800} />
+          <ThreeScatterplot
+            classifier={classifier}
+            data={data}
+            cameraLeft={0}
+            cameraBottom={0}
+            width={800}
+            height={800}
+          />
         ) : null}
       </Box>
     </Box>

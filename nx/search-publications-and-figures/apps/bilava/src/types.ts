@@ -1,3 +1,5 @@
+import {Float32BufferAttribute} from 'three'
+
 export interface TreeData {
   taxonomy: string[]
   data: string[]
@@ -21,4 +23,10 @@ export interface ScatterDot {
   uri: string // relative url to image
   hit: number // neighborhood hit
   ss: string // split set
+}
+
+export interface ProjectionBuffer {
+  position: Float32BufferAttribute
+  fillColor: Float32BufferAttribute
+  strokeColor: Float32BufferAttribute
 }

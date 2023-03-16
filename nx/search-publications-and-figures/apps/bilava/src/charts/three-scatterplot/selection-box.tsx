@@ -36,11 +36,7 @@ const SelectionBox = ({points}: SelectionBoxProps) => {
     <>
       {points.length > 0 ? (
         <line_ ref={refSelection}>
-          <lineBasicMaterial
-            attach="material"
-            color={'red'}
-            depthTest={false}
-          />
+          <lineBasicMaterial attach="material" color={'red'} depthTest={true} />
         </line_>
       ) : null}
     </>
