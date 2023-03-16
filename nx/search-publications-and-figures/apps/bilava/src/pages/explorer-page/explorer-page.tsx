@@ -12,7 +12,7 @@ export function ExplorerPage(props: ExplorerPageProps) {
     <Grid
       w="100hv"
       h="100vh"
-      gridTemplateColumns={'300px 1fr 2fr'}
+      gridTemplateColumns={'300px 1fr 1fr'}
       gridTemplateRows={'27px 1fr 300px'}
       gridGap="1px"
       gridTemplateAreas={`"header header header"

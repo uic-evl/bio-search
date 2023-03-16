@@ -11,11 +11,8 @@ import ThreeScatterplot from '../../charts/three-scatterplot/three-scatterplot'
 import {ScatterDot} from '../../types'
 import {fetch_projections} from '../../api'
 import {min} from 'd3-array'
-
-// const data: ScatterDot[] = [
-//   {x: 10, y: 10, lbl: 'exp.gel', prd: 'exp.gel'},
-//   {x: 20, y: 20, lbl: 'exp.pla', prd: 'exp.pla'},
-// ]
+import useDimensions from 'react-cool-dimensions'
+import {ResizeObserver} from '@juggle/resize-observer'
 
 export interface ProjectionPanelProps {
   project: string
@@ -29,7 +26,6 @@ const translateData = (data: ScatterDot[]) => {
   const padding = 20
   const minX = Math.abs(min(data, xAccessor) || 0) + padding
   const minY = Math.abs(min(data, yAccessor) || 0) + padding
-  console.log(minX, minY)
   return data.map(el => ({...el, x: el.x + minX, y: el.y + minY}))
 }
 
@@ -40,13 +36,26 @@ export function ProjectionPanel(props: ProjectionPanelProps) {
   const [splitSet, setSplitSet] = useState<string>('TRAIN')
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const classifiers = useClassifiers(props.project)
+  const {observe, height} = useDimensions({
+    useBorderBoxSize: true,
+    polyfill: ResizeObserver,
+    onResize: ({unobserve, height}) => {
+      // without observing, the canvas is expanding its height out of control
+      // and we only need the container height. TODO: fix for resizing
+      if (height > 0) {
+        unobserve()
+      }
+    },
+  })
 
   const handleOnLoadData = async (searchBoxClassifier: string) => {
+    setIsLoading(true)
     const projections = await fetch_projections(
       searchBoxClassifier,
       projection,
       splitSet,
     )
+    setIsLoading(false)
     setClassifier(searchBoxClassifier)
     setData(translateData(projections))
   }
@@ -64,15 +73,15 @@ export function ProjectionPanel(props: ProjectionPanelProps) {
         isLoading={isLoading}
         onClick={handleOnLoadData}
       />
-      <Box w="full" h="full">
-        {data ? (
+      <Box w="full" h="full" ref={observe}>
+        {data && height > 0 ? (
           <ThreeScatterplot
             classifier={classifier}
             data={data}
             cameraLeft={0}
             cameraBottom={0}
             width={800}
-            height={800}
+            height={height}
           />
         ) : null}
       </Box>

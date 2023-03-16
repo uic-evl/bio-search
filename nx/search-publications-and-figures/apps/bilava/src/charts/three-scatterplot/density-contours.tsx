@@ -56,7 +56,7 @@ export const DensityContours = (props: DensityContoursProps) => {
     const densityGenerator = contourDensity<ScatterDot>()
       .x(xAccessor)
       .y(yAccessor)
-      .size([props.width, props.height])
+      // .size([props.width, props.height])
       .thresholds(30)
       .bandwidth(5)
 

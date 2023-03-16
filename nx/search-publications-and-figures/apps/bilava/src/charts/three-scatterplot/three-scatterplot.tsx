@@ -193,7 +193,7 @@ export function ThreeScatterplot(props: ThreeScatterplotProps) {
   }, [props.data])
 
   return (
-    <Box w={props.width} h={props.height}>
+    <Box w="full" h={props.height} position={'relative'}>
       {cameraWidth && cameraHeight ? (
         <Canvas
           orthographic={true}
