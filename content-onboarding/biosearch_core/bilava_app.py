@@ -1,9 +1,9 @@
 """ Flask API for the search interface """
 
-from os import environ, getcwd
+from os import environ
 from pathlib import Path
 from dotenv import load_dotenv
-from flask import Flask, request
+from flask import Flask
 from flask_cors import CORS, cross_origin
 from markupsafe import escape
 from biosearch_core.db.model import ConnectionParams
@@ -19,6 +19,12 @@ ROOT = environ.get("FLASK_ROOT")
 PROJECTS_DIR = environ.get("PROJECTS_DIR")
 print(PROJECTS_DIR)
 print(ROOT)
+
+# this should come from the configuration file
+schemas_2_base_img_dir = {
+    "training": "curation_data",
+    "cord19": "biosearch/cord19/to_predict",
+}
 
 
 @cross_origin
@@ -66,4 +72,12 @@ def fetch_projections(classifier: str, reduction: str, split_set: str):
         password=environ.get("password"),
         schema=environ.get("schema"),
     )
-    return bilava.fetch_images(conn_params, classifier, reduction, split_set)
+    # pylint: disable=too-many-function-args
+    return bilava.fetch_images(
+        conn_params,
+        classifier,
+        reduction,
+        split_set,
+        schemas_2_base_img_dir,
+        environ.get("IMAGE_HOST"),
+    )

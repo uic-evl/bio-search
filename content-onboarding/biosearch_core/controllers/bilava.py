@@ -1,6 +1,6 @@
 """ Functions to support bilava back-end"""
 from pathlib import Path
-from typing import List, Literal
+from typing import List, Literal, Dict
 import json
 import logging
 from psycopg import connect
@@ -64,6 +64,8 @@ def fetch_images(
     classifier: str,
     reduction: Literal["pca", "umap", "tsne"],
     split_set: Literal["TRAIN", "VAL", "TEST", "UNL", "ALL"],
+    schemas_2_base_img_dir: Dict[str, str],
+    image_server: str,
 ):
     """Fetch images from database for projection view"""
 
@@ -80,7 +82,8 @@ def fetch_images(
                         ROUND(x_{reduction}, 2)::float as x,
                         ROUND(y_{reduction}, 2)::float as y,
                         ROUND(hit_{reduction}, 2)::float as hit,
-                        split_set as ss
+                        split_set as ss,
+                        schema
                  FROM {bilava_schema}.features
                  WHERE classifier = '{classifier}'
                 """.format(
@@ -94,6 +97,19 @@ def fetch_images(
 
                 cursor.execute(query)
                 images = cursor.fetchall()
+                images = [
+                    {
+                        "id": el["id"],
+                        "lbl": el["lbl"],
+                        "prd": el["prd"],
+                        "uri": f"{image_server}/{schemas_2_base_img_dir[el['schema']]}/{el['uri']}",
+                        "x": el["x"],
+                        "y": el["y"],
+                        "hit": el["hit"],
+                        "ss": el["ss"],
+                    }
+                    for el in images
+                ]
             # pylint: disable=broad-except
             except Exception as exc:
                 print("Erorr fetching labels", exc)
