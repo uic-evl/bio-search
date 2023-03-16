@@ -1,4 +1,4 @@
-import {Suspense, useEffect, useRef} from 'react'
+import {Suspense, useEffect, useRef, useMemo} from 'react'
 import {ScatterDot} from '../../types'
 import {contourDensity} from 'd3-contour'
 import {extent} from 'd3-array'
@@ -7,15 +7,10 @@ import {color as d3_color} from 'd3-color'
 import {ScaleLinear, scaleLinear} from 'd3-scale'
 import {transformSVGPath} from './svg-to-path'
 import {
+  AddEquation,
   CustomBlending,
-  ExtrudeGeometry,
-  Group,
   MeshBasicMaterial,
-  MinEquation,
-  Mesh,
-  ReverseSubtractEquation,
-  BufferGeometry,
-  Line,
+  ShapeGeometry,
 } from 'three'
 import {colorsMapper} from '../../utils/mapper'
 
@@ -50,21 +45,27 @@ const categories: Record<string, string[]> = {
   electron: ['mic.ele.sca', 'mic.ele.tra'],
 }
 
-export const DensityContours = (props: DensityContoursProps) => {
-  const refGroup = useRef<Group>(null!)
-  const clfCategories = categories[props.classifier]
-  const densityGenerator = contourDensity<ScatterDot>()
-    .x(xAccessor)
-    .y(yAccessor)
-    .size([props.width, props.height])
-    .thresholds(15)
-    .bandwidth(4)
+interface MeshProps {
+  geometries: ShapeGeometry[]
+  materials: MeshBasicMaterial[]
+}
 
-  useEffect(() => {
+export const DensityContours = (props: DensityContoursProps) => {
+  const meshProps = useMemo<MeshProps | undefined>(() => {
+    const clfCategories = categories[props.classifier]
+    const densityGenerator = contourDensity<ScatterDot>()
+      .x(xAccessor)
+      .y(yAccessor)
+      .size([props.width, props.height])
+      .thresholds(30)
+      .bandwidth(5)
+
     const densityPaths = []
     const scales: Record<string, ScaleLinear<string, string>> = {}
     const densityColors: string[] = []
     const densityNames: string[] = []
+    const contourGeometries = []
+    const contourMaterials: MeshBasicMaterial[] = []
 
     for (const category of clfCategories) {
       const filteredPoints = props.data.filter(
@@ -78,46 +79,54 @@ export const DensityContours = (props: DensityContoursProps) => {
       }
       const domain = extent(densityPaths, d => d.value)
       if (domain[0] === undefined || domain[1] === undefined) return
-      // console.log(d3_color(colorsMapper[category])?.formatHex())
-      // console.log(setOpacity(colorsMapper[category], 0.5))
 
-      // const maxColor = d3_color(colorsMapper[category])
-      // const minColor = maxColor?.copy({opacity: 0.1})
-      // console.log(minColor, maxColor)
-
+      const maxColor = d3_color(colorsMapper[category])
+      if (!maxColor) return
+      const minColor = maxColor.brighter(1)
       scales[category] = scaleLinear<string>()
         .domain(domain)
-        .range(['0xffffff', colorsMapper[category]])
-      console.log(scales[category].domain(), scales[category].range())
+        .range([minColor.formatRgb(), maxColor.formatRgb()])
     }
 
+    console.log('build shapes')
     for (let i = 0; i < densityPaths.length; i++) {
       const densityElem = densityPaths[i]
       const path = geoPath()(densityElem)
-      console.log(densityElem.value)
       const shapeMaterial = new MeshBasicMaterial({
         color: scales[densityNames[i]](densityElem.value),
-        wireframe: false,
         depthTest: true,
+        depthWrite: false,
         blending: CustomBlending,
-        blendEquation: MinEquation,
+        blendEquation: AddEquation,
+        toneMapped: false,
+        opacity: 0.7,
       })
       const transformedPath = transformSVGPath(path)
       const simpleShapes = transformedPath.toShapes(true)
       for (let simpleShape of simpleShapes) {
-        const shape3d = new ExtrudeGeometry(simpleShape, {
-          depth: 1,
-          bevelEnabled: false,
-        })
-        // let shape3d = new BufferGeometry().setFromPoints(
-        //   simpleShape.getPoints(),
-        // )
-        // const lineM = new Line(shape3d, shapeMaterial)
-        const densityMesh = new Mesh(shape3d, shapeMaterial)
-        refGroup.current.add(densityMesh)
+        contourGeometries.push(new ShapeGeometry(simpleShape))
+        contourMaterials.push(shapeMaterial)
       }
     }
-  }, [props.data, props.width, props.height])
 
-  return <group ref={refGroup} position={[0, 0, 1]}></group>
+    return {
+      geometries: contourGeometries,
+      materials: contourMaterials,
+    }
+  }, [props.data, props.classifier, props.width, props.height])
+
+  return (
+    <>
+      <group position={[0, 0, 1]}>
+        {meshProps &&
+          meshProps.geometries.map((geometry, idx) => (
+            <mesh
+              key={geometry.uuid}
+              geometry={geometry}
+              material={meshProps.materials[idx]}
+            />
+          ))}
+      </group>
+    </>
+  )
 }

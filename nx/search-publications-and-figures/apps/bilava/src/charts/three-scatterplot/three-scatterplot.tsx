@@ -16,59 +16,6 @@ import {
   QuadtreeLeaf,
 } from 'd3-quadtree'
 
-const fragmentShader = `
-varying vec3 vInsideColor;
-varying vec3 vOutsideColor;
-varying vec2 vUV;
-
-void main() {
-    float distanceFromCenter = distance(gl_PointCoord, vec2(.5));
-    float radius = 0.3;
-    float stroke = 0.5;
-
-    if (distanceFromCenter <= radius) {
-        float circle = 1. - step(radius, distanceFromCenter);
-        gl_FragColor = vec4(vInsideColor, 0.7);
-    } else if (distanceFromCenter <= stroke) {
-        float circle = 1. - step(radius, distanceFromCenter);
-        gl_FragColor = vec4(vOutsideColor, 0.7);
-    } else {
-        discard;
-    }
-}
-`
-
-const vertexShader = `
-attribute vec3 fillColor;
-attribute vec3 strokeColor;
-uniform float uSize;
-
-varying vec3 vInsideColor;
-varying vec3 vOutsideColor;
-varying vec2 vUV;
-varying float radius;
-varying float strokeWidth;
-
-float map(float value, float min1, float max1, float min2, float max2) {
-  return min2 + (value - min1) * (max2 - min2) / (max1 - min1);
-}
-
-void main() {
-    vec4 modelPosition = modelMatrix * vec4(position, 1.0);
-    vec4 viewPosition = viewMatrix * modelPosition;
-    vec4 projectedPosition = projectionMatrix * viewPosition;
-    gl_Position = projectedPosition;
-
-    gl_PointSize = uSize;
-
-    vInsideColor = fillColor;
-    vOutsideColor = strokeColor;
-    vUV = uv;
-    radius = map(uSize / 2., 0., uSize, 0., 1.);
-    strokeWidth = radius;
-}
-`
-
 const xAccessor = (d: ScatterDot) => d.x
 const yAccessor = (d: ScatterDot) => d.y
 const labelAccessor = (d: ScatterDot) => d.lbl
@@ -155,24 +102,24 @@ export function ThreeScatterplot(props: ThreeScatterplotProps) {
 
       selectionBox[0] = pointStart.x
       selectionBox[1] = pointStart.y
-      selectionBox[2] = 3
+      selectionBox[2] = 10
 
       selectionBox[3] = e.unprojectedPoint.x
       selectionBox[4] = pointStart.y
-      selectionBox[5] = 3
+      selectionBox[5] = 10
 
       selectionBox[6] = e.unprojectedPoint.x
       selectionBox[7] = e.unprojectedPoint.y
-      selectionBox[8] = 3
+      selectionBox[8] = 10
 
       selectionBox[9] = pointStart.x
       selectionBox[10] = e.unprojectedPoint.y
-      selectionBox[11] = 3
+      selectionBox[11] = 10
 
       // to close polygon
       selectionBox[12] = pointStart.x
       selectionBox[13] = pointStart.y
-      selectionBox[14] = 3
+      selectionBox[14] = 10
 
       setSelection(selectionBox)
     }
@@ -182,7 +129,6 @@ export function ThreeScatterplot(props: ThreeScatterplotProps) {
     // don't do anything else if we are just panning
     if (e.ctrlKey) return
     if (e.altKey) {
-      // TOOD: search
       if (!quadTree) return
       const selectedPoints = searchSelected(
         quadTree,
@@ -269,18 +215,9 @@ export function ThreeScatterplot(props: ThreeScatterplotProps) {
             maxDistance={350}
             enableRotate={false}
           />
-          <axesHelper args={[500]} />
-          {data ? (
-            <DensityContours
-              classifier={props.classifier}
-              data={props.data}
-              width={800}
-              height={800}
-            />
-          ) : null}
+          {/* <axesHelper args={[500]} /> */}
           {/* plane to track selection events */}
           {middle ? (
-            // <group position={[0, 0, -10]}>
             <mesh
               position={[middle.x, middle.y, -10]}
               scale={[cameraWidth * 1, cameraHeight * 1, 1]}
@@ -293,13 +230,21 @@ export function ThreeScatterplot(props: ThreeScatterplotProps) {
                 color="white"
                 depthTest={true}
                 blending={NoBlending}
-                toneMapped={true}
+                toneMapped={false}
               />
             </mesh>
-          ) : // </group>
-          null}
+          ) : null}
+          {/* contours per classifier class */}
+          {data ? (
+            <DensityContours
+              classifier={props.classifier}
+              data={props.data}
+              width={800}
+              height={800}
+            />
+          ) : null}
           {/* scatterplot dots on scene */}
-          {data ? <ProjectionPoints data={data} /> : null}
+          {data ? <ProjectionPoints buffer={data} data={props.data} /> : null}
           {/* box for brushing over the scatterplot */}
           <SelectionBox points={selection} />
         </Canvas>

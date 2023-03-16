@@ -41,12 +41,13 @@ export function ProjectionPanel(props: ProjectionPanelProps) {
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const classifiers = useClassifiers(props.project)
 
-  const handleOnLoadData = async () => {
+  const handleOnLoadData = async (searchBoxClassifier: string) => {
     const projections = await fetch_projections(
-      classifier,
+      searchBoxClassifier,
       projection,
       splitSet,
     )
+    setClassifier(searchBoxClassifier)
     setData(translateData(projections))
   }
 
@@ -88,12 +89,15 @@ interface ProjectionPanelHeaderProps {
   selectedPartition: string
   setPartition: Dispatch<SetStateAction<string>>
   isLoading: boolean
-  onClick: () => Promise<void>
+  onClick: (arg: string) => Promise<void>
 }
 
 const ProjectionPanelHeader = (props: ProjectionPanelHeaderProps) => {
+  const [classifier, setClassifier] = useState<string>('')
   const projections = ['pca', 'tsne', 'umap']
   const partitions = ['TRAIN', 'VAL', 'TEST', 'UNL']
+
+  const handleOnClick = () => props.onClick(classifier)
 
   return (
     <Box>
@@ -102,9 +106,9 @@ const ProjectionPanelHeader = (props: ProjectionPanelHeaderProps) => {
         {props.classifiers.length > 0 ? (
           <HeaderSelect
             placeholder="classifier"
-            value={props.selectedClassifier}
+            value={classifier}
             options={props.classifiers}
-            onChangeFn={props.setClassifier}
+            onChangeFn={setClassifier}
           />
         ) : (
           <Spinner />
@@ -125,12 +129,12 @@ const ProjectionPanelHeader = (props: ProjectionPanelHeaderProps) => {
         <Box>
           <ActionButton
             disabled={
-              !props.selectedClassifier ||
+              !classifier ||
               !props.selectedProjection ||
               !props.selectedPartition ||
               props.isLoading
             }
-            onClick={props.onClick}
+            onClick={handleOnClick}
             isLoading={props.isLoading}
           >
             Load
