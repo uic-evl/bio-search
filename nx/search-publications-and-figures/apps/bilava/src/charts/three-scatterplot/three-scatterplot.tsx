@@ -1,4 +1,11 @@
-import {useState, useEffect, useMemo, useRef} from 'react'
+import {
+  useState,
+  useEffect,
+  useMemo,
+  useRef,
+  Dispatch,
+  SetStateAction,
+} from 'react'
 import {Box} from '@chakra-ui/react'
 import {Color, Float32BufferAttribute, NoBlending} from 'three'
 import {Canvas, ThreeEvent} from '@react-three/fiber'
@@ -58,8 +65,8 @@ export interface ThreeScatterplotProps {
   data: ScatterDot[]
   cameraLeft: number
   cameraBottom: number
-  width: number
   height: number
+  setPointInterest: Dispatch<SetStateAction<ScatterDot | null>>
 }
 
 interface CanvasPoint {
@@ -244,7 +251,13 @@ export function ThreeScatterplot(props: ThreeScatterplotProps) {
             />
           ) : null}
           {/* scatterplot dots on scene */}
-          {data ? <ProjectionPoints buffer={data} data={props.data} /> : null}
+          {data ? (
+            <ProjectionPoints
+              buffer={data}
+              data={props.data}
+              setPointInterest={props.setPointInterest}
+            />
+          ) : null}
           {/* box for brushing over the scatterplot */}
           <SelectionBox points={selection} />
         </Canvas>

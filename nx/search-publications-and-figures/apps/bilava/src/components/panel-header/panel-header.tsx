@@ -95,6 +95,27 @@ export const HeaderSelect = (props: HeaderSelectProps) => (
   </Box>
 )
 
+interface HeaderKeySelectProps {
+  placeholder?: string
+  value: string
+  options: {label: string; value: string}[]
+  onChangeFn: (arg: SyntheticEvent) => void
+}
+
+export const HeaderKeySelect = (props: HeaderKeySelectProps) => (
+  <Box>
+    <MenuSelect
+      value={props.value}
+      placeholder={props.placeholder}
+      onChangeFn={props.onChangeFn}
+    >
+      {props.options.map(t => (
+        <Option key={t.value} value={t.value} label={t.label} />
+      ))}
+    </MenuSelect>
+  </Box>
+)
+
 interface BoxHeaderAndOptionsProps {
   title: string
   options: Array<string>

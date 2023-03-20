@@ -1,4 +1,4 @@
-import {useState, useEffect, useRef} from 'react'
+import {useState, useEffect, useRef, Dispatch, SetStateAction} from 'react'
 import {
   Mesh,
   MeshBasicMaterial,
@@ -22,9 +22,14 @@ interface Thumbnail {
 interface ProjectionPointsProps {
   buffer: ProjectionBuffer
   data: ScatterDot[]
+  setPointInterest: Dispatch<SetStateAction<ScatterDot | null>>
 }
 
-export const ProjectionPoints = ({buffer, data}: ProjectionPointsProps) => {
+export const ProjectionPoints = ({
+  buffer,
+  data,
+  setPointInterest,
+}: ProjectionPointsProps) => {
   const [thumbnails, setThumbnails] = useState<Thumbnail[]>([])
   const refPoints = useRef<Points>(null!)
   const dpr = Math.min(window.devicePixelRatio, 2)
@@ -107,6 +112,7 @@ export const ProjectionPoints = ({buffer, data}: ProjectionPointsProps) => {
               geometry={thb.geometry}
               pointMaterial={pointsMaterial}
               onClick={handleOnThumbnailClick}
+              setPointInterest={setPointInterest}
             />
           ))}
       </group>

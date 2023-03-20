@@ -16,6 +16,9 @@ import {ResizeObserver} from '@juggle/resize-observer'
 
 export interface ProjectionPanelProps {
   project: string
+  data: ScatterDot[]
+  setData: Dispatch<SetStateAction<ScatterDot[]>>
+  setPointInterest: Dispatch<SetStateAction<ScatterDot | null>>
 }
 
 const xAccessor = (d: ScatterDot) => d.x
@@ -30,7 +33,6 @@ const translateData = (data: ScatterDot[]) => {
 }
 
 export function ProjectionPanel(props: ProjectionPanelProps) {
-  const [data, setData] = useState<ScatterDot[] | null>(null)
   const [classifier, setClassifier] = useState<string>('')
   const [projection, setProjection] = useState<string>('tsne')
   const [splitSet, setSplitSet] = useState<string>('TRAIN')
@@ -57,7 +59,7 @@ export function ProjectionPanel(props: ProjectionPanelProps) {
     )
     setIsLoading(false)
     setClassifier(searchBoxClassifier)
-    setData(translateData(projections))
+    props.setData(translateData(projections))
   }
 
   return (
@@ -74,14 +76,14 @@ export function ProjectionPanel(props: ProjectionPanelProps) {
         onClick={handleOnLoadData}
       />
       <Box w="full" h="full" ref={observe}>
-        {data && height > 0 ? (
+        {props.data.length > 0 && height > 0 ? (
           <ThreeScatterplot
             classifier={classifier}
-            data={data}
+            data={props.data}
             cameraLeft={0}
             cameraBottom={0}
-            width={800}
             height={height}
+            setPointInterest={props.setPointInterest}
           />
         ) : null}
       </Box>

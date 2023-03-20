@@ -1,5 +1,5 @@
 import {ThreeEvent} from '@react-three/fiber'
-import {useMemo} from 'react'
+import {Dispatch, SetStateAction, useMemo} from 'react'
 import {
   Color,
   Float32BufferAttribute,
@@ -21,6 +21,7 @@ interface ProjectionImageProps {
   geometry: PlaneGeometry
   pointMaterial: ShaderMaterial
   onClick: (arg: ThreeEvent<MouseEvent>) => void
+  setPointInterest: Dispatch<SetStateAction<ScatterDot | null>>
 }
 
 export const ProjectionImage = ({
@@ -29,6 +30,7 @@ export const ProjectionImage = ({
   geometry,
   pointMaterial,
   onClick,
+  setPointInterest,
 }: ProjectionImageProps) => {
   const zPosition = 10
 
@@ -64,6 +66,11 @@ export const ProjectionImage = ({
     }
   }, [scatterdot])
 
+  const handleOnClickSelect = (e: ThreeEvent<MouseEvent>) => {
+    e.stopPropagation()
+    setPointInterest(scatterdot)
+  }
+
   return (
     <group>
       <mesh
@@ -94,8 +101,9 @@ export const ProjectionImage = ({
           scatterdot.y + geometry.parameters.height / 2.8,
           zPosition + 3,
         ]}
+        onClick={handleOnClickSelect}
       >
-        <planeBufferGeometry args={[2, 2]} />
+        <planeGeometry args={[2, 2]} />
         <meshBasicMaterial color={'black'} toneMapped={false} />
       </mesh>
     </group>
