@@ -24,6 +24,7 @@ export const vertexShader = `
 attribute vec3 fillColor;
 attribute vec3 strokeColor;
 uniform float uSize;
+uniform bool uSizeAttenuation;
 
 varying vec3 vInsideColor;
 varying vec3 vOutsideColor;
@@ -42,6 +43,9 @@ void main() {
     gl_Position = projectedPosition;
 
     gl_PointSize = uSize;
+    if (uSizeAttenuation) {
+        gl_PointSize *= (1.0 / -viewPosition.z);
+    }
 
     vInsideColor = fillColor;
     vOutsideColor = strokeColor;

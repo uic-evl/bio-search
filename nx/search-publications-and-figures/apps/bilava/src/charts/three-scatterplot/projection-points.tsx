@@ -11,6 +11,7 @@ import {
 import {ThreeEvent, useFrame} from '@react-three/fiber'
 import {ProjectionBuffer, ScatterDot} from '../../types'
 import {fragmentShader, vertexShader} from './shaders/scatterdot-shader'
+import {ProjectionImage} from './projection-image'
 
 interface Thumbnail {
   data: ScatterDot
@@ -36,7 +37,7 @@ export const ProjectionPoints = ({buffer, data}: ProjectionPointsProps) => {
     vertexColors: true,
     fragmentShader: fragmentShader,
     vertexShader: vertexShader,
-    uniforms: {uSize: {value: 10 * dpr}},
+    uniforms: {uSize: {value: 500 * dpr}, uSizeAttenuation: {value: true}},
   })
 
   const handleOnPointClick = (e: ThreeEvent<MouseEvent>) => {
@@ -94,26 +95,17 @@ export const ProjectionPoints = ({buffer, data}: ProjectionPointsProps) => {
           material={pointsMaterial}
           ref={refPoints}
           onClick={handleOnPointClick}
-        >
-          {/* preferring the useFrame approach over this one
-        <bufferGeometry>
-          <bufferAttribute attach="attributes-position" {...data.position} />
-          <bufferAttribute attach="attributes-fillColor" {...data.fillColor} />
-          <bufferAttribute
-            attach="attributes-strokeColor"
-            {...data.strokeColor}
-          />
-        </bufferGeometry> */}
-        </points>
+        ></points>
       </group>
       <group>
         {thumbnails &&
           thumbnails.map(thb => (
-            <mesh
+            <ProjectionImage
               key={thb.geometry.uuid}
-              geometry={thb.geometry}
+              scatterdot={thb.data}
               material={thb.material}
-              position={[thb.data.x, thb.data.y, 10]}
+              geometry={thb.geometry}
+              pointMaterial={pointsMaterial}
               onClick={handleOnThumbnailClick}
             />
           ))}
@@ -121,5 +113,3 @@ export const ProjectionPoints = ({buffer, data}: ProjectionPointsProps) => {
     </>
   )
 }
-
-/* */
