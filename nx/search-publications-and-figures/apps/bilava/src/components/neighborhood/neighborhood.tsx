@@ -3,6 +3,7 @@ import {Box} from '@chakra-ui/react'
 import {NeighborhoodPanelHeader} from './panel-header'
 import {DEFAULT_STRATEGY, SPIRAL_MAP} from './constants'
 import {ScatterDot} from '../../types'
+import SpiralMap from '../../charts/spiral-map/spiral-map'
 
 export interface NeighborhoodProps {
   data: ScatterDot[] | null
@@ -41,7 +42,7 @@ export function Neighborhood(props: NeighborhoodProps) {
   console.log('neighbors', neighbors)
 
   return (
-    <Box>
+    <Box h="full">
       <NeighborhoodPanelHeader
         layout={layout}
         setLayout={setLayout}
@@ -56,6 +57,15 @@ export function Neighborhood(props: NeighborhoodProps) {
         onSelectAll={handleSelectAll}
         onDeselectAll={handleDeselectAll}
       />
+      {neighbors.length > 0 && props.pointInterest ? (
+        <SpiralMap
+          pointInterest={props.pointInterest}
+          neighbors={neighbors}
+          maxRings={maxRings}
+          ringStrategy={strategy}
+          layout={layout}
+        />
+      ) : null}
     </Box>
   )
 }

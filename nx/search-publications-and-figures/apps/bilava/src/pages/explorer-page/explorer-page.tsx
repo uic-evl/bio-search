@@ -1,5 +1,5 @@
 import {useState} from 'react'
-import {Grid, GridItem} from '@chakra-ui/react'
+import {Grid, GridItem, Box} from '@chakra-ui/react'
 import DatasetPanel from '../../components/dataset-panel/dataset-panel'
 import ProjectionPanel from '../../components/projection-panel/projection-panel'
 import Neighborhood from '../../components/neighborhood/neighborhood'
@@ -38,6 +38,9 @@ export function ExplorerPage(props: ExplorerPageProps) {
       </GridItem>
       <GridItem area="thumbnails">
         <Neighborhood data={data} pointInterest={pointInterest} />
+      </GridItem>
+      <GridItem area="gallery">
+        <Box w="full" h="full"></Box>
       </GridItem>
     </Grid>
   )

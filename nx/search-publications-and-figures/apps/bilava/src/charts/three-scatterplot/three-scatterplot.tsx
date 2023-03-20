@@ -1,11 +1,4 @@
-import {
-  useState,
-  useEffect,
-  useMemo,
-  useRef,
-  Dispatch,
-  SetStateAction,
-} from 'react'
+import {useState, useEffect, Dispatch, SetStateAction} from 'react'
 import {Box} from '@chakra-ui/react'
 import {Color, Float32BufferAttribute, NoBlending} from 'three'
 import {Canvas, ThreeEvent} from '@react-three/fiber'

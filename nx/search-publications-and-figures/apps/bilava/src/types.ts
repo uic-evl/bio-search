@@ -25,6 +25,8 @@ export interface ScatterDot {
   ss: string // split set
   distance?: number
   selected?: boolean
+  w: number // image width
+  h: number // image height
 }
 
 export interface ProjectionBuffer {
@@ -36,4 +38,23 @@ export interface ProjectionBuffer {
 export interface SelectionListOption {
   label: string
   value: string
+}
+
+export interface SpiralThumbnail {
+  id?: string
+  name: string
+  index: number
+  k?: number
+  ring?: number
+  x?: number
+  y?: number
+  placedholder?: boolean
+  x0?: number
+  x1?: number
+  y0?: number
+  y1?: number
+  w?: number
+  h?: number
+  uri?: string
+  children?: SpiralThumbnail[]
 }
