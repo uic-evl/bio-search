@@ -10,6 +10,26 @@ export interface NeighborhoodProps {
   pointInterest: ScatterDot | null
 }
 
+/**
+ * Neighborhood panel.
+ *
+ * State:
+ * - numberNeighbors: Maximum number of elements to display on the grid
+ *         including the image of interest
+ * - layout: any of spiral maps or grid layout as defined in constants
+ * - saliency: TODO
+ * - strategy: The number of rings and layout have a defined set of strategies,
+ *         which include the number of rings and when the size of the thumbnails
+ *         get reduced. These strategies were predefined taking into account the
+ *         visibility of the elements.
+ * - objectFit: CSS property to show either fit or cover for the thumbnail
+ * - selectedIndexes: Keeps the state for what neighbors were selected on the
+ *         layout. We separate it from the useMemo neighbors to avoid rerenders
+ *         and refetching the image content.
+ *
+ * @param props
+ * @returns
+ */
 export function Neighborhood(props: NeighborhoodProps) {
   const [numberNeighbors, setNumberNeighbors] = useState<number>(32)
   const [layout, setLayout] = useState(SPIRAL_MAP)
@@ -17,6 +37,9 @@ export function Neighborhood(props: NeighborhoodProps) {
   const [strategy, setStrategy] = useState(DEFAULT_STRATEGY)
   const [maxRings, setMaxRings] = useState(2)
   const [objectFit, setObjectFit] = useState('fit')
+  const [selectedIndexes, setSelectedIndexes] = useState<boolean[]>(
+    Array.from({length: 32}, () => false),
+  )
 
   const handleSelectAll = () => {}
   const handleDeselectAll = () => {}
@@ -37,6 +60,18 @@ export function Neighborhood(props: NeighborhoodProps) {
   const neighbors = useMemo<ScatterDot[]>(() => {
     if (!props.pointInterest) return []
     let candidates = findNClosestNeighbors(props.pointInterest, numberNeighbors)
+
+    // update indices
+    if (numberNeighbors > selectedIndexes.length) {
+      const remaining = Array.from(
+        {length: selectedIndexes.length - numberNeighbors},
+        () => false,
+      )
+      setSelectedIndexes(selectedIndexes.concat(remaining))
+    } else if (numberNeighbors < selectedIndexes.length) {
+      setSelectedIndexes(selectedIndexes.slice(0, numberNeighbors))
+    }
+
     return candidates
   }, [props.pointInterest, numberNeighbors])
   console.log('neighbors', neighbors)
@@ -64,6 +99,8 @@ export function Neighborhood(props: NeighborhoodProps) {
           maxRings={maxRings}
           ringStrategy={strategy}
           layout={layout}
+          selectedIndexes={selectedIndexes}
+          setSelectedIndexes={setSelectedIndexes}
         />
       ) : null}
     </Box>

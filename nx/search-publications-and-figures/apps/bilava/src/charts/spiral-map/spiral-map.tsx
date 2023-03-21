@@ -1,4 +1,4 @@
-import {useMemo} from 'react'
+import {Dispatch, SetStateAction, useMemo} from 'react'
 import {ScatterDot, SpiralThumbnail} from '../../types'
 import {Box} from '@chakra-ui/react'
 import useDimensions from 'react-cool-dimensions'
@@ -15,6 +15,7 @@ import {
   SPATIAL_SPIRAL_MAP,
   GRID_LAYOUT,
 } from '../../components/neighborhood/constants'
+import HtmlImageThumbnail from '../../components/html-image-thumbnail/html-image-thumbnail'
 
 const calculateGridPositions = (
   root: HierarchyRectangularNode<SpiralThumbnail>,
@@ -57,13 +58,45 @@ const calculateGridPositions = (
 const getId = (d: HierarchyNode<SpiralThumbnail>) =>
   (d.parent ? d.parent.data.id + '.' : '') + d.data.name + '-' + d.data.index
 
+const createRoot = (children: SpiralThumbnail[]) => {
+  // to match type definition, but the root is only needed for
+  // spawning the hierarchy
+  const fakeScatterDotProps = {
+    dbId: 0,
+    x: 0,
+    y: 0,
+    lbl: '',
+    prd: '',
+    uri: '',
+    hit: 0,
+    ss: '',
+    w: 0,
+    h: 0,
+  }
+  return {
+    ...fakeScatterDotProps,
+    name: 'root',
+    index: 0,
+    children,
+  }
+}
+
+/**
+ * Generate a grid for the thumbnails in the neighborhood.
+ *
+ *
+ * @param data
+ * @param width   Container width
+ * @param height  Container height
+ * @returns
+ */
 const fetchGridNodes = (
   data: SpiralThumbnail[],
   width: number,
   height: number,
 ) => {
   let children = data.map(p => ({...p, placeholder: false}))
-  const root = {name: 'root', index: 0, children}
+  const root = createRoot(children)
   const hierarchy = (inputData: SpiralThumbnail) =>
     d3Hierarchy<SpiralThumbnail>(inputData).eachBefore(
       d => (d.data.id = getId(d)),
@@ -87,7 +120,7 @@ const featchSpiralNodes = (
   } else {
     children = convert2SpatiallyAwareArray(children, maxRings)
   }
-  const root = {name: 'root', index: 0, children}
+  const root = createRoot(children)
   const hierarchyFn = (inputData: SpiralThumbnail) =>
     d3Hierarchy<SpiralThumbnail>(inputData).eachBefore(
       d => (d.data.id = getId(d)),
@@ -108,6 +141,8 @@ export interface SpiralMapProps {
   layout: string
   pointInterest: ScatterDot
   neighbors: ScatterDot[]
+  selectedIndexes: boolean[]
+  setSelectedIndexes: Dispatch<SetStateAction<boolean[]>>
   ringStrategy: string
   maxRings: number
 }
@@ -118,6 +153,8 @@ export function SpiralMap({
   neighbors,
   ringStrategy,
   maxRings,
+  selectedIndexes,
+  setSelectedIndexes,
 }: SpiralMapProps) {
   const {observe, width, height} = useDimensions({polyfill: ResizeObserver})
 
@@ -153,15 +190,11 @@ export function SpiralMap({
       for (let brk of breaks) for (let j = 0; j < brk[0]; j++) ks.push(brk[1])
 
       const children: SpiralThumbnail[] = collection.map((d, i) => ({
-        x: d.x,
-        y: d.y,
-        name: d.id.toString(),
+        ...d,
+        name: d.dbId.toString(),
         index: i,
         k: ks[i],
         ring: newRings[i],
-        w: d.w,
-        h: d.h,
-        uri: d.uri,
       }))
       return children
     }
@@ -185,9 +218,30 @@ export function SpiralMap({
     return descendants
   }, [neighbors])
 
-  console.log(width, height, descendants)
-
-  return <Box w="full" h="full" backgroundColor="#2a2a2a" ref={observe}></Box>
+  return (
+    <Box
+      w="full"
+      h="full"
+      backgroundColor="#2a2a2a"
+      pos="relative"
+      ref={observe}
+    >
+      {descendants &&
+        descendants.map((d, idx) => (
+          <HtmlImageThumbnail
+            key={d.data.id}
+            imageNode={d}
+            objectFit={'fit'}
+            selected={selectedIndexes[idx]}
+            onSelectThumbnail={() => {
+              const indexes = [...selectedIndexes]
+              indexes[idx] = !indexes[idx]
+              setSelectedIndexes(indexes)
+            }}
+          />
+        ))}
+    </Box>
+  )
 }
 
 export default SpiralMap

@@ -1,6 +1,8 @@
 import {Box, Flex} from '@chakra-ui/react'
 import {HierarchyRectangularNode} from 'd3-hierarchy'
 import {ScatterDot, SpiralThumbnail} from '../../types'
+import {LabelCircleIcon} from '../icons/icons'
+import {colorsMapper} from '../../utils/mapper'
 import styles from './html-image-thumbnail.module.css'
 
 // for hierarchical values, x & y values are relative to parent
@@ -17,11 +19,15 @@ const left = (d: HierarchyRectangularNode<SpiralThumbnail>) => {
 export interface HtmlImageThumbnailProps {
   imageNode: HierarchyRectangularNode<SpiralThumbnail>
   objectFit: string
+  selected: boolean
+  onSelectThumbnail: () => void
 }
 
 export function HtmlImageThumbnail({
   imageNode,
   objectFit,
+  selected,
+  onSelectThumbnail,
 }: HtmlImageThumbnailProps) {
   const imgWidth = imageNode.data.w || 0
   const imgHeight = imageNode.data.h || 0
@@ -30,22 +36,36 @@ export function HtmlImageThumbnail({
     height: imageNode.y1 - imageNode.y0,
   }
 
+  const handleOnClickImage = () => {
+    onSelectThumbnail()
+  }
+
   return (
     <Box
       position="absolute"
-      width={container.width}
-      height={container.height}
+      w={container.width}
+      h={container.height}
       top={top(imageNode)}
       left={left(imageNode)}
+      backgroundColor="black"
+      border={'1px solid #2a2a2a'}
     >
-      <ScaledImage
-        imgPath={imageNode.data.uri || ''}
-        size={{width: imgWidth, height: imgHeight}}
-        container={container}
-        opacity={0.5}
-        padding={2}
-        objectFit={objectFit}
-      />
+      <Box w="full" h="full" border={selected ? '1px solid red' : ''}>
+        <ScaledImage
+          imgPath={imageNode.data.uri || ''}
+          size={{width: imgWidth, height: imgHeight}}
+          container={container}
+          opacity={0.5}
+          padding={2}
+          objectFit={objectFit}
+          onClick={handleOnClickImage}
+        />
+        <LabelCircleIcon
+          fill={colorsMapper[imageNode.data.lbl]}
+          stroke={colorsMapper[imageNode.data.prd]}
+          size={{width: 14, height: 14}}
+        />
+      </Box>
     </Box>
   )
 }
@@ -57,6 +77,7 @@ interface ScaledImageProps {
   padding: number
   opacity: number
   objectFit: string
+  onClick: () => void
 }
 
 const ScaledImage = ({
@@ -66,6 +87,7 @@ const ScaledImage = ({
   padding,
   opacity,
   objectFit,
+  onClick,
 }: ScaledImageProps) => {
   const verticalScale = (container.height - padding) / size.height
   const horizontalScale = (container.width - padding) / size.width
@@ -78,6 +100,9 @@ const ScaledImage = ({
       h="full"
       alignItems="center"
       justifyContent="center"
+      _hover={{
+        cursor: 'pointer',
+      }}
     >
       <img
         src={imgPath}
@@ -95,7 +120,7 @@ const ScaledImage = ({
               : `${scale * size.height - 2 * padding}px`,
           maxHeight: `${container.height - 2 * padding}px`,
         }}
-        className="neighbor-select"
+        onClick={onClick}
       />
     </Flex>
   )

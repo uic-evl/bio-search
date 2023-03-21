@@ -15,7 +15,7 @@ export interface Dimensions {
 }
 
 export interface ScatterDot {
-  id: number // TODO database, shit i need the schema and classifier too...
+  dbId: number // TODO database, shit i need the schema and classifier too...
   x: number // projected x coordinate
   y: number // projected y coordinate
   lbl: string // label
@@ -40,21 +40,12 @@ export interface SelectionListOption {
   value: string
 }
 
-export interface SpiralThumbnail {
-  id?: string
+export interface SpiralThumbnail extends ScatterDot {
+  id?: string // id generated to build d3 hierarchy
   name: string
   index: number
   k?: number
-  ring?: number
-  x?: number
-  y?: number
+  ring?: number // ring number
   placedholder?: boolean
-  x0?: number
-  x1?: number
-  y0?: number
-  y1?: number
-  w?: number
-  h?: number
-  uri?: string
-  children?: SpiralThumbnail[]
+  children?: SpiralThumbnail[] // children rings
 }
