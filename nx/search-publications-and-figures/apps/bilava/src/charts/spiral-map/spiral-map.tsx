@@ -216,7 +216,7 @@ export function SpiralMap({
     }
 
     return descendants
-  }, [neighbors])
+  }, [neighbors, width, height])
 
   return (
     <Box

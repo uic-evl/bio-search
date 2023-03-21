@@ -5,6 +5,8 @@ import {DEFAULT_STRATEGY, SPIRAL_MAP} from './constants'
 import {ScatterDot} from '../../types'
 import SpiralMap from '../../charts/spiral-map/spiral-map'
 
+const NUMBER_NEIGHBORS = 32
+
 export interface NeighborhoodProps {
   data: ScatterDot[] | null
   pointInterest: ScatterDot | null
@@ -31,18 +33,27 @@ export interface NeighborhoodProps {
  * @returns
  */
 export function Neighborhood(props: NeighborhoodProps) {
-  const [numberNeighbors, setNumberNeighbors] = useState<number>(32)
+  const [numberNeighbors, setNumberNeighbors] =
+    useState<number>(NUMBER_NEIGHBORS)
   const [layout, setLayout] = useState(SPIRAL_MAP)
   const [saliency, setSaliency] = useState('')
   const [strategy, setStrategy] = useState(DEFAULT_STRATEGY)
   const [maxRings, setMaxRings] = useState(2)
   const [objectFit, setObjectFit] = useState('fit')
   const [selectedIndexes, setSelectedIndexes] = useState<boolean[]>(
-    Array.from({length: 32}, () => false),
+    Array.from({length: NUMBER_NEIGHBORS + 1}, () => false),
   )
 
-  const handleSelectAll = () => {}
-  const handleDeselectAll = () => {}
+  const handleSelectAll = () => {
+    let indexes = [...selectedIndexes]
+    indexes = indexes.map(e => true)
+    setSelectedIndexes(indexes)
+  }
+  const handleDeselectAll = () => {
+    let indexes = [...selectedIndexes]
+    indexes = indexes.map(e => false)
+    setSelectedIndexes(indexes)
+  }
 
   const findNClosestNeighbors = (point: ScatterDot, n: number) => {
     if (!props.data) return []
@@ -69,7 +80,7 @@ export function Neighborhood(props: NeighborhoodProps) {
       )
       setSelectedIndexes(selectedIndexes.concat(remaining))
     } else if (numberNeighbors < selectedIndexes.length) {
-      setSelectedIndexes(selectedIndexes.slice(0, numberNeighbors))
+      setSelectedIndexes(selectedIndexes.slice(0, numberNeighbors + 1))
     }
 
     return candidates
