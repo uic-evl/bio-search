@@ -13,12 +13,14 @@ import {fetch_projections} from '../../api'
 import {min} from 'd3-array'
 import useDimensions from 'react-cool-dimensions'
 import {ResizeObserver} from '@juggle/resize-observer'
+import {Point} from '../../utils/convex-hull'
 
 export interface ProjectionPanelProps {
   project: string
   data: ScatterDot[]
   setData: Dispatch<SetStateAction<ScatterDot[]>>
   setPointInterest: Dispatch<SetStateAction<ScatterDot | null>>
+  neighborhoodHull: Point[]
 }
 
 const xAccessor = (d: ScatterDot) => d.x
@@ -84,6 +86,7 @@ export function ProjectionPanel(props: ProjectionPanelProps) {
             cameraBottom={0}
             height={height}
             setPointInterest={props.setPointInterest}
+            neighborhoodHull={props.neighborhoodHull}
           />
         ) : null}
       </Box>

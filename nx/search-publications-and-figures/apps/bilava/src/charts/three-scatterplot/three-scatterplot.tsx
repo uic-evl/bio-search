@@ -15,6 +15,8 @@ import {
   QuadtreeInternalNode,
   QuadtreeLeaf,
 } from 'd3-quadtree'
+import {Point} from '../../utils/convex-hull'
+import {NeighborhoodPolygon} from './neighborhood-hull'
 
 const xAccessor = (d: ScatterDot) => d.x
 const yAccessor = (d: ScatterDot) => d.y
@@ -60,6 +62,7 @@ export interface ThreeScatterplotProps {
   cameraBottom: number
   height: number
   setPointInterest: Dispatch<SetStateAction<ScatterDot | null>>
+  neighborhoodHull: Point[]
 }
 
 interface CanvasPoint {
@@ -253,6 +256,13 @@ export function ThreeScatterplot(props: ThreeScatterplotProps) {
           ) : null}
           {/* box for brushing over the scatterplot */}
           <SelectionBox points={selection} />
+          {/* convex hull for the selected neighbors */}
+          {props.neighborhoodHull && props.neighborhoodHull.length > 0 ? (
+            <NeighborhoodPolygon
+              points2D={props.neighborhoodHull}
+              zPosition={10}
+            />
+          ) : null}
         </Canvas>
       ) : null}
     </Box>
