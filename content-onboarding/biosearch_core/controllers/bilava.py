@@ -63,7 +63,7 @@ def fetch_images(
     conn_params: ConnectionParams,
     classifier: str,
     reduction: Literal["pca", "umap", "tsne"],
-    split_set: Literal["TRAIN", "VAL", "TEST", "UNL", "ALL"],
+    split_set: Literal["TRAIN", "TRAIN+UNL", "VAL", "TEST", "UNL", "ALL"],
     schemas_2_base_img_dir: Dict[str, str],
     image_server: str,
 ):
@@ -83,7 +83,10 @@ def fetch_images(
                         ROUND(y_{reduction}, 2)::float as y,
                         ROUND(hit_{reduction}, 2)::float as hit,
                         split_set as ss,
-                        schema
+                        schema,
+                        width,
+                        height,
+                        ms,
                  FROM {bilava_schema}.features
                  WHERE classifier = '{classifier}'
                 """.format(
@@ -93,13 +96,16 @@ def fetch_images(
                     lbl_len=lbl_len,
                 )
                 if split_set != "ALL":
-                    query = f"{query} AND split_set='{split_set}'"
+                    if split_set == "TRAIN+UNL":
+                        query = f"{query} AND (split_set='TRAIN' OR split_set='UNL')"
+                    else:
+                        query = f"{query} AND split_set='{split_set}'"
 
                 cursor.execute(query)
                 images = cursor.fetchall()
                 images = [
                     {
-                        "id": el["id"],
+                        "dbId": el["id"],
                         "lbl": el["lbl"],
                         "prd": el["prd"],
                         "uri": f"{image_server}/{schemas_2_base_img_dir[el['schema']]}/{el['uri']}",
@@ -107,11 +113,14 @@ def fetch_images(
                         "y": el["y"],
                         "hit": el["hit"],
                         "ss": el["ss"],
+                        "w": el["width"],
+                        "h": el["height"],
+                        "ms": el["ms"],
                     }
                     for el in images
                 ]
             # pylint: disable=broad-except
             except Exception as exc:
-                print("Erorr fetching labels", exc)
+                print("Error fetching labels", exc)
                 logging.error("Error fetching labels", exc_info=True)
     return images
