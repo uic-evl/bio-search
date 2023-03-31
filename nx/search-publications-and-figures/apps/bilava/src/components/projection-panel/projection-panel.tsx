@@ -109,7 +109,7 @@ interface ProjectionPanelHeaderProps {
 const ProjectionPanelHeader = (props: ProjectionPanelHeaderProps) => {
   const [classifier, setClassifier] = useState<string>('')
   const projections = ['pca', 'tsne', 'umap']
-  const partitions = ['TRAIN', 'VAL', 'TEST', 'UNL']
+  const partitions = ['TRAIN', 'TRAIN+UNL', 'VAL', 'TEST', 'UNL']
 
   const handleOnClick = () => props.onClick(classifier)
 

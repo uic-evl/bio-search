@@ -27,6 +27,7 @@ export interface ScatterDot {
   selected?: boolean
   w: number // image width
   h: number // image height
+  ms: number // margin sampling
 }
 
 export interface ProjectionBuffer {

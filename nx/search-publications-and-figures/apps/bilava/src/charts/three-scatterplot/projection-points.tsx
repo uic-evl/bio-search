@@ -52,6 +52,7 @@ export const ProjectionPoints = ({
     e.stopPropagation()
 
     const imageUrl = data[index].uri
+    console.log(imageUrl)
     imageLoader.load(imageUrl, texture => {
       const material = new MeshBasicMaterial({map: texture, toneMapped: false})
       const {width, height} = texture.image

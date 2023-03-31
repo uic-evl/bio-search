@@ -72,6 +72,7 @@ const createRoot = (children: SpiralThumbnail[]) => {
     ss: '',
     w: 0,
     h: 0,
+    ms: 0,
   }
   return {
     ...fakeScatterDotProps,

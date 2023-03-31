@@ -80,7 +80,7 @@ interface ScaledImageProps {
   onClick: () => void
 }
 
-const ScaledImage = ({
+export const ScaledImage = ({
   imgPath,
   container,
   size,

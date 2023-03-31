@@ -5,7 +5,18 @@ import {
   Dispatch,
   SetStateAction,
 } from 'react'
-import {Box, Flex, Text, Spacer, Select, Button} from '@chakra-ui/react'
+import {
+  Box,
+  Flex,
+  Text,
+  Spacer,
+  Select,
+  Button,
+  Tabs,
+  TabList,
+  Tab,
+  ButtonProps,
+} from '@chakra-ui/react'
 
 /** Components for the headers of panels */
 
@@ -142,16 +153,43 @@ interface ActionButtonProps {
   onClick: () => void
 }
 
-export const ActionButton = (props: PropsWithChildren<ActionButtonProps>) => (
+export const ActionButton = (props: ButtonProps) => (
   <Button
-    {...props}
     bg="none"
     size="xs"
     color="white"
     colorScheme="whiteAlpha"
     variant="outline"
     borderRadius="0px"
+    {...props}
   >
     {props.children}
   </Button>
 )
+
+interface HeaderTabsProps {
+  options: {label: string; value: string}[]
+  setTabIndex: Dispatch<SetStateAction<number>>
+}
+
+export const HeaderTabs = (props: PropsWithChildren<HeaderTabsProps>) => {
+  return (
+    <Box>
+      <Tabs
+        {...props}
+        size="sm"
+        variant="soft-rounded"
+        colorScheme="pink"
+        onChange={props.setTabIndex}
+      >
+        <TabList>
+          {props.options.map(({label, value}) => (
+            <Tab key={value} value={value}>
+              {label}
+            </Tab>
+          ))}
+        </TabList>
+      </Tabs>
+    </Box>
+  )
+}
