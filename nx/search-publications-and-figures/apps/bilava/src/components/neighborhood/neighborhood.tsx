@@ -1,5 +1,6 @@
-import {Dispatch, SetStateAction, useMemo, useState} from 'react'
-import {Box} from '@chakra-ui/react'
+import {Dispatch, SetStateAction, useRef, useState} from 'react'
+import {Box, Flex} from '@chakra-ui/react'
+import {useSize} from '@chakra-ui/react-use-size'
 import {NeighborhoodPanelHeader} from './panel-header'
 import {DEFAULT_STRATEGY, SPIRAL_MAP} from './constants'
 import {ScatterDot} from '../../types'
@@ -41,6 +42,9 @@ export function Neighborhood(props: NeighborhoodProps) {
   const [maxRings, setMaxRings] = useState(2)
   const [objectFit, setObjectFit] = useState('fit')
 
+  const spiralRef = useRef<HTMLDivElement | null>(null)
+  const spiralDimensions = useSize(spiralRef)
+
   const handleSelectAll = () => {
     let indexes = [...props.selectedIndexes]
     indexes = indexes.map(e => true)
@@ -53,7 +57,7 @@ export function Neighborhood(props: NeighborhoodProps) {
   }
 
   return (
-    <Box h="full">
+    <Box h="full" w="full">
       <NeighborhoodPanelHeader
         layout={layout}
         setLayout={setLayout}
@@ -68,17 +72,34 @@ export function Neighborhood(props: NeighborhoodProps) {
         onSelectAll={handleSelectAll}
         onDeselectAll={handleDeselectAll}
       />
-      {props.neighbors.length > 0 && props.pointInterest ? (
-        <SpiralMap
-          pointInterest={props.pointInterest}
-          neighbors={props.neighbors}
-          maxRings={maxRings}
-          ringStrategy={strategy}
-          layout={layout}
-          selectedIndexes={props.selectedIndexes}
-          setSelectedIndexes={props.setNeighborsIdx}
-        />
-      ) : null}
+      <Flex
+        w="full"
+        h="calc(100% - 27px);"
+        ref={spiralRef}
+        backgroundColor={'blackAlpha.900'}
+        justifyContent={'center'}
+        alignItems={'center'}
+      >
+        {props.neighbors.length > 0 &&
+        props.pointInterest &&
+        spiralDimensions &&
+        spiralDimensions.width > 0 &&
+        spiralDimensions.height > 0 ? (
+          <SpiralMap
+            pointInterest={props.pointInterest}
+            neighbors={props.neighbors}
+            maxRings={maxRings}
+            ringStrategy={strategy}
+            layout={layout}
+            selectedIndexes={props.selectedIndexes}
+            setSelectedIndexes={props.setNeighborsIdx}
+            dimensions={{
+              width: Math.min(spiralDimensions.width, spiralDimensions.height),
+              height: Math.min(spiralDimensions.width, spiralDimensions.height),
+            }}
+          />
+        ) : null}
+      </Flex>
     </Box>
   )
 }

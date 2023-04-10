@@ -21,6 +21,7 @@ export interface ProjectionPanelProps {
   setData: Dispatch<SetStateAction<ScatterDot[]>>
   setPointInterest: Dispatch<SetStateAction<ScatterDot | null>>
   neighborhoodHull: Point[]
+  setBrushedData: Dispatch<SetStateAction<ScatterDot[]>>
 }
 
 const xAccessor = (d: ScatterDot) => d.x
@@ -77,7 +78,7 @@ export function ProjectionPanel(props: ProjectionPanelProps) {
         isLoading={isLoading}
         onClick={handleOnLoadData}
       />
-      <Box w="full" h="full" ref={observe}>
+      <Box w="full" h="95%" ref={observe}>
         {props.data.length > 0 && height > 0 ? (
           <ThreeScatterplot
             classifier={classifier}
@@ -87,6 +88,7 @@ export function ProjectionPanel(props: ProjectionPanelProps) {
             height={height}
             setPointInterest={props.setPointInterest}
             neighborhoodHull={props.neighborhoodHull}
+            setBrushedData={props.setBrushedData}
           />
         ) : null}
       </Box>

@@ -63,6 +63,7 @@ export interface ThreeScatterplotProps {
   height: number
   setPointInterest: Dispatch<SetStateAction<ScatterDot | null>>
   neighborhoodHull: Point[]
+  setBrushedData: Dispatch<SetStateAction<ScatterDot[]>>
 }
 
 interface CanvasPoint {
@@ -140,6 +141,7 @@ export function ThreeScatterplot(props: ThreeScatterplotProps) {
         selection[3],
         selection[1],
       )
+      props.setBrushedData(selectedPoints)
     }
   }
 

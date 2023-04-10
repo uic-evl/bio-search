@@ -146,6 +146,7 @@ export interface SpiralMapProps {
   setSelectedIndexes: Dispatch<SetStateAction<boolean[]>>
   ringStrategy: string
   maxRings: number
+  dimensions: {width: number; height: number}
 }
 
 export function SpiralMap({
@@ -156,9 +157,8 @@ export function SpiralMap({
   maxRings,
   selectedIndexes,
   setSelectedIndexes,
+  dimensions,
 }: SpiralMapProps) {
-  const {observe, width, height} = useDimensions({polyfill: ResizeObserver})
-
   const breaks = [
     [13, 2],
     [20, 4],
@@ -204,28 +204,31 @@ export function SpiralMap({
     let descendants = null
 
     if (layout === GRID_LAYOUT) {
-      descendants = fetchGridNodes(inputData, width, height)
+      descendants = fetchGridNodes(
+        inputData,
+        dimensions.width,
+        dimensions.height,
+      )
     } else {
       descendants = featchSpiralNodes(
         inputData,
         layout,
         ringStrategy,
         maxRings,
-        width,
-        height,
+        dimensions.width,
+        dimensions.height,
       )
     }
 
     return descendants
-  }, [neighbors, width, height])
+  }, [neighbors, dimensions])
 
   return (
     <Box
-      w="full"
-      h="full"
+      w={dimensions.width}
+      h={dimensions.height}
       backgroundColor="#2a2a2a"
       pos="relative"
-      ref={observe}
     >
       {descendants &&
         descendants.map((d, idx) => (

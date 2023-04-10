@@ -9,6 +9,8 @@ import HtmlImageThumbnail, {
 import {LabelCircleIcon} from '../icons/icons'
 import {colorsMapper} from '../../utils/mapper'
 
+import styles from './gallery.module.css'
+
 const mispredicted = (images: ScatterDot[]) =>
   images ? images.filter(d => d.lbl !== 'unl' && d.lbl !== d.prd) : []
 
@@ -31,16 +33,17 @@ export interface GalleryProps {
   selectedIndexes: boolean[]
   brushedData: ScatterDot[] | null
   setGalleryIdx: Dispatch<SetStateAction<boolean[]>>
+  setPointInterest: Dispatch<SetStateAction<ScatterDot | null>>
 }
 
 export function Gallery(props: GalleryProps) {
   const [tabIndex, setTabIndex] = useState<number>(0)
   const [currPage, setCurrPage] = useState<number>(0)
   const [gridRef, dimensions] = useChartDimensions({
-    marginLeft: 20,
-    marginRight: 20,
+    marginLeft: 5,
+    marginRight: 5,
     marginTop: 0,
-    marginBottom: 1,
+    marginBottom: 0,
   })
   const gap = 5
 
@@ -57,7 +60,6 @@ export function Gallery(props: GalleryProps) {
 
   const [numberPages, itemsPerPage] = useMemo<[number, number]>(() => {
     if (!props.data) return [0, 0]
-    console.log('dimensions', dimensions)
 
     const squaredImgSize = props.size + gap
     const elemsWidth = Math.floor(dimensions.boundedWidth / squaredImgSize)
@@ -74,7 +76,7 @@ export function Gallery(props: GalleryProps) {
     if (tabIndex === 1) return props.brushedData ? props.brushedData : []
     if (tabIndex === 2) return confident(props.data)
     return uncertain(props.data)
-  }, [props.data, tabIndex])
+  }, [props.data, props.brushedData, tabIndex])
 
   useEffect(() => {
     setCurrPage(0)
@@ -101,7 +103,7 @@ export function Gallery(props: GalleryProps) {
         setTabIndex={setTabIndex}
         onSelectAll={handleSelectAll}
         onDeselectAll={handleDeselectAll}
-        numberPages={numberPages}
+        numberPages={Math.ceil(contextImages.length / itemsPerPage)}
       />
       <Grid
         ref={gridRef}
@@ -127,9 +129,11 @@ export function Gallery(props: GalleryProps) {
                     maxWidth: `${props.size - 4}px`,
                     maxHeight: `${props.size - 4}px`,
                   }}
-                  className={'item-image'}
+                  className={styles['item-image']}
                   alt=""
-                  onClick={() => {}}
+                  onClick={() => {
+                    props.setPointInterest(d)
+                  }}
                 />
                 <LabelCircleIcon
                   fill={colorsMapper[d.lbl]}
@@ -139,9 +143,10 @@ export function Gallery(props: GalleryProps) {
               </Box>
             </GridItem>
           ))}
+        {imagesOnPage && imagesOnPage.length === 0 && (
+          <Box color="white">No data to display</Box>
+        )}
       </Grid>
     </Box>
   )
 }
-
-export default Gallery

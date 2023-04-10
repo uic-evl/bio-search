@@ -3,6 +3,8 @@ import {Grid, GridItem, Box} from '@chakra-ui/react'
 import DatasetPanel from '../../components/dataset-panel/dataset-panel'
 import ProjectionPanel from '../../components/projection-panel/projection-panel'
 import Neighborhood from '../../components/neighborhood/neighborhood'
+import {Gallery} from '../../components/gallery/gallery'
+
 import {ScatterDot} from '../../types'
 
 import {findNClosestNeighbors} from '../../utils/neighborhood'
@@ -23,6 +25,8 @@ export function ExplorerPage(props: ExplorerPageProps) {
   const [neighborsIdx, setNeighborsIdx] = useState<boolean[]>(
     Array.from({length: INIT_NUM_NEIGHBORS + 1}, () => false),
   )
+  const [galleryIdx, setGalleryIdx] = useState<boolean[]>([])
+  const [brushedData, setBrushedData] = useState<ScatterDot[]>([])
 
   // neighbors calculated here to allow sharing state between projection and
   // neighborhood views.
@@ -49,10 +53,10 @@ export function ExplorerPage(props: ExplorerPageProps) {
   return (
     <Grid
       w="100hv"
-      h="100vh"
+      h="99vh"
       gridTemplateColumns={'300px 1fr 1fr'}
-      gridTemplateRows={'27px 1fr 300px'}
-      gridGap="4px"
+      gridTemplateRows={'25px 1fr 300px'}
+      gridGap="0px"
       gridTemplateAreas={`"header header header"
       "dataset projection thumbnails"
       "dataset gallery gallery"
@@ -68,6 +72,7 @@ export function ExplorerPage(props: ExplorerPageProps) {
           setData={setData}
           setPointInterest={setPointInterest}
           neighborhoodHull={neighborsConvexHull}
+          setBrushedData={setBrushedData}
         />
       </GridItem>
       <GridItem area="thumbnails">
@@ -81,7 +86,14 @@ export function ExplorerPage(props: ExplorerPageProps) {
         />
       </GridItem>
       <GridItem area="gallery">
-        <Box w="full" h="full"></Box>
+        <Gallery
+          data={data}
+          size={120}
+          selectedIndexes={[]}
+          brushedData={brushedData}
+          setGalleryIdx={setGalleryIdx}
+          setPointInterest={setPointInterest}
+        />
       </GridItem>
     </Grid>
   )
