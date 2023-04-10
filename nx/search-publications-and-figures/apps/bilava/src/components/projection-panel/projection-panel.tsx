@@ -8,7 +8,7 @@ import {
 } from '../panel-header/panel-header'
 import {useClassifiers} from './use-classifiers'
 import ThreeScatterplot from '../../charts/three-scatterplot/three-scatterplot'
-import {ScatterDot} from '../../types'
+import {Filter, ScatterDot} from '../../types'
 import {fetch_projections} from '../../api'
 import {min} from 'd3-array'
 import useDimensions from 'react-cool-dimensions'
@@ -22,6 +22,7 @@ export interface ProjectionPanelProps {
   setPointInterest: Dispatch<SetStateAction<ScatterDot | null>>
   neighborhoodHull: Point[]
   setBrushedData: Dispatch<SetStateAction<ScatterDot[]>>
+  filters: Filter
 }
 
 const xAccessor = (d: ScatterDot) => d.x
@@ -89,6 +90,7 @@ export function ProjectionPanel(props: ProjectionPanelProps) {
             setPointInterest={props.setPointInterest}
             neighborhoodHull={props.neighborhoodHull}
             setBrushedData={props.setBrushedData}
+            filters={props.filters}
           />
         ) : null}
       </Box>

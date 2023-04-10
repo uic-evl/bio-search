@@ -34,6 +34,7 @@ export interface ProjectionBuffer {
   position: Float32BufferAttribute
   fillColor: Float32BufferAttribute
   strokeColor: Float32BufferAttribute
+  raw: ScatterDot[]
 }
 
 export interface SelectionListOption {
@@ -49,4 +50,12 @@ export interface SpiralThumbnail extends ScatterDot {
   ring?: number // ring number
   placedholder?: boolean
   children?: SpiralThumbnail[] // children rings
+}
+
+export interface Filter {
+  hits: number
+  label: string[]
+  prediction: string[]
+  probability: number[]
+  source: string[]
 }

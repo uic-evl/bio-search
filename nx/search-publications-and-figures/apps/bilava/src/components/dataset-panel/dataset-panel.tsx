@@ -17,7 +17,7 @@ export function DatasetPanel(props: DatasetPanelProps) {
 
   return (
     <>
-      <Box h="full" overflowY={'scroll'}>
+      <Box h="450px">
         <BoxHeaderAndOptions
           title={'Dataset'}
           options={datasetViewOptions}

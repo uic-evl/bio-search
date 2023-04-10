@@ -5,10 +5,11 @@ import ProjectionPanel from '../../components/projection-panel/projection-panel'
 import Neighborhood from '../../components/neighborhood/neighborhood'
 import {Gallery} from '../../components/gallery/gallery'
 
-import {ScatterDot} from '../../types'
+import {Filter, ScatterDot} from '../../types'
 
 import {findNClosestNeighbors} from '../../utils/neighborhood'
 import {makeHull, Point} from '../../utils/convex-hull'
+import Filters from '../../components/filters/filters'
 
 /* eslint-disable-next-line */
 export interface ExplorerPageProps {}
@@ -27,6 +28,13 @@ export function ExplorerPage(props: ExplorerPageProps) {
   )
   const [galleryIdx, setGalleryIdx] = useState<boolean[]>([])
   const [brushedData, setBrushedData] = useState<ScatterDot[]>([])
+  const [filters, setFilters] = useState<Filter>({
+    hits: 0.5,
+    label: [],
+    prediction: [],
+    probability: [],
+    source: [],
+  })
 
   // neighbors calculated here to allow sharing state between projection and
   // neighborhood views.
@@ -62,8 +70,9 @@ export function ExplorerPage(props: ExplorerPageProps) {
       "dataset gallery gallery"
       `}
     >
-      <GridItem area={'dataset'}>
+      <GridItem area={'dataset'} borderRight={'1px solid black'}>
         <DatasetPanel taxonomy={project} />
+        <Filters filters={filters} setFilters={setFilters} />
       </GridItem>
       <GridItem area="projection">
         <ProjectionPanel
@@ -73,6 +82,7 @@ export function ExplorerPage(props: ExplorerPageProps) {
           setPointInterest={setPointInterest}
           neighborhoodHull={neighborsConvexHull}
           setBrushedData={setBrushedData}
+          filters={filters}
         />
       </GridItem>
       <GridItem area="thumbnails">

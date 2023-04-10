@@ -3,7 +3,7 @@ import {Box} from '@chakra-ui/react'
 import {Color, Float32BufferAttribute, NoBlending} from 'three'
 import {Canvas, ThreeEvent} from '@react-three/fiber'
 import {OrbitControls} from '@react-three/drei'
-import {ScatterDot, ProjectionBuffer} from '../../types'
+import {ScatterDot, ProjectionBuffer, Filter} from '../../types'
 import {extent} from 'd3-array'
 import {colorsMapper} from '../../utils/mapper'
 import SelectionBox from './selection-box'
@@ -64,6 +64,7 @@ export interface ThreeScatterplotProps {
   setPointInterest: Dispatch<SetStateAction<ScatterDot | null>>
   neighborhoodHull: Point[]
   setBrushedData: Dispatch<SetStateAction<ScatterDot[]>>
+  filters: Filter
 }
 
 interface CanvasPoint {
@@ -151,8 +152,14 @@ export function ThreeScatterplot(props: ThreeScatterplotProps) {
     if (extentX[0] === undefined || extentX[1] === undefined) return
     if (extentY[0] === undefined || extentY[1] === undefined) return
 
+    const qTree = quadtree<ScatterDot>()
+      .x(xAccessor)
+      .y(yAccessor)
+      .addAll(props.data)
+
     // previous on useMemo
-    const totalPoints = props.data.length
+    const filteredData = props.data.filter(el => el.hit <= props.filters.hits)
+    const totalPoints = filteredData.length
     const positionsBuffer = new Float32Array(totalPoints * 3)
     const fillsBuffer = new Float32Array(totalPoints * 3)
     const strokesBuffer = new Float32Array(totalPoints * 3)
@@ -160,13 +167,15 @@ export function ThreeScatterplot(props: ThreeScatterplotProps) {
     for (let i = 0; i < totalPoints; i++) {
       const i3 = i * 3
       // setup positions for 2D
-      positionsBuffer[i3 + 0] = xAccessor(props.data[i])
-      positionsBuffer[i3 + 1] = yAccessor(props.data[i])
+      positionsBuffer[i3 + 0] = xAccessor(filteredData[i])
+      positionsBuffer[i3 + 1] = yAccessor(filteredData[i])
       positionsBuffer[i3 + 2] = 0.0
       // colors for ground truth
-      const fills = new Color(colorsMapper[labelAccessor(props.data[i])])
+      const fills = new Color(colorsMapper[labelAccessor(filteredData[i])])
       // colors for prediction
-      const strokes = new Color(colorsMapper[predictionAccessor(props.data[i])])
+      const strokes = new Color(
+        colorsMapper[predictionAccessor(filteredData[i])],
+      )
       // assign values to buffers
       fillsBuffer[i3 + 0] = fills.r
       fillsBuffer[i3 + 1] = fills.g
@@ -177,15 +186,11 @@ export function ThreeScatterplot(props: ThreeScatterplotProps) {
       strokesBuffer[i3 + 2] = strokes.b
     }
 
-    const qTree = quadtree<ScatterDot>()
-      .x(xAccessor)
-      .y(yAccessor)
-      .addAll(props.data)
-
     setData({
       position: new Float32BufferAttribute(positionsBuffer, 3, false),
       fillColor: new Float32BufferAttribute(fillsBuffer, 3, false),
       strokeColor: new Float32BufferAttribute(strokesBuffer, 3, false),
+      raw: filteredData,
     })
     setCameraWidth(extentX[1] - extentX[0] + padding)
     setCameraHeight(extentY[1] - extentY[0] + padding)
@@ -195,7 +200,7 @@ export function ThreeScatterplot(props: ThreeScatterplotProps) {
       x: (extentX[0] + extentX[1]) / 2,
       y: (extentY[0] + extentY[1]) / 2,
     })
-  }, [props.data])
+  }, [props.data, props.filters])
 
   return (
     <Box w="full" h={props.height} position={'relative'}>
@@ -252,7 +257,6 @@ export function ThreeScatterplot(props: ThreeScatterplotProps) {
           {data ? (
             <ProjectionPoints
               buffer={data}
-              data={props.data}
               setPointInterest={props.setPointInterest}
             />
           ) : null}

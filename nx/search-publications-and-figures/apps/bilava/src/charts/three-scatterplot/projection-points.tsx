@@ -21,13 +21,11 @@ interface Thumbnail {
 
 interface ProjectionPointsProps {
   buffer: ProjectionBuffer
-  data: ScatterDot[]
   setPointInterest: Dispatch<SetStateAction<ScatterDot | null>>
 }
 
 export const ProjectionPoints = ({
   buffer,
-  data,
   setPointInterest,
 }: ProjectionPointsProps) => {
   const [thumbnails, setThumbnails] = useState<Thumbnail[]>([])
@@ -51,7 +49,7 @@ export const ProjectionPoints = ({
     if (index === undefined) return
     e.stopPropagation()
 
-    const imageUrl = data[index].uri
+    const imageUrl = buffer.raw[index].uri
     console.log(imageUrl)
     imageLoader.load(imageUrl, texture => {
       const material = new MeshBasicMaterial({map: texture, toneMapped: false})
@@ -64,7 +62,7 @@ export const ProjectionPoints = ({
       setThumbnails([
         ...thumbnails,
         {
-          data: data[index],
+          data: buffer.raw[index],
           material,
           geometry,
         },
@@ -80,7 +78,7 @@ export const ProjectionPoints = ({
 
   useEffect(() => {
     setThumbnails([])
-  }, [buffer, data])
+  }, [buffer])
 
   useFrame(() => {
     // TODO: not sure if it's the most efficient approach but putting

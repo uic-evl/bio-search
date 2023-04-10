@@ -147,12 +147,6 @@ export const BoxHeaderAndOptions = ({
   </PanelHeader>
 )
 
-interface ActionButtonProps {
-  disabled: boolean
-  isLoading: boolean
-  onClick: () => void
-}
-
 export const ActionButton = (props: ButtonProps) => (
   <Button
     bg="none"
@@ -193,3 +187,13 @@ export const HeaderTabs = (props: PropsWithChildren<HeaderTabsProps>) => {
     </Box>
   )
 }
+
+interface SimpleBoxHeaderProps {
+  title: string
+}
+
+export const SimpleBoxHeader = ({title}: SimpleBoxHeaderProps) => (
+  <PanelHeader>
+    <HeaderTitle>{title}</HeaderTitle>
+  </PanelHeader>
+)
