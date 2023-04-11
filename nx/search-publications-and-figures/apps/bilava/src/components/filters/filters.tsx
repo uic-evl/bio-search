@@ -84,6 +84,14 @@ export function Filters(props: FiltersProps) {
     let updatedFilters = {...props.filters}
     if (key === 'hits') {
       updatedFilters.hits = value as number
+    } else if (key === 'label') {
+      let keyFilters = [...updatedFilters[key]]
+      if (keyFilters.includes(value as string)) {
+        keyFilters = keyFilters.filter((v: string) => v !== value)
+      } else {
+        keyFilters.push(value as string)
+      }
+      updatedFilters[key] = keyFilters
     }
     // let updatedFilter = {...props.filters}
     // // if (Array.isArray(value)) {
@@ -126,6 +134,9 @@ export function Filters(props: FiltersProps) {
           <BarChartFilter
             data={props.data}
             dataAccessor={(d: ScatterDot) => d.lbl}
+            updateFilters={(value: string) =>
+              handleProjectionFilters('label', value)
+            }
           />
         ) : null}
       </Box>

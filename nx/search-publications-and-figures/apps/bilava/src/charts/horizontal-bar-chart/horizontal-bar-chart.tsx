@@ -67,8 +67,8 @@ export function HorizontalBarChart({
             />
             <text
               x={xScale(X[i])}
-              y={yScale(Y[i]) || 0 + yScale.bandwidth() / 2}
-              dy="0.35em"
+              y={(yScale(Y[i]) || 0) + yScale.bandwidth() / 2}
+              dy="0.10em"
               dx={isShortBar ? +4 : -4}
               textAnchor={isShortBar ? 'start' : undefined}
             >

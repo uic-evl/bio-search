@@ -35,6 +35,7 @@ export function ExplorerPage(props: ExplorerPageProps) {
     probability: [],
     source: [],
   })
+  console.log('filters', filters)
 
   // neighbors calculated here to allow sharing state between projection and
   // neighborhood views.
