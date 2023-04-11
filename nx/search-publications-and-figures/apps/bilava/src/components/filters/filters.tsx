@@ -118,6 +118,7 @@ export function Filters(props: FiltersProps) {
           }}
         />
       </Box>
+      <Subtitle pl={2} text="Ground-truth labels" />
     </Box>
   )
 }
