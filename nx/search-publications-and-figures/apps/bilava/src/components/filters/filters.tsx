@@ -10,7 +10,8 @@ import {
   SliderThumb,
 } from '@chakra-ui/react'
 import {SimpleBoxHeader} from '../panel-header/panel-header'
-import {Filter} from '../../types'
+import {BarChartFilter} from './bar-chart-filter'
+import {Filter, ScatterDot} from '../../types'
 
 interface SubtitleProps {
   text: string
@@ -68,6 +69,7 @@ const SliderController = ({
 
 /* eslint-disable-next-line */
 export interface FiltersProps {
+  data: ScatterDot[]
   filters: Filter
   setFilters: Dispatch<SetStateAction<Filter>>
 }
@@ -119,6 +121,14 @@ export function Filters(props: FiltersProps) {
         />
       </Box>
       <Subtitle pl={2} text="Ground-truth labels" />
+      <Box w="full" h="150px">
+        {props.data ? (
+          <BarChartFilter
+            data={props.data}
+            dataAccessor={(d: ScatterDot) => d.lbl}
+          />
+        ) : null}
+      </Box>
     </Box>
   )
 }

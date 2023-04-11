@@ -72,7 +72,7 @@ export function ExplorerPage(props: ExplorerPageProps) {
     >
       <GridItem area={'dataset'} borderRight={'1px solid black'}>
         <DatasetPanel taxonomy={project} />
-        <Filters filters={filters} setFilters={setFilters} />
+        <Filters data={data} filters={filters} setFilters={setFilters} />
       </GridItem>
       <GridItem area="projection">
         <ProjectionPanel

@@ -12,6 +12,8 @@ export interface Dimensions {
   marginLeft: number
   marginTop: number
   marginBottom: number
+  boundedWidth: number
+  boundedHeight: number
 }
 
 export interface ScatterDot {
@@ -58,4 +60,10 @@ export interface Filter {
   prediction: string[]
   probability: number[]
   source: string[]
+}
+
+export interface BarChartDatum {
+  field: string
+  count: number
+  selected: boolean
 }
