@@ -14,10 +14,10 @@
 }
 
 .AxisHorizontal .Axis__tick {
-  text-anchor: middle;
+  text-anchor: end;
 }
 
 .AxisVertical .Axis__tick {
-  dominant-baseline: middle;
+  /* dominant-baseline: middle; */
   text-anchor: end;
 }

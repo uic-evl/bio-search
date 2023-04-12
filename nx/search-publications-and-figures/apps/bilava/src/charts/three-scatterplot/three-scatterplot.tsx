@@ -17,6 +17,7 @@ import {
 } from 'd3-quadtree'
 import {Point} from '../../utils/convex-hull'
 import {NeighborhoodPolygon} from './neighborhood-hull'
+import {multiFilter} from '../../utils/mutifilter'
 
 const xAccessor = (d: ScatterDot) => d.x
 const yAccessor = (d: ScatterDot) => d.y
@@ -157,8 +158,16 @@ export function ThreeScatterplot(props: ThreeScatterplotProps) {
       .y(yAccessor)
       .addAll(props.data)
 
-    // previous on useMemo
-    const filteredData = props.data.filter(el => el.hit <= props.filters.hits)
+    // Filter first by data not being in the string[] filters
+    const {label, prediction, source} = props.filters
+    let filteredData: ScatterDot[] = multiFilter(props.data, {
+      lbl: label,
+      prd: prediction,
+      sr: source,
+    })
+    filteredData = filteredData.filter(el => el.hit <= props.filters.hits)
+    // TODO filter by probs
+
     const totalPoints = filteredData.length
     const positionsBuffer = new Float32Array(totalPoints * 3)
     const fillsBuffer = new Float32Array(totalPoints * 3)

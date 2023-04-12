@@ -87,6 +87,7 @@ def fetch_images(
                         width,
                         height,
                         ms,
+                        source
                  FROM {bilava_schema}.features
                  WHERE classifier = '{classifier}'
                 """.format(
@@ -116,11 +117,14 @@ def fetch_images(
                         "w": el["width"],
                         "h": el["height"],
                         "ms": el["ms"],
+                        "sr": el["source"],
                     }
                     for el in images
                 ]
+                unique_labels = list(set(el["lbl"] for el in images))
+                unique_labels.sort()
             # pylint: disable=broad-except
             except Exception as exc:
                 print("Error fetching labels", exc)
                 logging.error("Error fetching labels", exc_info=True)
-    return images
+    return {"data": images, "labels": unique_labels}

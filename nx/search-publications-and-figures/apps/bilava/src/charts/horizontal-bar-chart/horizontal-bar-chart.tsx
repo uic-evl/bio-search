@@ -1,5 +1,4 @@
 import {max as d3Max, map as d3Map, InternSet} from 'd3-array'
-import styles from './horizontal-bar-chart.module.css'
 import {ScaleBand, scaleBand, scaleLinear} from 'd3-scale'
 import {colorsMapper} from '../../utils/mapper'
 import {AxisVertical} from '../axis/axis'
@@ -38,14 +37,22 @@ export function HorizontalBarChart({
   ) as ScaleBand<string>
   const fill = (d: BarChartDatum, i: number) => {
     if (d.selected) {
-      return colorsMapper ? colorsMapper[Y[i]] : 'steelblue'
+      if (colorsMapper) {
+        return colorsMapper[Y[i]] !== undefined
+          ? colorsMapper[Y[i]]
+          : 'steelblue'
+      } else return 'steelblue'
     } else return 'white'
   }
   const stroke = (d: BarChartDatum, i: number) => {
     if (d.selected) {
       return 'none'
     } else {
-      return colorsMapper ? colorsMapper[Y[i]] : 'steelblue'
+      if (colorsMapper) {
+        return colorsMapper[Y[i]] !== undefined
+          ? colorsMapper[Y[i]]
+          : 'steelblue'
+      } else return 'steelblue'
     }
   }
 
@@ -54,7 +61,12 @@ export function HorizontalBarChart({
       {data.map((d, i) => {
         const isShortBar = xScale(X[i]) - xScale(0) < 20
         return (
-          <g textAnchor="end" fontFamily="sans-serif" fontSize={10}>
+          <g
+            key={d.field}
+            textAnchor="end"
+            fontFamily="sans-serif"
+            fontSize={10}
+          >
             <rect
               x={xScale(0)}
               y={yScale(Y[i])}

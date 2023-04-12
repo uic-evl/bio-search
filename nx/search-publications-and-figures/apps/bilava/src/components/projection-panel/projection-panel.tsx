@@ -8,7 +8,7 @@ import {
 } from '../panel-header/panel-header'
 import {useClassifiers} from './use-classifiers'
 import ThreeScatterplot from '../../charts/three-scatterplot/three-scatterplot'
-import {Filter, ScatterDot} from '../../types'
+import {Dataset, Filter, ScatterDot} from '../../types'
 import {fetch_projections} from '../../api'
 import {min} from 'd3-array'
 import useDimensions from 'react-cool-dimensions'
@@ -18,7 +18,7 @@ import {Point} from '../../utils/convex-hull'
 export interface ProjectionPanelProps {
   project: string
   data: ScatterDot[]
-  setData: Dispatch<SetStateAction<ScatterDot[]>>
+  setDataset: Dispatch<SetStateAction<Dataset>>
   setPointInterest: Dispatch<SetStateAction<ScatterDot | null>>
   neighborhoodHull: Point[]
   setBrushedData: Dispatch<SetStateAction<ScatterDot[]>>
@@ -56,14 +56,17 @@ export function ProjectionPanel(props: ProjectionPanelProps) {
 
   const handleOnLoadData = async (searchBoxClassifier: string) => {
     setIsLoading(true)
-    const projections = await fetch_projections(
+    const dataset = await fetch_projections(
       searchBoxClassifier,
       projection,
       splitSet,
     )
     setIsLoading(false)
     setClassifier(searchBoxClassifier)
-    props.setData(translateData(projections))
+    props.setDataset({
+      data: translateData(dataset.data),
+      labels: dataset.labels,
+    })
   }
 
   return (

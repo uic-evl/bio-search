@@ -1,4 +1,4 @@
-import {useState, useMemo} from 'react'
+import {useState, useMemo, useEffect} from 'react'
 import {ScatterDot, BarChartDatum, Dimensions, Filter} from '../../types'
 import {rollup} from 'd3-array'
 import ChartContainer from '../../charts/chart-container/chart-container'
@@ -16,20 +16,30 @@ export const BarChartFilter = ({
   dataAccessor,
   updateFilters,
 }: BarChartFilterProps) => {
-  const initFilters = useMemo<BarChartDatum[]>(() => {
-    const rolledDots = rollup<ScatterDot, number, string>(
-      data,
-      v => v.length,
-      dataAccessor,
-    )
-    return Array.from(rolledDots).map(arr => ({
-      field: arr[0],
-      count: arr[1] as number,
-      selected: true,
-    }))
-  }, data)
+  const [barFilters, setBarFilters] = useState<BarChartDatum[]>([])
 
-  const [barFilters, setBarFilters] = useState<BarChartDatum[]>(initFilters)
+  useEffect(() => {
+    if (!data || data.length === 0) return
+    const updateFilters = () => {
+      const rolledDots = rollup<ScatterDot, number, string>(
+        data,
+        v => v.length,
+        dataAccessor,
+      )
+      const filters = Array.from(rolledDots).map(arr => ({
+        field: arr[0],
+        count: arr[1] as number,
+        selected: true,
+      }))
+      filters.sort((a, b) => {
+        if (a.field < b.field) return -1
+        if (a.field > b.field) return 1
+        return 0
+      })
+      setBarFilters(filters)
+    }
+    updateFilters()
+  }, [data])
 
   const handleOnBarClick = (filter: BarChartDatum) => {
     const newFilters = [...barFilters].map(v => {

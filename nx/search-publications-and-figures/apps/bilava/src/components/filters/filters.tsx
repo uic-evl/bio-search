@@ -11,7 +11,9 @@ import {
 } from '@chakra-ui/react'
 import {SimpleBoxHeader} from '../panel-header/panel-header'
 import {BarChartFilter} from './bar-chart-filter'
-import {Filter, ScatterDot} from '../../types'
+import {Dataset, Filter, ScatterDot} from '../../types'
+
+const BAR_SIZE = 18 // pixels height for horizontal bars
 
 interface SubtitleProps {
   text: string
@@ -69,7 +71,7 @@ const SliderController = ({
 
 /* eslint-disable-next-line */
 export interface FiltersProps {
-  data: ScatterDot[]
+  dataset: Dataset
   filters: Filter
   setFilters: Dispatch<SetStateAction<Filter>>
 }
@@ -105,9 +107,11 @@ export function Filters(props: FiltersProps) {
     // }
     // // }
 
-    console.log(updatedFilters)
     props.setFilters(updatedFilters)
   }
+
+  const barchartHeight = () =>
+    `${(props.dataset.labels.length + 1) * BAR_SIZE}px`
 
   return (
     <Box w="full">
@@ -129,13 +133,38 @@ export function Filters(props: FiltersProps) {
         />
       </Box>
       <Subtitle pl={2} text="Ground-truth labels" />
-      <Box w="full" h="150px">
-        {props.data ? (
+      <Box w="full" h={barchartHeight()}>
+        {props.dataset.data && props.dataset.data.length > 0 ? (
           <BarChartFilter
-            data={props.data}
+            data={props.dataset.data}
             dataAccessor={(d: ScatterDot) => d.lbl}
             updateFilters={(value: string) =>
               handleProjectionFilters('label', value)
+            }
+          />
+        ) : null}
+      </Box>
+      <Subtitle pl={2} text="Predictions" />
+      <Box w="full" h={barchartHeight()}>
+        {props.dataset.data && props.dataset.data.length > 0 ? (
+          <BarChartFilter
+            data={props.dataset.data}
+            dataAccessor={(d: ScatterDot) => d.prd}
+            updateFilters={(value: string) =>
+              handleProjectionFilters('prediction', value)
+            }
+          />
+        ) : null}
+      </Box>
+
+      <Subtitle pl={2} text="Sources" />
+      <Box w="full" h="90px">
+        {props.dataset.data && props.dataset.data.length > 0 ? (
+          <BarChartFilter
+            data={props.dataset.data}
+            dataAccessor={(d: ScatterDot) => d.sr}
+            updateFilters={(value: string) =>
+              handleProjectionFilters('source', value)
             }
           />
         ) : null}

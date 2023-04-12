@@ -30,6 +30,12 @@ export interface ScatterDot {
   w: number // image width
   h: number // image height
   ms: number // margin sampling
+  sr: string // source
+}
+
+export interface Dataset {
+  data: ScatterDot[]
+  labels: string[]
 }
 
 export interface ProjectionBuffer {

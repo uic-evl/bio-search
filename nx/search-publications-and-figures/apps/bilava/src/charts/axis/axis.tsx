@@ -81,7 +81,7 @@ export const AxisVertical = ({
         <text
           key={tick}
           className={styles['Axis__tick']}
-          transform={`translate(20, ${
+          transform={`translate(12, ${
             (scale(tick as string) || 0) + scale.bandwidth() / 2
           })`}
         >

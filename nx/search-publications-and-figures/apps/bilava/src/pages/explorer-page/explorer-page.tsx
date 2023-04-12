@@ -5,7 +5,7 @@ import ProjectionPanel from '../../components/projection-panel/projection-panel'
 import Neighborhood from '../../components/neighborhood/neighborhood'
 import {Gallery} from '../../components/gallery/gallery'
 
-import {Filter, ScatterDot} from '../../types'
+import {Dataset, Filter, ScatterDot} from '../../types'
 
 import {findNClosestNeighbors} from '../../utils/neighborhood'
 import {makeHull, Point} from '../../utils/convex-hull'
@@ -19,7 +19,7 @@ const INIT_NUM_NEIGHBORS = 32
 export function ExplorerPage(props: ExplorerPageProps) {
   const project = 'cord19'
   // data fetched from db
-  const [data, setData] = useState<ScatterDot[]>([])
+  const [dataset, setDataset] = useState<Dataset>({data: [], labels: []})
   // neighborhood state
   const [pointInterest, setPointInterest] = useState<ScatterDot | null>(null)
   const [numNeighbors, setNumNeighbors] = useState<number>(INIT_NUM_NEIGHBORS)
@@ -35,7 +35,6 @@ export function ExplorerPage(props: ExplorerPageProps) {
     probability: [],
     source: [],
   })
-  console.log('filters', filters)
 
   // neighbors calculated here to allow sharing state between projection and
   // neighborhood views.
@@ -43,7 +42,7 @@ export function ExplorerPage(props: ExplorerPageProps) {
     [ScatterDot[], Point[]]
   >(() => {
     if (!pointInterest) return [[], []]
-    const nNeighbors = findNClosestNeighbors(data, pointInterest, 32)
+    const nNeighbors = findNClosestNeighbors(dataset.data, pointInterest, 32)
     const hull = makeHull(nNeighbors.map(p => ({x: p.x, y: p.y})))
 
     // update indices but keep already selected history
@@ -73,13 +72,13 @@ export function ExplorerPage(props: ExplorerPageProps) {
     >
       <GridItem area={'dataset'} borderRight={'1px solid black'}>
         <DatasetPanel taxonomy={project} />
-        <Filters data={data} filters={filters} setFilters={setFilters} />
+        <Filters dataset={dataset} filters={filters} setFilters={setFilters} />
       </GridItem>
       <GridItem area="projection">
         <ProjectionPanel
           project={project}
-          data={data}
-          setData={setData}
+          data={dataset.data}
+          setDataset={setDataset}
           setPointInterest={setPointInterest}
           neighborhoodHull={neighborsConvexHull}
           setBrushedData={setBrushedData}
@@ -88,7 +87,7 @@ export function ExplorerPage(props: ExplorerPageProps) {
       </GridItem>
       <GridItem area="thumbnails">
         <Neighborhood
-          data={data}
+          data={dataset.data}
           pointInterest={pointInterest}
           neighbors={neighbors}
           selectedIndexes={neighborsIdx}
@@ -98,7 +97,7 @@ export function ExplorerPage(props: ExplorerPageProps) {
       </GridItem>
       <GridItem area="gallery">
         <Gallery
-          data={data}
+          data={dataset.data}
           size={120}
           selectedIndexes={[]}
           brushedData={brushedData}
