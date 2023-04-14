@@ -27,7 +27,7 @@ export function HorizontalBarChart({
 
   const X = d3Map(data, xAccessor) as number[]
   const Y = d3Map(data, yAccessor) as string[]
-  const marginLeft = 50
+  const marginLeft = 90
   const paddingY = 0.1
   const max = d3Max(X) || 0
 

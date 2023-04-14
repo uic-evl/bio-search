@@ -1,4 +1,4 @@
-import {ScaleBand, ScaleContinuousNumeric} from 'd3-scale'
+import {ScaleBand, ScaleContinuousNumeric, ScaleLinear} from 'd3-scale'
 import {ticks as d3Ticks} from 'd3-array'
 
 import styles from './axis.module.css'
@@ -98,6 +98,65 @@ export const AxisVertical = ({
           {label}
         </text>
       )}
+    </g>
+  )
+}
+
+interface AxisBottomProps {
+  dimensions: {boundedWidth: number; boundedHeight: number}
+  formatTick: ((arg: number) => string) | ((arg: string) => string)
+  scale: ScaleLinear<number, number>
+  showLine: boolean
+  showTicks: boolean
+  tickMargin: number
+  fontSize: number
+  isOrdinal: boolean
+}
+
+export const AxisBottom = (props: AxisBottomProps) => {
+  const numberTicks = props.isOrdinal
+    ? props.scale.domain().length
+    : props.dimensions.boundedWidth < 600
+    ? props.dimensions.boundedWidth / 100
+    : props.dimensions.boundedWidth / 250
+
+  const ticks = props.isOrdinal
+    ? props.scale.domain()
+    : props.scale.ticks(numberTicks)
+
+  const textProps = (tick: number) => ({
+    dominantBaseline: 'auto',
+    transform: `translate(${props.scale(tick)}, ${+props.tickMargin})`,
+    textAnchor: 'middle',
+  })
+
+  const tickProps = (tick: number) => ({
+    x1: props.scale(tick),
+    x2: props.scale(tick),
+    y2: +5,
+    stroke: 'black',
+  })
+
+  return (
+    <g transform={`translate(0, ${props.dimensions.boundedHeight})`}>
+      <line
+        x2={props.dimensions.boundedWidth}
+        stroke={props.showLine ? 'black' : undefined}
+      />
+      {ticks.map(tick => (
+        <g key={`tick-info=${tick}`}>
+          <text
+            key={`ax-bt-${tick}`}
+            {...textProps(tick)}
+            fontSize={props.fontSize}
+          >
+            {props.formatTick(tick as never)}
+          </text>
+          {props.showTicks && (
+            <line key={`ax-bl-${tick}`} {...tickProps(tick)} />
+          )}
+        </g>
+      ))}
     </g>
   )
 }

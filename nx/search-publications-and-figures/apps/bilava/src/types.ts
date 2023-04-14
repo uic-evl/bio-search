@@ -31,6 +31,7 @@ export interface ScatterDot {
   h: number // image height
   ms: number // margin sampling
   sr: string // source
+  mp: number // probability for prediction
 }
 
 export interface Dataset {

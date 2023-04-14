@@ -87,7 +87,8 @@ def fetch_images(
                         width,
                         height,
                         ms,
-                        source
+                        source,
+                        round((SELECT max(probs) from unnest(pred_probs) as probs),2)::float as max_prob
                  FROM {bilava_schema}.features
                  WHERE classifier = '{classifier}'
                 """.format(
@@ -118,6 +119,7 @@ def fetch_images(
                         "h": el["height"],
                         "ms": el["ms"],
                         "sr": el["source"],
+                        "mp": el["max_prob"],
                     }
                     for el in images
                 ]

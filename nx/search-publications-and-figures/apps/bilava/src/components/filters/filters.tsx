@@ -8,10 +8,15 @@ import {
   SliderTrack,
   SliderFilledTrack,
   SliderThumb,
+  RangeSliderTrack,
+  RangeSlider,
+  RangeSliderThumb,
+  RangeSliderFilledTrack,
 } from '@chakra-ui/react'
 import {SimpleBoxHeader} from '../panel-header/panel-header'
 import {BarChartFilter} from './bar-chart-filter'
 import {Dataset, Filter, ScatterDot} from '../../types'
+import StackedBarChart from '../../charts/stacked-bar-chart/stacked-bar-chart'
 
 const BAR_SIZE = 18 // pixels height for horizontal bars
 
@@ -64,7 +69,7 @@ const SliderController = ({
       <SliderTrack>
         <SliderFilledTrack />
       </SliderTrack>
-      <SliderThumb />
+      <SliderThumb backgroundColor={'black'} />
     </Slider>
   </Flex>
 )
@@ -78,6 +83,12 @@ export interface FiltersProps {
 
 export function Filters(props: FiltersProps) {
   const [hits, setHits] = useState<number>(0.5)
+  const [selection, setSelection] = useState<
+    [[number, number], [number, number]]
+  >([
+    [0, 0],
+    [0, 100],
+  ])
 
   const handleProjectionFilters = (
     key: keyof Filter,
@@ -114,60 +125,99 @@ export function Filters(props: FiltersProps) {
     `${(props.dataset.labels.length + 1) * BAR_SIZE}px`
 
   return (
-    <Box w="full">
-      <SimpleBoxHeader title="Info & Filters" />
-      <Subtitle pl={2} text="Neighborhood Similarity" />
-      <Box w="full" pl={2} pr={2}>
-        <SliderController
-          text={hits.toString()}
-          value={hits}
-          min={0}
-          max={1}
-          step={0.05}
-          textWidth={'50px'}
-          setValue={setHits}
-          setValueEnd={value => {
-            setHits(value)
-            handleProjectionFilters('hits', value)
-          }}
-        />
+    <Box>
+      <Box w="full">
+        <SimpleBoxHeader title="Info & Filters" />
       </Box>
-      <Subtitle pl={2} text="Ground-truth labels" />
-      <Box w="full" h={barchartHeight()}>
-        {props.dataset.data && props.dataset.data.length > 0 ? (
-          <BarChartFilter
-            data={props.dataset.data}
-            dataAccessor={(d: ScatterDot) => d.lbl}
-            updateFilters={(value: string) =>
-              handleProjectionFilters('label', value)
-            }
+      <Box w="full" pl={2} pr={4} maxH={'500px'} overflowY={'scroll'}>
+        <Subtitle pl={2} text="Neighborhood Similarity" />
+        <Box w="full" pl={2} pr={2}>
+          <SliderController
+            text={hits.toString()}
+            value={hits}
+            min={0}
+            max={1}
+            step={0.05}
+            textWidth={'50px'}
+            setValue={setHits}
+            setValueEnd={value => {
+              setHits(value)
+              handleProjectionFilters('hits', value)
+            }}
           />
-        ) : null}
-      </Box>
-      <Subtitle pl={2} text="Predictions" />
-      <Box w="full" h={barchartHeight()}>
-        {props.dataset.data && props.dataset.data.length > 0 ? (
-          <BarChartFilter
-            data={props.dataset.data}
-            dataAccessor={(d: ScatterDot) => d.prd}
-            updateFilters={(value: string) =>
-              handleProjectionFilters('prediction', value)
-            }
-          />
-        ) : null}
-      </Box>
+        </Box>
+        <Subtitle pl={2} text="Ground-truth labels" />
+        <Box w="full" h={barchartHeight()}>
+          {props.dataset.data && props.dataset.data.length > 0 ? (
+            <BarChartFilter
+              data={props.dataset.data}
+              dataAccessor={(d: ScatterDot) => d.lbl}
+              updateFilters={(value: string) =>
+                handleProjectionFilters('label', value)
+              }
+            />
+          ) : null}
+        </Box>
+        <Subtitle pl={2} text="Predictions" />
+        <Box w="full" h={barchartHeight()}>
+          {props.dataset.data && props.dataset.data.length > 0 ? (
+            <BarChartFilter
+              data={props.dataset.data}
+              dataAccessor={(d: ScatterDot) => d.prd}
+              updateFilters={(value: string) =>
+                handleProjectionFilters('prediction', value)
+              }
+            />
+          ) : null}
+        </Box>
+        <Box ml={5} mt={2}>
+          <RangeSlider
+            colorScheme="pink"
+            defaultValue={[0, 100]}
+            min={0}
+            max={100}
+            step={1}
+            onChangeEnd={val => {
+              // setSelection(val)
+              // handleProjectionFilters('prob', val)
+            }}
+          >
+            <RangeSliderTrack>
+              <RangeSliderFilledTrack />
+            </RangeSliderTrack>
+            <RangeSliderThumb index={0} backgroundColor={'black'} />
+            <RangeSliderThumb index={1} backgroundColor={'black'} />
+          </RangeSlider>
+        </Box>
 
-      <Subtitle pl={2} text="Sources" />
-      <Box w="full" h="90px">
-        {props.dataset.data && props.dataset.data.length > 0 ? (
-          <BarChartFilter
-            data={props.dataset.data}
-            dataAccessor={(d: ScatterDot) => d.sr}
-            updateFilters={(value: string) =>
-              handleProjectionFilters('source', value)
-            }
-          />
-        ) : null}
+        <Subtitle pl={2} text="Predicted Instances (Log)" />
+        {props.dataset.data
+          ? props.dataset.labels.map(label => (
+              <Box w="full" h="60px" mb={1} mt={4} ml={1}>
+                <StackedBarChart
+                  keys={[label, 'unl']}
+                  useLogs={true}
+                  data={props.dataset.data.filter(el => el.prd === label)}
+                  title={`${label}`}
+                  minValue={0}
+                  selection={selection}
+                />
+              </Box>
+            ))
+          : null}
+
+        <Subtitle pl={2} text="Sources" />
+        <Box w="full" h="90px">
+          {props.dataset.data && props.dataset.data.length > 0 ? (
+            <BarChartFilter
+              data={props.dataset.data}
+              dataAccessor={(d: ScatterDot) => d.sr}
+              updateFilters={(value: string) =>
+                handleProjectionFilters('source', value)
+              }
+            />
+          ) : null}
+        </Box>
       </Box>
     </Box>
   )
