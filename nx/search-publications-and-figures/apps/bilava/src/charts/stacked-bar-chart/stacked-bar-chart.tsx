@@ -19,7 +19,7 @@ export interface StackedBarChartProps {
   keys: string[]
   useLogs: boolean
   title: string
-  selection: [[number, number], [number, number]]
+  selectionX: [number, number]
   minValue: number
 }
 
@@ -35,9 +35,6 @@ export function StackedBarChart(props: StackedBarChartProps) {
     marginLeft: 5,
     marginRight: 14,
   })
-
-  console.log('dimensions', dimensions)
-
   const brushRef = useRef(null)
 
   const values = props.data.map(el => {
@@ -64,10 +61,9 @@ export function StackedBarChart(props: StackedBarChartProps) {
     return series
   })
   const series = stackGenerator(transBuckets)
-  console.log(series)
 
   const xScale = scaleLinear()
-    .domain([props.minValue, 100])
+    .domain([props.minValue * 100, 100]) // minValue [0,1]
     .range([dimensions.marginLeft, dimensions.width - dimensions.marginRight])
 
   const yRange = [
@@ -87,14 +83,18 @@ export function StackedBarChart(props: StackedBarChartProps) {
       ])
       .on('end', brushed)
     function brushed(event: D3BrushEvent<BarChartDatum>) {
-      if (event.selection) brush.extent(props.selection)
+      if (event.selection)
+        brush.extent([
+          [props.selectionX[0], 0],
+          [props.selectionX[1], dimensions.height],
+        ])
     }
     const brushSelection = select(brushRef.current)
     brushSelection
       .call(brush as any)
-      .call(brush.move as any, props.selection.map(xScale as any))
+      .call(brush.move as any, props.selectionX.map(xScale as any))
     // eslint-disable-next-line
-  }, [dimensions, xScale, props.selection])
+  }, [dimensions, xScale, props.selectionX])
 
   return (
     <Box h="full" ref={ref} {...styles}>

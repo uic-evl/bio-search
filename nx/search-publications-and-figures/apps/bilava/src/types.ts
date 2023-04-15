@@ -37,6 +37,8 @@ export interface ScatterDot {
 export interface Dataset {
   data: ScatterDot[]
   labels: string[]
+  sources: string[]
+  minPrediction: number
 }
 
 export interface ProjectionBuffer {
@@ -65,7 +67,7 @@ export interface Filter {
   hits: number
   label: string[]
   prediction: string[]
-  probability: number[]
+  probability: [number, number]
   source: string[]
 }
 

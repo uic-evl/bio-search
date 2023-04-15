@@ -15,11 +15,12 @@ import Filters from '../../components/filters/filters'
 export interface ExplorerPageProps {}
 
 const INIT_NUM_NEIGHBORS = 32
+const INIT_DATASET = {data: [], labels: [], minPrediction: 0, sources: []}
 
 export function ExplorerPage(props: ExplorerPageProps) {
   const project = 'cord19'
   // data fetched from db
-  const [dataset, setDataset] = useState<Dataset>({data: [], labels: []})
+  const [dataset, setDataset] = useState<Dataset>(INIT_DATASET)
   // neighborhood state
   const [pointInterest, setPointInterest] = useState<ScatterDot | null>(null)
   const [numNeighbors, setNumNeighbors] = useState<number>(INIT_NUM_NEIGHBORS)
@@ -32,7 +33,7 @@ export function ExplorerPage(props: ExplorerPageProps) {
     hits: 0.5,
     label: [],
     prediction: [],
-    probability: [],
+    probability: [0, 100],
     source: [],
   })
 

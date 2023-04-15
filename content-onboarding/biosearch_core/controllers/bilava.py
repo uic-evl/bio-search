@@ -105,6 +105,7 @@ def fetch_images(
 
                 cursor.execute(query)
                 images = cursor.fetchall()
+                print(images[1])
                 images = [
                     {
                         "dbId": el["id"],
@@ -124,9 +125,17 @@ def fetch_images(
                     for el in images
                 ]
                 unique_labels = list(set(el["lbl"] for el in images))
+                sources = list(set(el["sr"] for el in images))
                 unique_labels.sort()
+                sources.sort()
+                min_prediction = min([el["mp"] for el in images])
             # pylint: disable=broad-except
             except Exception as exc:
                 print("Error fetching labels", exc)
                 logging.error("Error fetching labels", exc_info=True)
-    return {"data": images, "labels": unique_labels}
+    return {
+        "data": images,
+        "labels": unique_labels,
+        "sources": sources,
+        "minPrediction": min_prediction,
+    }

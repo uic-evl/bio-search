@@ -4,7 +4,7 @@ import {Color, Float32BufferAttribute, NoBlending} from 'three'
 import {Canvas, ThreeEvent} from '@react-three/fiber'
 import {OrbitControls} from '@react-three/drei'
 import {ScatterDot, ProjectionBuffer, Filter} from '../../types'
-import {extent} from 'd3-array'
+import {extent, filter} from 'd3-array'
 import {colorsMapper} from '../../utils/mapper'
 import SelectionBox from './selection-box'
 import {ProjectionPoints} from './projection-points'
@@ -165,8 +165,12 @@ export function ThreeScatterplot(props: ThreeScatterplotProps) {
       prd: prediction,
       sr: source,
     })
-    filteredData = filteredData.filter(el => el.hit <= props.filters.hits)
-    // TODO filter by probs
+    filteredData = filteredData.filter(
+      el =>
+        el.hit <= props.filters.hits &&
+        el.mp >= props.filters.probability[0] / 100 &&
+        el.mp <= props.filters.probability[1] / 100,
+    )
 
     const totalPoints = filteredData.length
     const positionsBuffer = new Float32Array(totalPoints * 3)

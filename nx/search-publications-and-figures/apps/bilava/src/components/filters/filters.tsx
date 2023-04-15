@@ -1,4 +1,4 @@
-import {Dispatch, SetStateAction, useState} from 'react'
+import {Dispatch, SetStateAction, useEffect, useState} from 'react'
 import {
   Box,
   chakra,
@@ -83,21 +83,22 @@ export interface FiltersProps {
 
 export function Filters(props: FiltersProps) {
   const [hits, setHits] = useState<number>(0.5)
-  const [selection, setSelection] = useState<
-    [[number, number], [number, number]]
-  >([
-    [0, 0],
-    [0, 100],
-  ])
+  const [selection, setSelection] = useState<[number, number]>([0, 100])
+
+  console.log('min pred', props.dataset.minPrediction)
+
+  useEffect(() => {
+    setSelection([props.dataset.minPrediction * 100, 100])
+  }, [props.dataset])
 
   const handleProjectionFilters = (
     key: keyof Filter,
-    value: string | number,
+    value: string | number | [number, number],
   ) => {
     let updatedFilters = {...props.filters}
     if (key === 'hits') {
       updatedFilters.hits = value as number
-    } else if (key === 'label') {
+    } else if (key === 'label' || key === 'source' || key === 'prediction') {
       let keyFilters = [...updatedFilters[key]]
       if (keyFilters.includes(value as string)) {
         keyFilters = keyFilters.filter((v: string) => v !== value)
@@ -105,50 +106,49 @@ export function Filters(props: FiltersProps) {
         keyFilters.push(value as string)
       }
       updatedFilters[key] = keyFilters
+    } else if (key === 'probability') {
+      updatedFilters.probability = value as [number, number]
     }
-    // let updatedFilter = {...props.filters}
-    // // if (Array.isArray(value)) {
-    // //   updatedFilter = value
-    // // } else {
-    // if (key === 'hits') updatedFilter.hits = value as number
-    // else {
-    //   updatedFilter = props.filters[key].includes(value)
-    //     ? props.filters[key].filter(v => v !== value)
-    //     : [...props.filters[key], value]
-    // }
-    // // }
-
     props.setFilters(updatedFilters)
   }
 
   const barchartHeight = () =>
     `${(props.dataset.labels.length + 1) * BAR_SIZE}px`
 
+  const sourcesHeight = () =>
+    `${(props.dataset.sources.length + 1) * BAR_SIZE}px`
+
   return (
     <Box>
       <Box w="full">
         <SimpleBoxHeader title="Info & Filters" />
       </Box>
-      <Box w="full" pl={2} pr={4} maxH={'500px'} overflowY={'scroll'}>
-        <Subtitle pl={2} text="Neighborhood Similarity" />
-        <Box w="full" pl={2} pr={2}>
-          <SliderController
-            text={hits.toString()}
-            value={hits}
-            min={0}
-            max={1}
-            step={0.05}
-            textWidth={'50px'}
-            setValue={setHits}
-            setValueEnd={value => {
-              setHits(value)
-              handleProjectionFilters('hits', value)
-            }}
-          />
-        </Box>
-        <Subtitle pl={2} text="Ground-truth labels" />
-        <Box w="full" h={barchartHeight()}>
-          {props.dataset.data && props.dataset.data.length > 0 ? (
+      {/* You need to load data first to see the charts and filters */}
+      {props.dataset.data.length === 0 ? (
+        <Box>Load data to see filters</Box>
+      ) : null}
+
+      {/* Show data and filters */}
+      {props.dataset.data.length > 0 ? (
+        <Box w="full" pl={2} pr={4} maxH={'500px'} overflowY={'scroll'}>
+          <Subtitle pl={2} text="Neighborhood Similarity" />
+          <Box w="full" pl={2} pr={2}>
+            <SliderController
+              text={hits.toString()}
+              value={hits}
+              min={0}
+              max={1}
+              step={0.05}
+              textWidth={'50px'}
+              setValue={setHits}
+              setValueEnd={value => {
+                setHits(value)
+                handleProjectionFilters('hits', value)
+              }}
+            />
+          </Box>
+          <Subtitle pl={2} mt={4} text="Ground-truth labels" />
+          <Box w="full" h={barchartHeight()}>
             <BarChartFilter
               data={props.dataset.data}
               dataAccessor={(d: ScatterDot) => d.lbl}
@@ -156,11 +156,9 @@ export function Filters(props: FiltersProps) {
                 handleProjectionFilters('label', value)
               }
             />
-          ) : null}
-        </Box>
-        <Subtitle pl={2} text="Predictions" />
-        <Box w="full" h={barchartHeight()}>
-          {props.dataset.data && props.dataset.data.length > 0 ? (
+          </Box>
+          <Subtitle pl={2} mt={4} text="Predictions" />
+          <Box w="full" h={barchartHeight()}>
             <BarChartFilter
               data={props.dataset.data}
               dataAccessor={(d: ScatterDot) => d.prd}
@@ -168,47 +166,43 @@ export function Filters(props: FiltersProps) {
                 handleProjectionFilters('prediction', value)
               }
             />
-          ) : null}
-        </Box>
-        <Box ml={5} mt={2}>
-          <RangeSlider
-            colorScheme="pink"
-            defaultValue={[0, 100]}
-            min={0}
-            max={100}
-            step={1}
-            onChangeEnd={val => {
-              // setSelection(val)
-              // handleProjectionFilters('prob', val)
-            }}
-          >
-            <RangeSliderTrack>
-              <RangeSliderFilledTrack />
-            </RangeSliderTrack>
-            <RangeSliderThumb index={0} backgroundColor={'black'} />
-            <RangeSliderThumb index={1} backgroundColor={'black'} />
-          </RangeSlider>
-        </Box>
+          </Box>
 
-        <Subtitle pl={2} text="Predicted Instances (Log)" />
-        {props.dataset.data
-          ? props.dataset.labels.map(label => (
-              <Box w="full" h="60px" mb={1} mt={4} ml={1}>
-                <StackedBarChart
-                  keys={[label, 'unl']}
-                  useLogs={true}
-                  data={props.dataset.data.filter(el => el.prd === label)}
-                  title={`${label}`}
-                  minValue={0}
-                  selection={selection}
-                />
-              </Box>
-            ))
-          : null}
+          <Subtitle pl={2} mt={4} text="Predicted Instances (Log)" />
+          {props.dataset.labels.map(label => (
+            <Box w="full" h="60px" mb={1} mt={4} ml={1}>
+              <StackedBarChart
+                keys={[label, 'unl']}
+                useLogs={true}
+                data={props.dataset.data.filter(el => el.prd === label)}
+                title={`${label}`}
+                minValue={props.dataset.minPrediction}
+                selectionX={selection}
+              />
+            </Box>
+          ))}
+          <Box ml={5} mt={2}>
+            <RangeSlider
+              colorScheme="pink"
+              defaultValue={selection}
+              min={props.dataset.minPrediction * 100}
+              max={100}
+              step={1}
+              onChangeEnd={(val: [number, number]) => {
+                setSelection(val)
+                handleProjectionFilters('probability', val)
+              }}
+            >
+              <RangeSliderTrack>
+                <RangeSliderFilledTrack />
+              </RangeSliderTrack>
+              <RangeSliderThumb index={0} backgroundColor={'black'} />
+              <RangeSliderThumb index={1} backgroundColor={'black'} />
+            </RangeSlider>
+          </Box>
 
-        <Subtitle pl={2} text="Sources" />
-        <Box w="full" h="90px">
-          {props.dataset.data && props.dataset.data.length > 0 ? (
+          <Subtitle pl={2} mt={4} text="Sources" />
+          <Box w="full" h={sourcesHeight()}>
             <BarChartFilter
               data={props.dataset.data}
               dataAccessor={(d: ScatterDot) => d.sr}
@@ -216,9 +210,9 @@ export function Filters(props: FiltersProps) {
                 handleProjectionFilters('source', value)
               }
             />
-          ) : null}
+          </Box>
         </Box>
-      </Box>
+      ) : null}
     </Box>
   )
 }

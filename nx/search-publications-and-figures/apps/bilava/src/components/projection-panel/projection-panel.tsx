@@ -66,6 +66,8 @@ export function ProjectionPanel(props: ProjectionPanelProps) {
     props.setDataset({
       data: translateData(dataset.data),
       labels: dataset.labels,
+      sources: dataset.sources,
+      minPrediction: dataset.minPrediction,
     })
   }
 
