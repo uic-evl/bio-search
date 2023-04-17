@@ -76,3 +76,10 @@ export interface BarChartDatum {
   count: number
   selected: boolean
 }
+
+export interface ImageExtras {
+  caption: string
+  probs: number[]
+  name: string
+  fullLabel: string
+}

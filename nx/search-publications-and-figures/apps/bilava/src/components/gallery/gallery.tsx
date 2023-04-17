@@ -30,13 +30,13 @@ const uncertain = (images: ScatterDot[]) => {
 export interface GalleryProps {
   data: ScatterDot[] | null
   size: number
-  selectedIndexes: boolean[]
   brushedData: ScatterDot[] | null
-  setGalleryIdx: Dispatch<SetStateAction<boolean[]>>
+  setGalleryCandidates: Dispatch<SetStateAction<ScatterDot[]>>
   setPointInterest: Dispatch<SetStateAction<ScatterDot | null>>
 }
 
 export function Gallery(props: GalleryProps) {
+  const [selectedIdx, setSelectedIdx] = useState<boolean[]>([])
   const [tabIndex, setTabIndex] = useState<number>(0)
   const [currPage, setCurrPage] = useState<number>(0)
   const [gridRef, dimensions] = useChartDimensions({
@@ -48,14 +48,14 @@ export function Gallery(props: GalleryProps) {
   const gap = 5
 
   const handleSelectAll = () => {
-    let indexes = [...props.selectedIndexes]
+    let indexes = [...selectedIdx]
     indexes = indexes.map(e => true)
-    props.setGalleryIdx(indexes)
+    setSelectedIdx(indexes)
   }
   const handleDeselectAll = () => {
-    let indexes = [...props.selectedIndexes]
+    let indexes = [...selectedIdx]
     indexes = indexes.map(e => false)
-    props.setGalleryIdx(indexes)
+    setSelectedIdx(indexes)
   }
 
   const [numberPages, itemsPerPage] = useMemo<[number, number]>(() => {
@@ -80,6 +80,8 @@ export function Gallery(props: GalleryProps) {
 
   useEffect(() => {
     setCurrPage(0)
+    props.setGalleryCandidates([])
+    setSelectedIdx(Array.from({length: contextImages.length}, () => false))
   }, [contextImages])
 
   const imagesOnPage = useMemo<ScatterDot[]>(() => {
@@ -120,7 +122,16 @@ export function Gallery(props: GalleryProps) {
         {imagesOnPage &&
           imagesOnPage.map((d, idx) => (
             <GridItem key={d.dbId} w={`${props.size}px`} h={`${props.size}px`}>
-              <Box w="full" h="full" position={'relative'}>
+              <Box
+                w="full"
+                h="full"
+                position={'relative'}
+                border={
+                  selectedIdx[currPage * itemsPerPage + idx]
+                    ? '1px solid red'
+                    : ''
+                }
+              >
                 <img
                   src={d.uri}
                   style={{
@@ -132,13 +143,22 @@ export function Gallery(props: GalleryProps) {
                   className={styles['item-image']}
                   alt=""
                   onClick={() => {
-                    props.setPointInterest(d)
+                    const indexes = [...selectedIdx]
+                    const wrapIdx = currPage * itemsPerPage + idx
+                    indexes[wrapIdx] = !indexes[wrapIdx]
+                    setSelectedIdx(indexes)
+                    props.setGalleryCandidates(
+                      contextImages.filter((el, idx) => indexes[idx]),
+                    )
                   }}
                 />
                 <LabelCircleIcon
                   fill={colorsMapper[d.lbl]}
                   stroke={colorsMapper[d.prd]}
                   size={{width: 14, height: 14}}
+                  onClick={() => {
+                    props.setPointInterest(d)
+                  }}
                 />
               </Box>
             </GridItem>

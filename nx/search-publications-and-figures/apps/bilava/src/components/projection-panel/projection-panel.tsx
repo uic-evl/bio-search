@@ -18,7 +18,7 @@ import {Point} from '../../utils/convex-hull'
 export interface ProjectionPanelProps {
   project: string
   data: ScatterDot[]
-  setDataset: Dispatch<SetStateAction<Dataset>>
+  propagateDataLoad: (arg1: Dataset, arg2: string) => void
   setPointInterest: Dispatch<SetStateAction<ScatterDot | null>>
   neighborhoodHull: Point[]
   setBrushedData: Dispatch<SetStateAction<ScatterDot[]>>
@@ -63,12 +63,15 @@ export function ProjectionPanel(props: ProjectionPanelProps) {
     )
     setIsLoading(false)
     setClassifier(searchBoxClassifier)
-    props.setDataset({
-      data: translateData(dataset.data),
-      labels: dataset.labels,
-      sources: dataset.sources,
-      minPrediction: dataset.minPrediction,
-    })
+    props.propagateDataLoad(
+      {
+        data: translateData(dataset.data),
+        labels: dataset.labels,
+        sources: dataset.sources,
+        minPrediction: dataset.minPrediction,
+      },
+      searchBoxClassifier,
+    )
   }
 
   return (

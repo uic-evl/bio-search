@@ -21,6 +21,7 @@ export interface HtmlImageThumbnailProps {
   objectFit: string
   selected: boolean
   onSelectThumbnail: () => void
+  onDemandDetails: () => void
 }
 
 export function HtmlImageThumbnail({
@@ -28,6 +29,7 @@ export function HtmlImageThumbnail({
   objectFit,
   selected,
   onSelectThumbnail,
+  onDemandDetails,
 }: HtmlImageThumbnailProps) {
   const imgWidth = imageNode.data.w || 0
   const imgHeight = imageNode.data.h || 0
@@ -38,6 +40,10 @@ export function HtmlImageThumbnail({
 
   const handleOnClickImage = () => {
     onSelectThumbnail()
+  }
+
+  const handleOnDemandDetails = () => {
+    onDemandDetails()
   }
 
   return (
@@ -64,6 +70,7 @@ export function HtmlImageThumbnail({
           fill={colorsMapper[imageNode.data.lbl]}
           stroke={colorsMapper[imageNode.data.prd]}
           size={{width: 14, height: 14}}
+          onClick={handleOnDemandDetails}
         />
       </Box>
     </Box>

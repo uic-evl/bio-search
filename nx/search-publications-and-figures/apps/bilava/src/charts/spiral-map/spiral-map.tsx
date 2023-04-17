@@ -1,6 +1,6 @@
-import {Dispatch, SetStateAction, useMemo} from 'react'
+import {Dispatch, SetStateAction, useMemo, useState} from 'react'
 import {ScatterDot, SpiralThumbnail} from '../../types'
-import {Box} from '@chakra-ui/react'
+import {Box, Flex, IconButton} from '@chakra-ui/react'
 import useDimensions from 'react-cool-dimensions'
 import {
   hierarchy as d3Hierarchy,
@@ -16,6 +16,7 @@ import {
   GRID_LAYOUT,
 } from '../../components/neighborhood/constants'
 import HtmlImageThumbnail from '../../components/html-image-thumbnail/html-image-thumbnail'
+import {CloseIcon} from '@chakra-ui/icons'
 
 const calculateGridPositions = (
   root: HierarchyRectangularNode<SpiralThumbnail>,
@@ -149,6 +150,7 @@ export interface SpiralMapProps {
   ringStrategy: string
   maxRings: number
   dimensions: {width: number; height: number}
+  setInspectedThumbnail: Dispatch<SetStateAction<ScatterDot | null>>
 }
 
 export function SpiralMap({
@@ -160,6 +162,7 @@ export function SpiralMap({
   selectedIndexes,
   setSelectedIndexes,
   dimensions,
+  setInspectedThumbnail,
 }: SpiralMapProps) {
   const breaks = [
     [13, 2],
@@ -244,6 +247,7 @@ export function SpiralMap({
               indexes[idx] = !indexes[idx]
               setSelectedIndexes(indexes)
             }}
+            onDemandDetails={() => setInspectedThumbnail(d.data)}
           />
         ))}
     </Box>

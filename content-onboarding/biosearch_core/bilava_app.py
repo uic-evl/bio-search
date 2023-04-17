@@ -81,3 +81,23 @@ def fetch_projections(classifier: str, reduction: str, split_set: str):
         schemas_2_base_img_dir,
         environ.get("IMAGE_HOST"),
     )
+
+
+@cross_origin
+@app.route(
+    ROOT + "/image/<int:img_id>/<string:classifier>/extras",
+    methods=["GET"],
+)
+def fetch_extra_image_info(img_id: int, classifier: str):
+    """Retrieve additional information for image"""
+    img_id = escape(img_id)
+    classifier = escape(classifier)
+    conn_params = ConnectionParams(
+        host=environ.get("host"),
+        port=environ.get("port"),
+        dbname=environ.get("dbname"),
+        user=environ.get("user"),
+        password=environ.get("password"),
+        schema=environ.get("schema"),
+    )
+    return bilava.fetch_image_extras(conn_params, img_id, classifier)

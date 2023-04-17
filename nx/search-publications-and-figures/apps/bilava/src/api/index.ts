@@ -1,5 +1,5 @@
 import {run} from '@search-publications-and-figures/api'
-import {Dataset} from '../types'
+import {Dataset, ImageExtras} from '../types'
 
 const BILAVA_ENDPOINT = import.meta.env.VITE_API
 
@@ -31,6 +31,19 @@ export const fetch_projections = async (
   splitSet: string,
 ): Promise<Dataset> => {
   const url = `${BILAVA_ENDPOINT}/projections/${classifier}/${projection}/${splitSet}`
+  const payload = await run(url, 'get', {
+    data: undefined,
+    token: undefined,
+    params: undefined,
+  })
+  return payload
+}
+
+export const fetch_image_extras = async (
+  imgId: number,
+  classifier: string,
+): Promise<ImageExtras> => {
+  const url = `${BILAVA_ENDPOINT}/image/${imgId}/${classifier}/extras`
   const payload = await run(url, 'get', {
     data: undefined,
     token: undefined,

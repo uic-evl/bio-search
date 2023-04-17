@@ -73,8 +73,6 @@ export function Filters(props: FiltersProps) {
   const [hits, setHits] = useState<number>(0.5)
   const [selection, setSelection] = useState<[number, number]>([0, 100])
 
-  console.log('min pred', props.dataset.minPrediction)
-
   useEffect(() => {
     setSelection([props.dataset.minPrediction * 100, 100])
   }, [props.dataset])

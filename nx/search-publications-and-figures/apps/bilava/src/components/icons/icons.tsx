@@ -1,4 +1,5 @@
 import {Box, BoxProps} from '@chakra-ui/react'
+import {ScatterDot} from '../../types'
 
 export const TopLeft = (props: BoxProps) => (
   <Box position="absolute" top={0} left={0} {...props}>
@@ -10,12 +11,14 @@ export interface LabelCircleIconProps {
   fill: string
   stroke: string
   size: {width: number; height: number}
+  onClick?: () => void
 }
 
 export const LabelCircleIcon = ({
   fill,
   stroke,
   size = {width: 20, height: 20},
+  onClick,
   ...props
 }: LabelCircleIconProps) => {
   return (
@@ -34,6 +37,7 @@ export const LabelCircleIcon = ({
           fill={fill}
           stroke={stroke}
           strokeWidth={2}
+          onClick={onClick ? onClick : undefined}
         ></circle>
       </svg>
     </TopLeft>

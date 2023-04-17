@@ -111,6 +111,7 @@ export function StackedBarChart(props: StackedBarChartProps) {
           <g key={group.key}>
             {group.map(d => (
               <rect
+                key={`${group.key}-${d.data.x0}`}
                 x={
                   group.key === 'unl'
                     ? xScale(d.data.x0)

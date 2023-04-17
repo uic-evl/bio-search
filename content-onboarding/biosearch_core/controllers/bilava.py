@@ -6,6 +6,7 @@ import logging
 from psycopg import connect
 from psycopg.rows import dict_row
 from biosearch_core.db.model import ConnectionParams
+from biosearch_core.data.figure import SubFigureStatus
 
 
 def fetch_classifiers(project_dir: str) -> List[str]:
@@ -88,7 +89,8 @@ def fetch_images(
                         height,
                         ms,
                         source,
-                        round((SELECT max(probs) from unnest(pred_probs) as probs),2)::float as max_prob
+                        round((SELECT max(probs) from unnest(pred_probs) as probs),2)::float as max_prob,
+                        status::int
                  FROM {bilava_schema}.features
                  WHERE classifier = '{classifier}'
                 """.format(
@@ -105,11 +107,13 @@ def fetch_images(
 
                 cursor.execute(query)
                 images = cursor.fetchall()
-                print(images[1])
+
                 images = [
                     {
                         "dbId": el["id"],
-                        "lbl": el["lbl"],
+                        "lbl": el["lbl"]
+                        if el["status"] == SubFigureStatus.GROUND_TRUTH.value
+                        else "unl",
                         "prd": el["prd"],
                         "uri": f"{image_server}/{schemas_2_base_img_dir[el['schema']]}/{el['uri']}",
                         "x": el["x"],
@@ -125,6 +129,8 @@ def fetch_images(
                     for el in images
                 ]
                 unique_labels = list(set(el["lbl"] for el in images))
+                if "unl" in unique_labels:
+                    unique_labels.remove("unl")
                 sources = list(set(el["sr"] for el in images))
                 unique_labels.sort()
                 sources.sort()
@@ -139,3 +145,41 @@ def fetch_images(
         "sources": sources,
         "minPrediction": min_prediction,
     }
+
+
+def fetch_image_extras(conn_params: ConnectionParams, db_id: int, classifier: str):
+    """Fetch information for the thumbnail details panel"""
+    # pylint: disable=not-context-manager
+    with connect(conninfo=conn_params.conninfo(), row_factory=dict_row) as conn:
+        with conn.cursor() as cursor:
+            try:
+                # pylint: disable=C0209:consider-using-f-string
+                query = """
+                    SELECT name, pred_probs, source
+                    FROM {bilava_schema}.features 
+                    WHERE id={db_id} AND classifier='{classifier}'
+                """.format(
+                    bilava_schema=conn_params.schema, db_id=db_id, classifier=classifier
+                )
+                cursor.execute(query)
+                image = cursor.fetchall()[0]
+
+                caption_schema = "training"
+                if image["source"] == "gdx":
+                    caption_schema = "gdx"
+                elif image["source"] == "cord19":
+                    caption_schema = "cord19"
+                query_caption = f"SELECT ground_truth, caption FROM {caption_schema}.figures WHERE id={db_id}"
+                cursor.execute(query_caption)
+                record = cursor.fetchall()[0]
+
+                return {
+                    "name": image["name"],
+                    "probs": [round(float(el), 3) for el in image["pred_probs"]],
+                    "caption": record["caption"],
+                    "fullLabel": record["ground_truth"],
+                }
+            # pylint: disable=broad-except
+            except Exception as exc:
+                print("Error fetching image extra", exc)
+                logging.error("Error fetching image extra", exc_info=True)

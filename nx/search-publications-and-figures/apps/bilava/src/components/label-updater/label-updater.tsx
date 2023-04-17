@@ -1,15 +1,25 @@
 import {Dispatch, SetStateAction, useEffect, useState} from 'react'
 import {ScatterDot} from '../../types'
-import styles from './label-updater.module.css'
-import {Box, Radio, RadioGroup, Select, Stack} from '@chakra-ui/react'
+import {
+  Box,
+  Button,
+  Flex,
+  Radio,
+  RadioGroup,
+  Select,
+  Stack,
+  chakra,
+} from '@chakra-ui/react'
 import {SimpleBoxHeader, Subtitle} from '../panel-header/panel-header'
 import {colorsMapper, findChildren, findSiblings} from '../../utils/mapper'
 
 const EmptySelector = () => (
-  <Box w="full" ml={2} mr={2}>
-    <SimpleBoxHeader title="update labels" />
-    <Box fontStyle="italic">
-      Please select images from the Gallery or Neighborhood views
+  <Box>
+    <Box w="full">
+      <SimpleBoxHeader title="update labels" />
+      <Box pl={2} pr={2} fontStyle="italic">
+        Please select images from the Gallery or Neighborhood views
+      </Box>
     </Box>
   </Box>
 )
@@ -26,7 +36,7 @@ export const LabelUpdater = ({neighbors, galleryItems}: LabelUpdaterProps) => {
     undefined,
   )
   const [targetLabel, setTargetLabel] = useState<string | null>(null)
-  console.log(targetLabel)
+  const [action, setAction] = useState<string>('update')
 
   useEffect(() => {
     // Control what options are available to update based on selected elements
@@ -41,8 +51,6 @@ export const LabelUpdater = ({neighbors, galleryItems}: LabelUpdaterProps) => {
     if (selection !== selectionGroup) {
       setSelectionGroup(selection)
     }
-    console.log(selection)
-    console.log(neighbors)
     if (selection) {
       setLabel(
         selection === 'neighborhood' ? neighbors[0].lbl : galleryItems[0].lbl,
@@ -51,6 +59,10 @@ export const LabelUpdater = ({neighbors, galleryItems}: LabelUpdaterProps) => {
   }, [neighbors, galleryItems])
 
   const labelOpts = siblings2options(label, colorsMapper)
+
+  const handleOnSave = () => {
+    console.log('on save')
+  }
 
   if (neighbors.length === 0 && galleryItems.length === 0) {
     return <EmptySelector />
@@ -89,6 +101,41 @@ export const LabelUpdater = ({neighbors, galleryItems}: LabelUpdaterProps) => {
             setTargetLabel={setTargetLabel}
           />
         ) : null}
+        <chakra.span>{targetLabel}</chakra.span>
+
+        <Box mt="4">
+          <Flex direction="row" alignItems="center" textAlign="center">
+            <Select
+              size="xs"
+              variant="filled"
+              w="90px"
+              bg={action === 'update' ? 'green.200' : 'tomato'}
+              value={action}
+              onChange={e => setAction(e.target.value)}
+            >
+              <option value="update">Update</option>
+              <option value="delete">Delete</option>
+            </Select>
+
+            <Box>
+              {selectionGroup && (
+                <chakra.span ml={2}>
+                  {selectionGroup === 'gallery'
+                    ? galleryItems && galleryItems.length
+                      ? galleryItems.length
+                      : 0
+                    : neighbors && neighbors.length
+                    ? neighbors.length
+                    : 0}{' '}
+                  images
+                </chakra.span>
+              )}
+            </Box>
+          </Flex>
+        </Box>
+        <Button w="full" size="sm" mt={2} onClick={handleOnSave}>
+          Save
+        </Button>
       </Box>
     </Box>
   )

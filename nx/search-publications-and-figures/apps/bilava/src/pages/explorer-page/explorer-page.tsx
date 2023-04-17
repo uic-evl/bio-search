@@ -17,6 +17,13 @@ export interface ExplorerPageProps {}
 
 const INIT_NUM_NEIGHBORS = 32
 const INIT_DATASET = {data: [], labels: [], minPrediction: 0, sources: []}
+const DEFAULT_FILTERS: Filter = {
+  hits: 0.5,
+  label: [],
+  prediction: [],
+  probability: [0, 100],
+  source: [],
+}
 
 export function ExplorerPage(props: ExplorerPageProps) {
   const project = 'cord19'
@@ -28,15 +35,20 @@ export function ExplorerPage(props: ExplorerPageProps) {
   const [neighborsIdx, setNeighborsIdx] = useState<boolean[]>(
     Array.from({length: INIT_NUM_NEIGHBORS + 1}, () => false),
   )
-  const [galleryIdx, setGalleryIdx] = useState<boolean[]>([])
+  const [galleryCandidates, setGalleryCandidates] = useState<ScatterDot[]>([])
   const [brushedData, setBrushedData] = useState<ScatterDot[]>([])
-  const [filters, setFilters] = useState<Filter>({
-    hits: 0.5,
-    label: [],
-    prediction: [],
-    probability: [0, 100],
-    source: [],
-  })
+  const [filters, setFilters] = useState<Filter>(DEFAULT_FILTERS)
+  const [classifier, setClassifier] = useState<string | null>(null)
+
+  const handleOnLoadData = (dataset: Dataset, classifier: string) => {
+    setDataset(dataset) // translated dataset from projections
+    setPointInterest(null)
+    setNeighborsIdx(Array.from({length: INIT_NUM_NEIGHBORS + 1}, () => false))
+    setBrushedData([])
+    setGalleryCandidates([])
+    setFilters(DEFAULT_FILTERS)
+    setClassifier(classifier)
+  }
 
   // neighbors calculated here to allow sharing state between projection and
   // neighborhood views.
@@ -56,7 +68,6 @@ export function ExplorerPage(props: ExplorerPageProps) {
       setNeighborsIdx(neighborsIdx.slice(0, numNeighbors + 1))
     }
 
-    console.log('hull', hull)
     return [nNeighbors, hull]
   }, [pointInterest, numNeighbors])
 
@@ -73,18 +84,24 @@ export function ExplorerPage(props: ExplorerPageProps) {
       `}
     >
       <GridItem area={'dataset'} borderRight={'1px solid black'}>
-        <DatasetPanel taxonomy={project} />
-        <Filters dataset={dataset} filters={filters} setFilters={setFilters} />
-        <LabelUpdater
-          neighbors={neighbors.filter((el, idx) => neighborsIdx[idx])}
-          galleryItems={[]}
-        />
+        <Box h="full" overflowY={'scroll'}>
+          <DatasetPanel taxonomy={project} />
+          <Filters
+            dataset={dataset}
+            filters={filters}
+            setFilters={setFilters}
+          />
+          <LabelUpdater
+            neighbors={neighbors.filter((el, idx) => neighborsIdx[idx])}
+            galleryItems={galleryCandidates}
+          />
+        </Box>
       </GridItem>
       <GridItem area="projection">
         <ProjectionPanel
           project={project}
           data={dataset.data}
-          setDataset={setDataset}
+          propagateDataLoad={handleOnLoadData}
           setPointInterest={setPointInterest}
           neighborhoodHull={neighborsConvexHull}
           setBrushedData={setBrushedData}
@@ -99,15 +116,16 @@ export function ExplorerPage(props: ExplorerPageProps) {
           selectedIndexes={neighborsIdx}
           setNumNeighbors={setNumNeighbors}
           setNeighborsIdx={setNeighborsIdx}
+          classifier={classifier ? classifier : ''}
+          labels={dataset.labels}
         />
       </GridItem>
       <GridItem area="gallery">
         <Gallery
           data={dataset.data}
           size={120}
-          selectedIndexes={[]}
           brushedData={brushedData}
-          setGalleryIdx={setGalleryIdx}
+          setGalleryCandidates={setGalleryCandidates}
           setPointInterest={setPointInterest}
         />
       </GridItem>

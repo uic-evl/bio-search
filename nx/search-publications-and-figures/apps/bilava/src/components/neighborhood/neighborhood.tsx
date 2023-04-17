@@ -1,10 +1,12 @@
 import {Dispatch, SetStateAction, useRef, useState} from 'react'
-import {Box, Flex} from '@chakra-ui/react'
+import {Box, Flex, IconButton} from '@chakra-ui/react'
 import {useSize} from '@chakra-ui/react-use-size'
 import {NeighborhoodPanelHeader} from './panel-header'
 import {DEFAULT_STRATEGY, SPIRAL_MAP} from './constants'
 import {ScatterDot} from '../../types'
 import SpiralMap from '../../charts/spiral-map/spiral-map'
+import {CloseIcon} from '@chakra-ui/icons'
+import ThumbnailDetails from '../thumbnail-details/thumbnail-details'
 
 export interface NeighborhoodProps {
   data: ScatterDot[] | null
@@ -13,6 +15,8 @@ export interface NeighborhoodProps {
   selectedIndexes: boolean[]
   setNumNeighbors: Dispatch<SetStateAction<number>>
   setNeighborsIdx: Dispatch<SetStateAction<boolean[]>>
+  classifier: string
+  labels: string[]
 }
 
 /**
@@ -41,6 +45,9 @@ export function Neighborhood(props: NeighborhoodProps) {
   const [strategy, setStrategy] = useState(DEFAULT_STRATEGY)
   const [maxRings, setMaxRings] = useState(2)
   const [objectFit, setObjectFit] = useState('fit')
+  // the image to show inside the modal when clicking on a thumbnail
+  const [inspectedThumbnail, setInspectedThumbnail] =
+    useState<ScatterDot | null>(null)
 
   const spiralRef = useRef<HTMLDivElement | null>(null)
   const spiralDimensions = useSize(spiralRef)
@@ -79,6 +86,7 @@ export function Neighborhood(props: NeighborhoodProps) {
         backgroundColor={'blackAlpha.900'}
         justifyContent={'center'}
         alignItems={'center'}
+        position="relative"
       >
         {props.neighbors.length > 0 &&
         props.pointInterest &&
@@ -97,7 +105,35 @@ export function Neighborhood(props: NeighborhoodProps) {
               width: Math.min(spiralDimensions.width, spiralDimensions.height),
               height: Math.min(spiralDimensions.width, spiralDimensions.height),
             }}
+            setInspectedThumbnail={setInspectedThumbnail}
           />
+        ) : null}
+        {inspectedThumbnail !== null ? (
+          <Box
+            w="full"
+            h="full"
+            bg="rgba(255,255,255,0.7)"
+            position="absolute"
+            top={0}
+            left={0}
+          >
+            <Box position="absolute" top={1} right={1}>
+              <IconButton
+                aria-label="close"
+                icon={<CloseIcon />}
+                onClick={() => setInspectedThumbnail(null)}
+              />
+            </Box>
+            <Flex alignItems="center" justifyContent="center" w="full" h="full">
+              <Box bg="white" w="90%" h="90%">
+                <ThumbnailDetails
+                  image={inspectedThumbnail}
+                  classifier={props.classifier}
+                  labels={props.labels}
+                />
+              </Box>
+            </Flex>
+          </Box>
         ) : null}
       </Flex>
     </Box>
