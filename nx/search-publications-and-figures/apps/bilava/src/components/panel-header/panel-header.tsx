@@ -16,6 +16,7 @@ import {
   TabList,
   Tab,
   ButtonProps,
+  chakra,
 } from '@chakra-ui/react'
 
 /** Components for the headers of panels */
@@ -37,7 +38,7 @@ export const PanelHeader = (props: PropsWithChildren) => {
 }
 
 export const HeaderTitle = (props: PropsWithChildren) => (
-  <Box ml={2} mr={2}>
+  <Box pl={2} mr={2}>
     <Text
       fontSize="sm"
       color="white"
@@ -170,7 +171,7 @@ export const HeaderTabs = (props: PropsWithChildren<HeaderTabsProps>) => {
   return (
     <Box>
       <Tabs
-        {...props}
+        // {...props}
         size="sm"
         variant="soft-rounded"
         colorScheme="pink"
@@ -196,4 +197,16 @@ export const SimpleBoxHeader = ({title}: SimpleBoxHeaderProps) => (
   <PanelHeader>
     <HeaderTitle>{title}</HeaderTitle>
   </PanelHeader>
+)
+
+interface SubtitleProps {
+  text: string
+  pl?: number
+  mt?: number
+}
+
+export const Subtitle = ({text, pl, mt}: SubtitleProps) => (
+  <Box w="full" pl={pl} mt={mt}>
+    <chakra.span fontWeight="bold">{text.toLowerCase()}</chakra.span>
+  </Box>
 )

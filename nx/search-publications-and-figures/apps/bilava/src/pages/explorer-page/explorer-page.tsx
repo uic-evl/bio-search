@@ -10,6 +10,7 @@ import {Dataset, Filter, ScatterDot} from '../../types'
 import {findNClosestNeighbors} from '../../utils/neighborhood'
 import {makeHull, Point} from '../../utils/convex-hull'
 import Filters from '../../components/filters/filters'
+import {LabelUpdater} from '../../components/label-updater/label-updater'
 
 /* eslint-disable-next-line */
 export interface ExplorerPageProps {}
@@ -74,6 +75,10 @@ export function ExplorerPage(props: ExplorerPageProps) {
       <GridItem area={'dataset'} borderRight={'1px solid black'}>
         <DatasetPanel taxonomy={project} />
         <Filters dataset={dataset} filters={filters} setFilters={setFilters} />
+        <LabelUpdater
+          neighbors={neighbors.filter((el, idx) => neighborsIdx[idx])}
+          galleryItems={[]}
+        />
       </GridItem>
       <GridItem area="projection">
         <ProjectionPanel

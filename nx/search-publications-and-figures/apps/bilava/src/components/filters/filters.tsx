@@ -13,24 +13,12 @@ import {
   RangeSliderThumb,
   RangeSliderFilledTrack,
 } from '@chakra-ui/react'
-import {SimpleBoxHeader} from '../panel-header/panel-header'
+import {SimpleBoxHeader, Subtitle} from '../panel-header/panel-header'
 import {BarChartFilter} from './bar-chart-filter'
 import {Dataset, Filter, ScatterDot} from '../../types'
 import StackedBarChart from '../../charts/stacked-bar-chart/stacked-bar-chart'
 
 const BAR_SIZE = 18 // pixels height for horizontal bars
-
-interface SubtitleProps {
-  text: string
-  pl?: number
-  mt?: number
-}
-
-const Subtitle = ({text, pl, mt}: SubtitleProps) => (
-  <Box w="full" pl={pl} mt={mt}>
-    <chakra.span fontWeight="bold">{text.toLowerCase()}</chakra.span>
-  </Box>
-)
 
 interface SliderControllerProps {
   text: string
@@ -170,7 +158,7 @@ export function Filters(props: FiltersProps) {
 
           <Subtitle pl={2} mt={4} text="Predicted Instances (Log)" />
           {props.dataset.labels.map(label => (
-            <Box w="full" h="60px" mb={1} mt={4} ml={1}>
+            <Box key={label} w="full" h="60px" mb={1} mt={4} ml={1}>
               <StackedBarChart
                 keys={[label, 'unl']}
                 useLogs={true}

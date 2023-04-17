@@ -38,4 +38,38 @@ const colorsMapper: {[id: string]: string} = {
   oth: schemeCategory10[6],
 }
 
-export {colorsMapper}
+const findChildren = (mapping: Record<string, string>, v: string) => {
+  const vSplit = v.split('.')
+  const vDepth = vSplit.length
+
+  const children = Object.keys(mapping).filter(
+    key => key.includes(v) && key.split('.').length === vDepth + 1,
+  )
+  return children
+}
+
+const isHigherModality = (depth: number) => depth === 1
+
+export const findSiblings = (mapping: Record<string, string>, v: string) => {
+  if (!v) return []
+
+  const vSplit = v.split('.')
+  const vDepth = vSplit.length
+
+  let siblings = null
+  if (!isHigherModality(vDepth)) {
+    siblings = Object.keys(mapping).filter(
+      key =>
+        key !== v &&
+        key.split('.').length === vDepth &&
+        key.includes(vSplit[0]),
+    )
+  } else {
+    siblings = Object.keys(mapping).filter(
+      key => key.split('.').length === 1 && key !== v,
+    )
+  }
+  return siblings
+}
+
+export {colorsMapper, findChildren}
