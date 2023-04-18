@@ -1,7 +1,7 @@
 import {Dispatch, SetStateAction, useEffect, useMemo, useState} from 'react'
 import {Box, Grid, GridItem} from '@chakra-ui/react'
 import {GalleryHeader} from './panel-header'
-import {ScatterDot} from '../../types'
+import {Filter, ScatterDot} from '../../types'
 import {useChartDimensions} from '../../charts/use-chart-dimensions/use-chart-dimensions'
 import HtmlImageThumbnail, {
   ScaledImage,
@@ -10,18 +10,25 @@ import {LabelCircleIcon} from '../icons/icons'
 import {colorsMapper} from '../../utils/mapper'
 
 import styles from './gallery.module.css'
+import {multiFilter} from '../../utils/mutifilter'
+
+const CONFIDENT_THRESHOLD = 0.05
 
 const mispredicted = (images: ScatterDot[]) =>
   images ? images.filter(d => d.lbl !== 'unl' && d.lbl !== d.prd) : []
 
 const confident = (images: ScatterDot[]) => {
-  const unlabeled = images.filter(d => d.lbl === 'unl')
+  const unlabeled = images.filter(
+    d => d.lbl === 'unl' && d.en < CONFIDENT_THRESHOLD,
+  )
   unlabeled.sort((a, b) => b.ms - a.ms)
   return unlabeled
 }
 
 const uncertain = (images: ScatterDot[]) => {
-  const unlabeled = images.filter(d => d.lbl === 'unl')
+  const unlabeled = images.filter(
+    d => d.lbl === 'unl' && d.en > CONFIDENT_THRESHOLD,
+  )
   unlabeled.sort((a, b) => a.ms - b.ms)
   return unlabeled
 }
@@ -33,6 +40,7 @@ export interface GalleryProps {
   brushedData: ScatterDot[] | null
   setGalleryCandidates: Dispatch<SetStateAction<ScatterDot[]>>
   setPointInterest: Dispatch<SetStateAction<ScatterDot | null>>
+  filters: Filter
 }
 
 export function Gallery(props: GalleryProps) {
@@ -51,11 +59,13 @@ export function Gallery(props: GalleryProps) {
     let indexes = [...selectedIdx]
     indexes = indexes.map(e => true)
     setSelectedIdx(indexes)
+    props.setGalleryCandidates(contextImages.filter((el, idx) => indexes[idx]))
   }
   const handleDeselectAll = () => {
     let indexes = [...selectedIdx]
     indexes = indexes.map(e => false)
     setSelectedIdx(indexes)
+    props.setGalleryCandidates(contextImages.filter((el, idx) => indexes[idx]))
   }
 
   const [numberPages, itemsPerPage] = useMemo<[number, number]>(() => {
@@ -72,10 +82,25 @@ export function Gallery(props: GalleryProps) {
 
   const contextImages = useMemo<ScatterDot[]>(() => {
     if (!props.data) return []
-    if (tabIndex === 0) return mispredicted(props.data)
-    if (tabIndex === 1) return props.brushedData ? props.brushedData : []
-    if (tabIndex === 2) return confident(props.data)
-    return uncertain(props.data)
+    let candidates: ScatterDot[] = []
+    if (tabIndex === 0) candidates = mispredicted(props.data)
+    if (tabIndex === 1) candidates = props.brushedData ? props.brushedData : []
+    if (tabIndex === 2) candidates = confident(props.data)
+    if (tabIndex === 3) candidates = uncertain(props.data)
+
+    const {label, prediction, source} = props.filters
+    candidates = multiFilter(candidates, {
+      lbl: label,
+      prd: prediction,
+      sr: source,
+    })
+    candidates = candidates.filter(
+      el =>
+        el.hit <= props.filters.hits &&
+        el.mp >= props.filters.probability[0] / 100 &&
+        el.mp <= props.filters.probability[1] / 100,
+    )
+    return candidates
   }, [props.data, props.brushedData, tabIndex])
 
   useEffect(() => {

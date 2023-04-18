@@ -37,6 +37,11 @@ const colorsMapper: {[id: string]: string} = {
   'rad.oth': schemeCategory10[4],
   oth: schemeCategory10[6],
   unl: schemeCategory10[7],
+  error: 'black',
+  'error.text': 'black',
+  'error.logo': 'black',
+  'error.face': 'black',
+  'error.border': 'black',
 }
 
 const findChildren = (mapping: Record<string, string>, v: string) => {

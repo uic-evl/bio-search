@@ -21,6 +21,7 @@ export interface ScatterDot {
   x: number // projected x coordinate
   y: number // projected y coordinate
   lbl: string // label
+  ulbl: string | null // updated label
   prd: string // prediction
   uri: string // relative url to image
   hit: number // neighborhood hit
@@ -30,6 +31,7 @@ export interface ScatterDot {
   w: number // image width
   h: number // image height
   ms: number // margin sampling
+  en: number // entropy
   sr: string // source
   mp: number // probability for prediction
 }
@@ -82,4 +84,13 @@ export interface ImageExtras {
   probs: number[]
   name: string
   fullLabel: string
+}
+
+export interface UpdateResult {
+  total_updates: number
+}
+
+export interface ResponseError {
+  description: string
+  error: boolean
 }

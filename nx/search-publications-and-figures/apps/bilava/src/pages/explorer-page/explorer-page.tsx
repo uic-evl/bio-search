@@ -127,6 +127,7 @@ export function ExplorerPage(props: ExplorerPageProps) {
           brushedData={brushedData}
           setGalleryCandidates={setGalleryCandidates}
           setPointInterest={setPointInterest}
+          filters={filters}
         />
       </GridItem>
     </Grid>

@@ -1,6 +1,7 @@
 import {Dispatch, SetStateAction, useEffect, useState} from 'react'
-import {ScatterDot} from '../../types'
+import {ScatterDot, UpdateResult} from '../../types'
 import {
+  AlertStatus,
   Box,
   Button,
   Flex,
@@ -8,10 +9,29 @@ import {
   RadioGroup,
   Select,
   Stack,
+  UseToastOptions,
   chakra,
+  useToast,
 } from '@chakra-ui/react'
 import {SimpleBoxHeader, Subtitle} from '../panel-header/panel-header'
 import {colorsMapper, findChildren, findSiblings} from '../../utils/mapper'
+import {batch_update} from '../../api'
+
+const errorMessage = (description: string) => ({
+  title: 'Error',
+  description,
+  status: 'error' as AlertStatus,
+  isClosable: true,
+  duration: 3000,
+})
+
+const successMessage = (result: UpdateResult) => ({
+  title: 'Success',
+  description: `${result.total_updates} images updated`,
+  type: 'success' as AlertStatus,
+  isClosable: true,
+  duration: 3000,
+})
 
 const EmptySelector = () => (
   <Box>
@@ -37,6 +57,7 @@ export const LabelUpdater = ({neighbors, galleryItems}: LabelUpdaterProps) => {
   )
   const [targetLabel, setTargetLabel] = useState<string | null>(null)
   const [action, setAction] = useState<string>('update')
+  const toast = useToast()
 
   useEffect(() => {
     // Control what options are available to update based on selected elements
@@ -51,17 +72,45 @@ export const LabelUpdater = ({neighbors, galleryItems}: LabelUpdaterProps) => {
     if (selection !== selectionGroup) {
       setSelectionGroup(selection)
     }
-    if (selection) {
-      setLabel(
-        selection === 'neighborhood' ? neighbors[0].lbl : galleryItems[0].lbl,
-      )
-    }
   }, [neighbors, galleryItems])
+
+  useEffect(() => {
+    if (neighbors.length === 0 && galleryItems.length === 0) {
+      setSelectionGroup(undefined)
+      return
+    }
+
+    const collection =
+      selectionGroup === 'neighborhood' ? neighbors : galleryItems
+    const label =
+      collection[0].lbl === 'unl' ? collection[0].prd : collection[0].lbl
+
+    setTargetLabel(label)
+    setLabel(label)
+  }, [selectionGroup])
 
   const labelOpts = siblings2options(label, colorsMapper)
 
-  const handleOnSave = () => {
-    console.log('on save')
+  const handleOnSave = async () => {
+    const collection =
+      selectionGroup === 'neighborhood' ? neighbors : galleryItems
+    const ids = collection.map(el => el.dbId)
+
+    let newLabel = 'error' // label for delete cases
+    if (action === 'update') {
+      if (targetLabel === null) {
+        toast(errorMessage('input a value to update'))
+        return
+      }
+      newLabel = targetLabel
+    }
+
+    const response = await batch_update(ids, newLabel)
+    if ('error' in response) {
+      toast(errorMessage(response.description))
+    } else {
+      toast(successMessage(response))
+    }
   }
 
   if (neighbors.length === 0 && galleryItems.length === 0) {
@@ -82,26 +131,22 @@ export const LabelUpdater = ({neighbors, galleryItems}: LabelUpdaterProps) => {
           isDisabled={selectionGroup === undefined}
         >
           <Stack direction="row">
-            <Radio size="sm" value="gallery">
+            <Radio
+              size="sm"
+              value="gallery"
+              isDisabled={galleryItems.length === 0}
+            >
               Gallery
             </Radio>
-            <Radio size="sm" value="neighborhood">
+            <Radio
+              size="sm"
+              value="neighborhood"
+              isDisabled={neighbors.length === 0}
+            >
               Neighborhood
             </Radio>
           </Stack>
         </RadioGroup>
-
-        <Subtitle text={'label'} />
-        {label ? (
-          <HierarchicalSelect
-            opts={labelOpts}
-            label={label}
-            mapping={colorsMapper}
-            level={0}
-            setTargetLabel={setTargetLabel}
-          />
-        ) : null}
-        <chakra.span>{targetLabel}</chakra.span>
 
         <Box mt="4">
           <Flex direction="row" alignItems="center" textAlign="center">
@@ -133,7 +178,28 @@ export const LabelUpdater = ({neighbors, galleryItems}: LabelUpdaterProps) => {
             </Box>
           </Flex>
         </Box>
-        <Button w="full" size="sm" mt={2} onClick={handleOnSave}>
+
+        {label && action == 'update' ? (
+          <Box mt="4">
+            <Subtitle text={'label'} />
+            <HierarchicalSelect
+              opts={labelOpts}
+              label={label}
+              mapping={colorsMapper}
+              level={0}
+              setTargetLabel={setTargetLabel}
+            />
+            <chakra.span>{targetLabel}</chakra.span>
+          </Box>
+        ) : null}
+
+        <Button
+          w="full"
+          size="sm"
+          mt={2}
+          onClick={handleOnSave}
+          isDisabled={neighbors.length === 0 && galleryItems.length === 0}
+        >
           Save
         </Button>
       </Box>
@@ -154,7 +220,11 @@ const siblings2options = (
   const branchLabels = getBranchKeys(label)
 
   const siblings = findSiblings(mapping, branchLabels[0])
-  const labels = [branchLabels[0], ...siblings]
+
+  let labels = null
+  console.log(branchLabels)
+  if (branchLabels[0] !== 'unl') labels = [branchLabels[0], ...siblings]
+  else labels = [...siblings]
   labels.sort()
   return labels2options(labels)
 }

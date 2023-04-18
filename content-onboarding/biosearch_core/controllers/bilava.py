@@ -1,9 +1,10 @@
 """ Functions to support bilava back-end"""
 from pathlib import Path
 from typing import List, Literal, Dict
+from datetime import datetime
 import json
 import logging
-from psycopg import connect
+from psycopg import connect, sql
 from psycopg.rows import dict_row
 from biosearch_core.db.model import ConnectionParams
 from biosearch_core.data.figure import SubFigureStatus
@@ -88,11 +89,13 @@ def fetch_images(
                         width,
                         height,
                         ms,
+                        en,
                         source,
                         round((SELECT max(probs) from unnest(pred_probs) as probs),2)::float as max_prob,
-                        status::int
+                        status::int,
+                        upt_label
                  FROM {bilava_schema}.features
-                 WHERE classifier = '{classifier}'
+                 WHERE classifier = '{classifier}' AND (upt_label IS NULL OR upt_label NOT LIKE 'error%')
                 """.format(
                     reduction=reduction,
                     classifier=classifier,
@@ -123,8 +126,10 @@ def fetch_images(
                         "w": el["width"],
                         "h": el["height"],
                         "ms": el["ms"],
+                        "en": el["en"],
                         "sr": el["source"],
                         "mp": el["max_prob"],
+                        "ulbl": el["upt_label"],
                     }
                     for el in images
                 ]
@@ -164,12 +169,18 @@ def fetch_image_extras(conn_params: ConnectionParams, db_id: int, classifier: st
                 cursor.execute(query)
                 image = cursor.fetchall()[0]
 
-                caption_schema = "training"
-                if image["source"] == "gdx":
-                    caption_schema = "gdx"
-                elif image["source"] == "cord19":
-                    caption_schema = "cord19"
-                query_caption = f"SELECT ground_truth, caption FROM {caption_schema}.figures WHERE id={db_id}"
+                if image["source"] == "gdx" or image["source"] == "cord19":
+                    query_caption = """
+                        SELECT sf.label as lbl, f.caption 
+                        FROM {schema}.figures sf, {schema}.figures f 
+                        WHERE sf.id={db_id} AND f.id = sf.parent_id
+                    """.format(
+                        schema=image["source"], db_id=db_id
+                    )
+                else:
+                    caption_schema = "training"
+                    query_caption = f"SELECT ground_truth as lbl, caption FROM {caption_schema}.figures WHERE id={db_id}"
+
                 cursor.execute(query_caption)
                 record = cursor.fetchall()[0]
 
@@ -177,9 +188,37 @@ def fetch_image_extras(conn_params: ConnectionParams, db_id: int, classifier: st
                     "name": image["name"],
                     "probs": [round(float(el), 3) for el in image["pred_probs"]],
                     "caption": record["caption"],
-                    "fullLabel": record["ground_truth"],
+                    "fullLabel": record["lbl"],
                 }
             # pylint: disable=broad-except
             except Exception as exc:
                 print("Error fetching image extra", exc)
                 logging.error("Error fetching image extra", exc_info=True)
+
+
+def update_image_labels(
+    conn_params: ConnectionParams, ids: List[int], label: str
+) -> bool:
+    """Update the upt_label column with the user specified value. We do not touch
+    the label value yet as this column will be updated during the next iteration
+    """
+    query_params = [(datetime.now(), dbid) for dbid in ids]
+    flattened_values = [item for sublist in query_params for item in sublist]
+
+    single_query = f"UPDATE {conn_params.schema}.features SET upt_label='{label}', "
+    single_query += "upt_date=('{}') WHERE id=({}); "  # the placeholder
+
+    # pylint: disable=not-context-manager
+    with connect(conninfo=conn_params.conninfo(), autocommit=False) as conn:
+        with conn.cursor() as cursor:
+            try:
+                all_queries = single_query * len(query_params)
+                query = sql.SQL(all_queries.format(*flattened_values))
+                cursor.execute(query)
+                conn.commit()
+                return True
+            # pylint: disable=broad-except
+            except Exception as exc:
+                print("Error updating features in database", exc)
+                logging.error("Error updating features in database", exc_info=True)
+                return False
