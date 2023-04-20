@@ -1,7 +1,10 @@
 """ Functions to support bilava back-end"""
+from os import listdir, remove
 from pathlib import Path
 from typing import List, Literal, Dict
 from datetime import datetime
+import pandas as pd
+from pathlib import Path
 import json
 import logging
 from psycopg import connect, sql, Cursor
@@ -345,26 +348,107 @@ def update_original_subfigures(cursor: Cursor, subfigures: List[Dict]):
     cursor.execute(query)
 
 
-def end_labeling_session(conn_params: ConnectionParams):
+def get_parquet_filename(classifier: str, output_folder: str) -> str:
+    """Get filename with new version for training file"""
+    base_name = f"cord19_{classifier}_v"
+    candidates = [
+        el[:-8]
+        for el in listdir(output_folder)
+        if base_name in el and el.endswith(".parquet")
+    ]
+    # get the v{number} and get rid of the v
+    versions = [int(el.split("_")[-1][1:]) for el in candidates]
+    new_version = max(versions) + 1
+    return f"{base_name}{new_version}.parquet"
+
+
+classifier_2_short = {
+    "higher-modality": None,
+    "microscopy": "mic",
+    "electron": "mic.ele",
+    "graphics": "gra",
+    "experimental": "exp",
+    "gel": "exp.gel",
+    "molecular": "mol",
+    "photography": "pho",
+    "radiology": "rad",
+}
+
+
+def create_training_file(
+    cursor: Cursor, classifier: str, schemas: List[str]
+) -> pd.DataFrame:
+    """Query schemas to get training data for classifier"""
+    gt_like = classifier_2_short[classifier]
+
+    dfs = []
+    for schema in schemas:
+        query = (
+            f"SELECT label, .... FROM {schema}.figures WHERE grount_truth IS NOT NULL "
+        )
+        if gt_like is not None:
+            query += " AND ground_truth like 'gt_like%'"
+        cursor.execute(query)
+        results = cursor.fetchall()
+        dfs.append(pd.DataFrame.from_dict(results))
+    return pd.concat(dfs)
+
+
+def export_parquet(
+    cursor: Cursor, classifier: str, output_folder: str, schemas: List[str]
+):
+    """Create parquet file and save it to location"""
+    parquet_name = get_parquet_filename(classifier, output_folder)
+    df_images = create_training_file(cursor, classifier, schemas)
+    filename = Path(output_folder) / parquet_name
+    df_images.to_parquet(filename)
+    del df_images
+    return filename
+
+
+def cleanup(created_files: List[str]):
+    """In case of errors, delete the created files"""
+    for filepath in created_files:
+        f_path = Path(filepath)
+        if f_path.exists():
+            try:
+                remove(f_path)
+            except PermissionError:
+                logging.error("could not delete file %s", filepath, exc_info=True)
+
+
+def end_labeling_session(
+    conn_params: ConnectionParams, output_folder: str, schemas: List[str]
+):
     """Collect the updated labels, update the required tables and create the
     training files.
     """
     schema = conn_params.schema
+    created_filenames = []  # parquet file names to create
 
     # pylint: disable=not-context-manager
     with connect(
         conninfo=conn_params.conninfo(), autocommit=False, row_factory=dict_row
     ) as conn:
         with conn.cursor() as cursor:
-            # get the classifier names that will need to be updated
-            classifiers = fetch_affected_classifiers(cursor, schema)
-            # get the record of changes per subfigure
-            subfigures = fetch_affected_subfigures(cursor, schema)
-            # record the session
-            session_id = record_session(cursor, schema, subfigures, classifiers)
-            # record the changes in the session
-            archive_updates(cursor, schema, subfigures, session_id)
-            # update the ground truth values in the original subfigures
-            update_original_subfigures(cursor, subfigures)
-            # create new parquet records
-            # need to move the data so its under /curation_data
+            try:
+                # get the classifier names that will need to be updated
+                classifiers = fetch_affected_classifiers(cursor, schema)
+                # get the record of changes per subfigure
+                subfigures = fetch_affected_subfigures(cursor, schema)
+                # record the session
+                session_id = record_session(cursor, schema, subfigures, classifiers)
+                # record the changes in the session
+                archive_updates(cursor, schema, subfigures, session_id)
+                # update the ground truth values in the original subfigures
+                update_original_subfigures(cursor, subfigures)
+                # create new parquet records
+                # need to move the data so its under /curation_data
+                for classifier in classifiers:
+                    f_name = export_parquet(cursor, classifier, output_folder, schemas)
+                    created_filenames.append(f_name)
+                conn.commit()
+            # pylint: disable=W0702:bare-except
+            except:
+                logging.error("error finishing labeling session", exc_info=True)
+                cleanup(created_filenames)
