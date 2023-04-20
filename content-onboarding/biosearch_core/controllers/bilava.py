@@ -1,7 +1,8 @@
 """ Functions to support bilava back-end"""
+from math import ceil, floor
 from os import listdir, remove
 from pathlib import Path
-from typing import List, Literal, Dict
+from typing import List, Literal, Dict, Optional, Tuple
 from datetime import datetime
 import pandas as pd
 from pathlib import Path
@@ -254,8 +255,8 @@ def fetch_affected_subfigures(cursor: Cursor, schema: str) -> List[Dict]:
     # pylint: disable=C0209:consider-using-f-string
     query = """
         SELECT id, schema, 
-               STRING_AGG(DISTINCT 'label', ',') as label,
-               STRING_AGG(DISTINCT 'upt_label', ',') as upt_label,
+               STRING_AGG(DISTINCT label, ',') as label,
+               STRING_AGG(DISTINCT upt_label, ',') as upt_label,
                STRING_AGG(DISTINCT CAST(upt_date AS text), ',') as upt_date
         FROM {schema}.features 
         WHERE upt_label IS NOT NULL and label != upt_label 
@@ -372,34 +373,186 @@ classifier_2_short = {
     "molecular": "mol",
     "photography": "pho",
     "radiology": "rad",
+    "error": "error",
 }
 
 
+def split_dataframe_errors(
+    input_df: pd.DataFrame,
+) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    """Split the dataframe into dataframes without errors, with errors marked
+    as ground truth, and without errors marked as ground truth"""
+    df_errors_wo_gt = input_df.loc[
+        (input_df.label.str.contains("error") & (input_df.split_set == "UNL"))
+    ].reset_index()
+    df_errors_w_gt = input_df.loc[
+        (input_df.label.str.contains("error") & (input_df.split_set != "UNL"))
+    ].reset_index()
+    df_no_errors = input_df.loc[~input_df.label.str.contains("error")].reset_index()
+    return df_no_errors, df_errors_w_gt, df_errors_wo_gt
+
+
+def fill_split_set_for_errors_without_ground_truth(
+    input_df: pd.DataFrame, n_train=0.8, n_val=0.1
+) -> pd.DataFrame:
+    """Fill the split_set based on a partition n_train/n_val/1-n_train+n_val"""
+    df_len = len(input_df)
+    num_train = floor(df_len * n_train)
+    num_val = ceil(df_len * n_val)
+    input_df = input_df.reset_index()
+
+    # fmt: off
+    input_df.loc[input_df.index < num_train, 'split_set'] = 'TRAIN'
+    input_df.loc[(input_df.index >= num_train) & (input_df.index < num_train+num_val), 'split_set'] = 'VAL'
+    input_df.loc[input_df.index >= num_train + num_val, 'split_set'] = 'TEST'
+    # fmt: on
+    return input_df
+
+
+def assign_splits_to_errors(df_input: pd.DataFrame) -> pd.DataFrame:
+    df_no_errors, df_err_w_gt, df_err_wo_gt = split_dataframe_errors(df_input)
+    df_err_wo_gt_updated = fill_split_set_for_errors_without_ground_truth(df_err_wo_gt)
+
+    # update split_set column in db
+
+    df_out = pd.concat[df_no_errors, df_err_w_gt, df_err_wo_gt_updated]
+    # fmt: off
+    columns = ["img", "img_path", "width", "height", "label" "source", "caption", "original", "split_set"]
+    df_out = df_out[columns]
+    # fmt: on
+    return df_out
+
+
+def create_df_from_labeled_sources(
+    cursor: Cursor,
+    classifier: str,
+    labeled_schema: str,
+    bilava_schema: str,
+    mapper: Dict[str, Optional[str]],
+) -> pd.DataFrame:
+    """Fetch the dataframe from the labeled data from the training schema and
+    fetching the split_set from BI-LAVA"""
+    gt_like = mapper[classifier]
+
+    query = f"""
+        SELECT f.id, f.name as img, f.uri as img_path, f.width, f.height, 
+               f.ground_truth as label, f.source, f.caption, f.notes as original
+        FROM {labeled_schema}.figures f
+        WHERE f.ground_truth IS NOT NULL AND 
+              f.ground_truth NOT LIKE 'error%'
+    """
+    if gt_like is not None:
+        query += f" AND f.ground_truth like '{gt_like}%'"
+    cursor.execute(query)
+    images_without_split = cursor.fetchall()
+
+    # splits for updated and not updated images
+    if gt_like:
+        query_splits = f"""
+            SELECT DISTINCT(id, split_set) as out 
+            FROM {bilava_schema}.features 
+            WHERE schema='{labeled_schema}' AND 
+                (   
+                    (upt_label is NULL AND label like '{gt_like}%') 
+                    OR 
+                    (upt_label like '{gt_like}%')
+                )
+        """
+    else:
+        query_splits = f"""
+            SELECT DISTINCT(id, split_set) as out 
+            FROM {bilava_schema}.features 
+            WHERE schema='{labeled_schema}'
+        """
+
+    splits = cursor.execute(query_splits).fetchall()
+    id_2_split = {int(el["out"][0]): el["out"][1] for el in splits}
+
+    for image in images_without_split:
+        image["split_set"] = id_2_split[image["id"]]
+
+    df_images = pd.DataFrame.from_dict(images_without_split).reset_index()
+
+    # handle errors if classifier is higher-modality
+    if gt_like is None:
+        df_images = assign_splits_to_errors(df_images)
+
+    return df_images
+
+
+def create_df_from_unlabeled_sources(
+    cursor: Cursor,
+    classifier: str,
+    unlabeled_schema: str,
+    mapper: Dict[str, Optional[str]],
+) -> pd.DataFrame:
+    """Fetch the updated ground_trugth data in the unlabeled schema and assign
+    everything as training data"""
+    gt_like = mapper[classifier]
+    query = f"""
+                SELECT f.name as img, f.uri as img_path, f.width, f.height, 
+                      f.ground_truth as label, f.source, f.caption, 
+                      f.notes as original
+                FROM {unlabeled_schema}.figures f
+                WHERE f.ground_truth IS NOT NULL 
+            """
+    if gt_like is not None:
+        query += f" AND ground_truth like '{gt_like}%'"
+    cursor.execute(query)
+    results = cursor.fetchall()
+    local_df = pd.DataFrame.from_dict(results)
+    # TODO: change later to several splits
+    local_df["split_set"] = "TRAIN"
+
+    return local_df
+
+
 def create_training_file(
-    cursor: Cursor, classifier: str, schemas: List[str]
+    cursor: Cursor,
+    classifier: str,
+    schemas: List[str],
+    bilava_schema: str,
+    labeled_schema: str,
+    mapper: Dict[str, Optional[str]],
 ) -> pd.DataFrame:
     """Query schemas to get training data for classifier"""
-    gt_like = classifier_2_short[classifier]
-
     dfs = []
+    # fmt: off
     for schema in schemas:
-        query = (
-            f"SELECT label, .... FROM {schema}.figures WHERE grount_truth IS NOT NULL "
-        )
-        if gt_like is not None:
-            query += " AND ground_truth like 'gt_like%'"
-        cursor.execute(query)
-        results = cursor.fetchall()
-        dfs.append(pd.DataFrame.from_dict(results))
-    return pd.concat(dfs)
+        if schema == labeled_schema:
+            local_df = create_df_from_labeled_sources(cursor, classifier, schema, bilava_schema, mapper)
+        else:
+            local_df = create_df_from_unlabeled_sources(cursor, classifier, schema, mapper)
+        dfs.append(local_df)
+
+    df_images = pd.concat(dfs).reset_index()
+    # adapt the label to the depth of the classifier
+    clf_short = mapper[classifier]
+    depth = 1 if clf_short is None else len(clf_short.split(".")) + 1
+    df_images["label"] = df_images.apply(
+        lambda x: ".".join(x.label.split(".")[:depth]), axis=1
+    )
+    columns = ["img", "img_path", "width", "height", "label" "source", "caption", "original", "split_set"]
+    df_images = df_images[columns]
+    # fmt: on
+
+    return df_images
 
 
 def export_parquet(
-    cursor: Cursor, classifier: str, output_folder: str, schemas: List[str]
+    cursor: Cursor,
+    classifier: str,
+    output_folder: str,
+    data_schemas: List[str],
+    bilava_schema: str,
+    labeled_schema: str,
+    mapper: Dict[str, Optional[str]],
 ):
     """Create parquet file and save it to location"""
     parquet_name = get_parquet_filename(classifier, output_folder)
-    df_images = create_training_file(cursor, classifier, schemas)
+    df_images = create_training_file(
+        cursor, classifier, data_schemas, bilava_schema, labeled_schema, mapper
+    )
     filename = Path(output_folder) / parquet_name
     df_images.to_parquet(filename)
     del df_images
@@ -418,37 +571,48 @@ def cleanup(created_files: List[str]):
 
 
 def end_labeling_session(
-    conn_params: ConnectionParams, output_folder: str, schemas: List[str]
+    cursor: Cursor,
+    bilava_schema: str,
+    labeled_schema: str,
+    output_folder: str,
+    schemas: List[str],
+    mapper: Dict[str, Optional[str]],
 ):
     """Collect the updated labels, update the required tables and create the
-    training files.
+    training files. The connection needs to return row_factory=dict_row to
+    treat returning elements as dictionaries and not tuples.
     """
-    schema = conn_params.schema
     created_filenames = []  # parquet file names to create
 
-    # pylint: disable=not-context-manager
-    with connect(
-        conninfo=conn_params.conninfo(), autocommit=False, row_factory=dict_row
-    ) as conn:
-        with conn.cursor() as cursor:
-            try:
-                # get the classifier names that will need to be updated
-                classifiers = fetch_affected_classifiers(cursor, schema)
-                # get the record of changes per subfigure
-                subfigures = fetch_affected_subfigures(cursor, schema)
-                # record the session
-                session_id = record_session(cursor, schema, subfigures, classifiers)
-                # record the changes in the session
-                archive_updates(cursor, schema, subfigures, session_id)
-                # update the ground truth values in the original subfigures
-                update_original_subfigures(cursor, subfigures)
-                # create new parquet records
-                # need to move the data so its under /curation_data
-                for classifier in classifiers:
-                    f_name = export_parquet(cursor, classifier, output_folder, schemas)
-                    created_filenames.append(f_name)
-                conn.commit()
-            # pylint: disable=W0702:bare-except
-            except:
-                logging.error("error finishing labeling session", exc_info=True)
-                cleanup(created_filenames)
+    with cursor:
+        try:
+            # get the classifier names that will need to be updated
+            classifiers = fetch_affected_classifiers(cursor, bilava_schema)
+
+            # get the record of changes per subfigure
+            subfigures = fetch_affected_subfigures(cursor, bilava_schema)
+            # record the session
+            session_id = record_session(cursor, bilava_schema, subfigures, classifiers)
+            # record the changes in the session
+            archive_updates(cursor, bilava_schema, subfigures, session_id)
+            # update the ground truth values in the original subfigures
+            update_original_subfigures(cursor, subfigures)
+            # create new parquet records
+            # need to move the data so its under /curation_data
+            for classifier in classifiers:
+                f_name = export_parquet(
+                    cursor,
+                    classifier,
+                    output_folder,
+                    schemas,
+                    bilava_schema,
+                    labeled_schema,
+                    mapper,
+                )
+                created_filenames.append(f_name)
+            return created_filenames
+        # pylint: disable=W0702:bare-except
+        except Exception as exc:
+            logging.error("error finishing labeling session", exc_info=True)
+            cleanup(created_filenames)
+            raise exc
