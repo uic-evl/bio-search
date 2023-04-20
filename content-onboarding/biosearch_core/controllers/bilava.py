@@ -4,10 +4,11 @@ from typing import List, Literal, Dict
 from datetime import datetime
 import json
 import logging
-from psycopg import connect, sql
+from psycopg import connect, sql, Cursor
 from psycopg.rows import dict_row
 from biosearch_core.db.model import ConnectionParams
 from biosearch_core.data.figure import SubFigureStatus
+from biosearch_core.bilava.session import create_session
 
 
 def fetch_classifiers(project_dir: str) -> List[str]:
@@ -222,3 +223,148 @@ def update_image_labels(
                 print("Error updating features in database", exc)
                 logging.error("Error updating features in database", exc_info=True)
                 return False
+
+
+def fetch_affected_classifiers(cursor: Cursor, schema: str) -> List[str]:
+    """Grab from the bilava work table every classifier where the images were updated"""
+    query = f"SELECT classifier, COUNT(classifier) FROM {schema}.features WHERE upt_label IS NOT NULL GROUP BY classifier"
+    cursor.execute(query)
+    records = cursor.fetchall()
+    return [el["classifier"] for el in records]
+
+
+def fetch_affected_subfigures(cursor: Cursor, schema: str) -> List[Dict]:
+    """Fetch the list of figures updated during the labeling session.
+    BI-LAVA duplicates each figure row for each classifier where it appears in
+    the features table. However, once we update a label, it propagate the update
+    for every copy on the table based on the figure id. Therefore, to retrieve
+    the unique figures we need to group by the record from the features table.
+    The label and upt_label values store the full label so the STRING_AGG will
+    return one value despite being concatenated.
+
+    Returns:
+        List of dictionary entries where each dictionary has the keys
+        'id', 'schema', 'label', 'upt_label', 'upt_date'.
+        The schema value indicates what schema in the database stores the original
+        row for the subfigure
+    """
+    # pylint: disable=C0209:consider-using-f-string
+    query = """
+        SELECT id, schema, 
+               STRING_AGG(DISTINCT 'label', ',') as label,
+               STRING_AGG(DISTINCT 'upt_label', ',') as upt_label,
+               STRING_AGG(DISTINCT CAST(upt_date AS text), ',') as upt_date
+        FROM {schema}.features 
+        WHERE upt_label IS NOT NULL and label != upt_label 
+        GROUP BY id, schema
+        ORDER BY 1
+    """.format(
+        schema=schema
+    )
+    cursor.execute(query)
+    return cursor.fetchall()
+
+
+def fetch_session_number(cursor: Cursor, schema: str) -> int:
+    """Fetch consecutive session number"""
+    query_session_id = f"SELECT MAX(number) as num FROM {schema}.session"
+    cursor.execute(query_session_id)
+    record = cursor.fetchone()["num"]
+
+    session_number = 1
+    if record is not None:
+        session_number = record + 1
+    return session_number
+
+
+def record_session(
+    cursor: Cursor, schema: str, subfigures: List[Dict], classifiers: List[str]
+):
+    """Record a summary of the changes in the database"""
+    end_date = datetime.now()
+    session_number = fetch_session_number(cursor, schema)
+    session = create_session(end_date, subfigures, classifiers, session_number)
+
+    # pylint: disable=C0209:consider-using-f-string
+    insert_query = """
+        INSERT INTO {schema}.session(end_date, "number", num_updates, num_errors, num_classifiers)
+	    VALUES ('{end_date}', {number}, {num_updates}, {num_errors}, {num_classifiers})
+        RETURNING id;
+    """.format(
+        schema=schema,
+        number=session_number,
+        end_date=session.end_date,
+        num_updates=session.num_updates,
+        num_errors=session.num_errors,
+        num_classifiers=session.num_classifiers,
+    )
+    results = cursor.execute(insert_query).fetchone()
+    session_id = results["id"]
+
+    return session_id
+
+
+def archive_updates(
+    cursor: Cursor, schema: str, subfigures: List[Dict], session_id: int
+):
+    """Archive the session updates in the database"""
+    insert_sql = f"COPY {schema}.archivevault (subfig_id,schema,label,upt_label,upt_date,session_number) FROM STDIN"
+    with cursor.copy(insert_sql) as copy:
+        for subfig in subfigures:
+            copy.write_row(
+                (
+                    subfig["id"],
+                    subfig["schema"],
+                    subfig["label"],
+                    subfig["upt_label"],
+                    subfig["upt_date"],
+                    session_id,
+                )
+            )
+
+
+def update_original_subfigures(cursor: Cursor, subfigures: List[Dict]):
+    """Update the ground truth value on the figure data sources.
+    Use the schema to point to the right tables. For instance, the cord19 unlabeled
+    data is in one schema while the training data is in another schema.
+    """
+    query_params = [
+        (
+            sf["schema"],
+            sf["upt_label"],
+            datetime.now(),
+            SubFigureStatus.GROUND_TRUTH.value,
+            sf["id"],
+        )
+        for sf in subfigures
+    ]
+    flattened_values = [item for sublist in query_params for item in sublist]
+    single_query = "UPDATE {}.figures SET ground_truth='{}', last_update_by='{}', status={} WHERE id={}; "
+    all_queries = single_query * len(query_params)
+    query = sql.SQL(all_queries.format(*flattened_values))
+    cursor.execute(query)
+
+
+def end_labeling_session(conn_params: ConnectionParams):
+    """Collect the updated labels, update the required tables and create the
+    training files.
+    """
+    schema = conn_params.schema
+
+    # pylint: disable=not-context-manager
+    with connect(
+        conninfo=conn_params.conninfo(), autocommit=False, row_factory=dict_row
+    ) as conn:
+        with conn.cursor() as cursor:
+            # get the classifier names that will need to be updated
+            classifiers = fetch_affected_classifiers(cursor, schema)
+            # get the record of changes per subfigure
+            subfigures = fetch_affected_subfigures(cursor, schema)
+            # record the session
+            session_id = record_session(cursor, schema, subfigures, classifiers)
+            # record the changes in the session
+            archive_updates(cursor, schema, subfigures, session_id)
+            # update the ground truth values in the original subfigures
+            update_original_subfigures(cursor, subfigures)
+            # create new parquet records
+            # need to move the data so its under /curation_data
