@@ -2,12 +2,13 @@
 from math import ceil, floor
 from os import listdir, remove
 from pathlib import Path
+import json
+import logging
 from typing import List, Literal, Dict, Optional, Tuple
 from datetime import datetime
 import pandas as pd
-from pathlib import Path
-import json
-import logging
+import numpy as np
+from sklearn.model_selection import StratifiedShuffleSplit, train_test_split
 from psycopg import connect, sql, Cursor
 from psycopg.rows import dict_row
 from biosearch_core.db.model import ConnectionParams
@@ -231,7 +232,9 @@ def update_image_labels(
 
 def fetch_affected_classifiers(cursor: Cursor, schema: str) -> List[str]:
     """Grab from the bilava work table every classifier where the images were updated"""
-    query = f"SELECT classifier, COUNT(classifier) FROM {schema}.features WHERE upt_label IS NOT NULL GROUP BY classifier"
+    query = f"""SELECT classifier, COUNT(classifier) 
+                FROM {schema}.features 
+                WHERE upt_label IS NOT NULL GROUP BY classifier"""
     cursor.execute(query)
     records = cursor.fetchall()
     return [el["classifier"] for el in records]
@@ -245,6 +248,15 @@ def fetch_affected_subfigures(cursor: Cursor, schema: str) -> List[Dict]:
     the unique figures we need to group by the record from the features table.
     The label and upt_label values store the full label so the STRING_AGG will
     return one value despite being concatenated.
+    BI-LAVA considers and update to every element that has an up_label value
+    on the table. For unlabeled data, having a label == upt_label means that
+    we are confirming the predicted label and making it ground truth. For labeled
+    data, label == upt_label should not happen because it's redundant and it's
+    controlled by the application during the interactions.
+
+    Args:
+        - cursor: Database cursor
+        - schema: BI-LAVA schema
 
     Returns:
         List of dictionary entries where each dictionary has the keys
@@ -256,17 +268,26 @@ def fetch_affected_subfigures(cursor: Cursor, schema: str) -> List[Dict]:
     query = """
         SELECT id, schema, 
                STRING_AGG(DISTINCT label, ',') as label,
+               STRING_AGG(DISTINCT prediction, ',') as prediction,
                STRING_AGG(DISTINCT upt_label, ',') as upt_label,
-               STRING_AGG(DISTINCT CAST(upt_date AS text), ',') as upt_date
+               STRING_AGG(DISTINCT CAST(upt_date AS text), ',') as upt_date,
+               STRING_AGG(DISTINCT split_set, ',') as split_set
         FROM {schema}.features 
-        WHERE upt_label IS NOT NULL and label != upt_label 
+        WHERE upt_label IS NOT NULL 
         GROUP BY id, schema
         ORDER BY 1
     """.format(
         schema=schema
     )
-    cursor.execute(query)
-    return cursor.fetchall()
+    results = cursor.execute(query).fetchall()
+    for figure in results:
+        if figure["split_set"] == "UNL":
+            figure["label"] = "unl"
+        # because the prediction can be concatenated, grab the longest prediction
+        predictions = figure["prediction"].split(",")
+        lengths = [len(el) for el in predictions]
+        figure["prediction"] = predictions[np.argmax(lengths)]
+    return results
 
 
 def fetch_session_number(cursor: Cursor, schema: str) -> int:
@@ -312,7 +333,7 @@ def archive_updates(
     cursor: Cursor, schema: str, subfigures: List[Dict], session_id: int
 ):
     """Archive the session updates in the database"""
-    insert_sql = f"COPY {schema}.archivevault (subfig_id,schema,label,upt_label,upt_date,session_number) FROM STDIN"
+    insert_sql = f"COPY {schema}.archivevault (subfig_id,schema,label,upt_label,upt_date,session_number,prediction) FROM STDIN"
     with cursor.copy(insert_sql) as copy:
         for subfig in subfigures:
             copy.write_row(
@@ -323,6 +344,7 @@ def archive_updates(
                     subfig["upt_label"],
                     subfig["upt_date"],
                     session_id,
+                    subfig["prediction"],
                 )
             )
 
@@ -382,14 +404,53 @@ def split_dataframe_errors(
 ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """Split the dataframe into dataframes without errors, with errors marked
     as ground truth, and without errors marked as ground truth"""
-    df_errors_wo_gt = input_df.loc[
-        (input_df.label.str.contains("error") & (input_df.split_set == "UNL"))
-    ].reset_index()
-    df_errors_w_gt = input_df.loc[
-        (input_df.label.str.contains("error") & (input_df.split_set != "UNL"))
-    ].reset_index()
-    df_no_errors = input_df.loc[~input_df.label.str.contains("error")].reset_index()
+    # fmt: off
+    df_errors_wo_gt = input_df.loc[(input_df.label.str.contains("error") & (input_df.split_set == "UNL"))].reset_index(drop=True)
+    df_errors_w_gt = input_df.loc[(input_df.label.str.contains("error") & (input_df.split_set != "UNL"))].reset_index(drop=True)
+    df_no_errors = input_df.loc[~input_df.label.str.contains("error")].reset_index(drop=True)
+    # fmt: on
     return df_no_errors, df_errors_w_gt, df_errors_wo_gt
+
+
+def split_sets(
+    data: pd.DataFrame,
+    test_size: float = 0.2,
+    val_size: float = 0.1,
+    random_state: int = 42,
+):
+    """Split by label"""
+    df_set = data.copy().reset_index(drop=True)
+    y = df_set.label
+    sss = StratifiedShuffleSplit(
+        n_splits=5, test_size=test_size, random_state=random_state
+    )
+    for _, (train_index, test_index) in enumerate(sss.split(df_set, y)):
+        df_set.loc[test_index, "split_set"] = "TEST"
+        df_set.loc[train_index, "split_set"] = "TRAIN"
+
+    df_test = df_set[df_set.split_set == "TEST"].reset_index()
+    df_train = df_set[df_set.split_set == "TRAIN"].reset_index()
+    y_train = df_train.label
+
+    # split for validation
+    num_val = ceil(df_set.shape[0] * val_size)
+    val_test_size = num_val / df_train.shape[0]
+
+    try:
+        sss = StratifiedShuffleSplit(
+            n_splits=5, test_size=val_test_size, random_state=random_state
+        )
+        for _, (train_index, test_index) in enumerate(sss.split(df_train, y_train)):
+            df_train.loc[test_index, "split_set"] = "VAL"
+            df_train.loc[train_index, "split_set"] = "TRAIN"
+    except ValueError:
+        # when the least populated class in y has only 1 member, needs > 2
+        # then do a simple assignment
+        df_train.loc[df_train.index < num_val, "split_set"] = "VAL"
+
+    if "index" in df_train.columns:
+        df_train = df_train.drop(columns=["index"])
+    return pd.concat([df_train, df_test]).reset_index(drop=True)
 
 
 def fill_split_set_for_errors_without_ground_truth(
@@ -406,20 +467,41 @@ def fill_split_set_for_errors_without_ground_truth(
     input_df.loc[(input_df.index >= num_train) & (input_df.index < num_train+num_val), 'split_set'] = 'VAL'
     input_df.loc[input_df.index >= num_train + num_val, 'split_set'] = 'TEST'
     # fmt: on
-    return input_df
+    return input_df.drop(columns=["index"])
 
 
-def assign_splits_to_errors(df_input: pd.DataFrame) -> pd.DataFrame:
+def assign_splits_to_errors(
+    cursor: Cursor, df_input: pd.DataFrame, schema: str
+) -> pd.DataFrame:
+    """Process the images with errors as labels. In case these images do not have
+    a split_set for training the classifier, assign one and save it to db"""
     df_no_errors, df_err_w_gt, df_err_wo_gt = split_dataframe_errors(df_input)
-    df_err_wo_gt_updated = fill_split_set_for_errors_without_ground_truth(df_err_wo_gt)
+    try:
+        # try our best to stratify
+        df_err_wo_gt_updated = split_sets(df_err_wo_gt, test_size=0.1, val_size=0.1)
+    except ValueError:
+        # in case stratification fails, do simple divide
+        df_err_wo_gt_updated = fill_split_set_for_errors_without_ground_truth(
+            df_err_wo_gt
+        )
 
     # update split_set column in db
+    if len(df_err_wo_gt_updated) > 0:
+        query_params = [
+            (schema, sf["split_set"], sf["id"])
+            for sf in df_err_wo_gt_updated.iterrows()
+        ]
+        flattened_values = [item for sublist in query_params for item in sublist]
+        single_query = "UPDATE {}.figures SET split_set='{}' WHERE id={}; "
+        all_queries = single_query * len(query_params)
+        query = sql.SQL(all_queries.format(*flattened_values))
+        cursor.execute(query)
 
-    df_out = pd.concat[df_no_errors, df_err_w_gt, df_err_wo_gt_updated]
-    # fmt: off
-    columns = ["img", "img_path", "width", "height", "label" "source", "caption", "original", "split_set"]
-    df_out = df_out[columns]
-    # fmt: on
+    df_out = pd.concat([df_no_errors, df_err_w_gt, df_err_wo_gt_updated])
+    if "index" in df_out.columns:
+        df_out = df_out.drop(columns=["index"])
+    if "level_0" in df_out.columns:
+        df_out = df_out.drop(columns=["level_0"])
     return df_out
 
 
@@ -438,8 +520,7 @@ def create_df_from_labeled_sources(
         SELECT f.id, f.name as img, f.uri as img_path, f.width, f.height, 
                f.ground_truth as label, f.source, f.caption, f.notes as original
         FROM {labeled_schema}.figures f
-        WHERE f.ground_truth IS NOT NULL AND 
-              f.ground_truth NOT LIKE 'error%'
+        WHERE f.ground_truth IS NOT NULL 
     """
     if gt_like is not None:
         query += f" AND f.ground_truth like '{gt_like}%'"
@@ -470,12 +551,13 @@ def create_df_from_labeled_sources(
 
     for image in images_without_split:
         image["split_set"] = id_2_split[image["id"]]
-
     df_images = pd.DataFrame.from_dict(images_without_split).reset_index()
 
     # handle errors if classifier is higher-modality
     if gt_like is None:
-        df_images = assign_splits_to_errors(df_images)
+        df_images = assign_splits_to_errors(cursor, df_images, labeled_schema)
+    if "id" in df_images.columns:
+        df_images = df_images.drop(columns=["id"])
 
     return df_images
 
@@ -525,17 +607,16 @@ def create_training_file(
             local_df = create_df_from_unlabeled_sources(cursor, classifier, schema, mapper)
         dfs.append(local_df)
 
-    df_images = pd.concat(dfs).reset_index()
+    df_images = pd.concat(dfs).reset_index(drop=True)
     # adapt the label to the depth of the classifier
     clf_short = mapper[classifier]
     depth = 1 if clf_short is None else len(clf_short.split(".")) + 1
     df_images["label"] = df_images.apply(
         lambda x: ".".join(x.label.split(".")[:depth]), axis=1
     )
-    columns = ["img", "img_path", "width", "height", "label" "source", "caption", "original", "split_set"]
+    columns = ["img", "img_path", "width", "height", "label", "source", "caption", "original", "split_set"]
     df_images = df_images[columns]
     # fmt: on
-
     return df_images
 
 
