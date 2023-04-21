@@ -1,7 +1,5 @@
 """ Test cases for the update step in BI-LAVA"""
 from datetime import datetime
-from pathlib import Path
-import numpy as np
 import pandas as pd
 
 import pytest
@@ -16,10 +14,10 @@ from biosearch_core.bilava.session import create_session
 # poetry run pytest tests/bilava/tests_bilava_updates.py
 
 postgresql_my_proc = factories.postgresql_proc(
-    port=5933,
+    port=1,
     host="localhost",
-    user="",
-    password="aaa",
+    user="a",
+    password="a",
 )
 postgresql_my = factories.postgresql("postgresql_my_proc")
 
@@ -330,8 +328,6 @@ def test_create_training_file_after_updates_for_classifier(database):
     with database.cursor(row_factory=dict_row) as cursor:
         classifiers = bilava.fetch_affected_classifiers(cursor, bilava_schema)
         subfigures = bilava.fetch_affected_subfigures(cursor, bilava_schema)
-        print("\n")
-        print(subfigures)
         session_id = bilava.record_session(
             cursor, bilava_schema, subfigures, classifiers
         )
@@ -360,24 +356,46 @@ def test_create_training_file_after_updates_for_classifier(database):
         for level in label_levels:
             assert level == 1
 
+        # Check child classifier bulldogs
         classifier = "breeds-bulldog"
         assert classifier in classifiers
         df_images = bilava.create_training_file(
             cursor, classifier, data_schemas, bilava_schema, labeled_schema, mapper
         )
-        print(df_images.head())
+        names = df_images.img.values.tolist()
+        names.sort()
+        assert names == ["img-1", "img-2", "img-5", "img-6", "img-8", "unl-2", "unl-4"]
+        assert df_images is not None
+        assert df_images.shape[0] == 7
+
+        # Check child classifier terriers
+        classifier = "breeds-terrier"
+        assert classifier in classifiers
+        df_images = bilava.create_training_file(
+            cursor, classifier, data_schemas, bilava_schema, labeled_schema, mapper
+        )
+        names = df_images.img.values.tolist()
+        names.sort()
+        assert names == ["img-10", "img-7", "img-9", "unl-3", "unl-5"]
+        assert df_images is not None
+        assert df_images.shape[0] == 5
 
 
-# # f_name = bilava.export_parquet(
-# #     cursor,
-# #     classifier,
-# #     output_folder,
-# #     data_schemas,
-# #     bilava_schema,
-# #     labeled_schema,
-# #     mapper,
-# # )
-# # assert f_name == "cord19_breeds_v1.parquet"
-# # assert Path(f_name).exists() is True
-# # bilava.cleanup([f_name])
-# # assert Path(f_name).exists() is False
+def test_save_parquets_on_finish(database):
+    """Test that the whole on finish procedure generates three files"""
+    bilava_schema = "devbilava"
+    output_folder = "tests/bilava/fake_project/parquets"
+    data_schemas = ["dogs", "unlabeled"]
+    labeled_schema = "dogs"
+
+    mapper = {"breeds": None, "breeds-terrier": "ter", "breeds-bulldog": "bul"}
+    with database.cursor(row_factory=dict_row) as cursor:
+        filenames = bilava.end_labeling_session(
+            cursor=cursor,
+            bilava_schema=bilava_schema,
+            labeled_schema=labeled_schema,
+            output_folder=output_folder,
+            schemas=data_schemas,
+            mapper=mapper,
+        )
+        assert len(filenames) == 3

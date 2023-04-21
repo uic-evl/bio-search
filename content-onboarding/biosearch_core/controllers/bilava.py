@@ -8,7 +8,7 @@ from typing import List, Literal, Dict, Optional, Tuple
 from datetime import datetime
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import StratifiedShuffleSplit, train_test_split
+from sklearn.model_selection import StratifiedShuffleSplit
 from psycopg import connect, sql, Cursor
 from psycopg.rows import dict_row
 from biosearch_core.db.model import ConnectionParams
