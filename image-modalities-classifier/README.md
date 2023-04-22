@@ -75,3 +75,21 @@ poetry install --extras "torch"
 
 check
 https://wandb.ai/site/articles/model-explorations-and-hyperparameter-search-with-w-b-and-kubernetes
+
+higher-modality
+image_modalities_classifier/train.py higher-modality efficientnet-b1 /mnt/curation_data/modality_classifiers_production /mnt/curation_data/ --num_workers 4 --project biocuration --batch_size 256 --epochs 100 --no-pseudo --patience 10 --pretrained --gpus -1 --precision 16 --strategy ddp --mean 0.7687 0.7660 0.7663 --std 0.3024 0.2991 0.3034
+
+microscopy:
+image_modalities_classifier/train.py microscopy efficientnet-b0 /media/cumulus/curation_data/modality_classifiers_production /media/cumulus/curation_data --num_workers 4 --project biocuration --lr 1e-3 --batch_size 32 --epochs 100 --no-pseudo --patience 10 --pretrained --gpus -1 --precision 16 --mean 0.4951 0.4829 0.4857 --std 0.3524 0.3438 0.3545
+
+experimental:
+image_modalities_classifier/train.py experimental efficientnet-b1 /media/cumulus/curation_data/modality_classifiers_production /media/cumulus/curation_data --num_workers 4 --project biocuration --lr 1e-3 --batch_size 32 --epochs 100 --no-pseudo --patience 10 --pretrained --gpus -1 --precision 16 --mean 0.8608 0.8608 0.8615 --std 0.2348 0.2346 0.2345
+
+molecular:
+image_modalities_classifier/train.py molecular efficientnet-b1 /media/cumulus/curation_data/modality_classifiers_production /media/cumulus/curation_data --num_workers 4 --project biocuration --lr 1e-3 --batch_size 32 --epochs 100 --no-pseudo --patience 10 --pretrained --gpus -1 --precision 16 --mean 0.8737 0.8744 0.8658 --std 0.2385 0.2346 0.2499
+
+radiology
+image_modalities_classifier/train.py radiology efficientnet-b0 /media/cumulus/curation_data/modality_classifiers_production /media/cumulus/curation_data --num_workers 4 --project biocuration --lr 1e-3 --batch_size 32 --epochs 100 --no-pseudo --patience 10 --pretrained --gpus -1 --precision 16 --mean 0.4981 0.4983 0.4984 --std 0.2521 0.2521 0.2521
+
+graphics:
+image_modalities_classifier/train.py graphics efficientnet-b1 /media/cumulus/curation_data/modality_classifiers_production /media/cumulus/curation_data --num_workers 4 --project biocuration --lr 1e-3 --batch_size 32 --epochs 100 --no-pseudo --patience 10 --pretrained --gpus -1 --precision 16 --mean 0.9247 0.9201 0.9210 --std 0.2078 0.2006 0.2131
