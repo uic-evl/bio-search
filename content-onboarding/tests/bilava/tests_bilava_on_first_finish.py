@@ -6,19 +6,14 @@ import pytest
 from pytest_postgresql import factories
 from psycopg.rows import dict_row
 
-import biosearch_core.controllers.bilava as bilava
+import biosearch_core.bilava.offload as bilava
 from biosearch_core.data.figure import SubFigureStatus
 from biosearch_core.bilava.session import create_session
 
 # path to sql file
 # poetry run pytest tests/bilava/tests_bilava_updates.py
 
-postgresql_my_proc = factories.postgresql_proc(
-    port=1,
-    host="localhost",
-    user="a",
-    password="a",
-)
+postgresql_my_proc = factories.postgresql_proc(host="localhost")
 postgresql_my = factories.postgresql("postgresql_my_proc")
 
 
@@ -302,7 +297,7 @@ def test_fetch_dataframe_from_labeled_sources_with_higher_classifier(database):
     bilava_schema = "devbilava"
     training_schema = "dogs"
     classifier = "breeds"
-    mapper = {"breeds": None, "breeds-terrier": "ter", "breeds-bulldog": "bul"}
+    mapper = {"breeds": None, "breeds-terrier": "ter.", "breeds-bulldog": "bul."}
 
     with database.cursor(row_factory=dict_row) as cursor:
         df_images = bilava.create_df_from_labeled_sources(
@@ -319,11 +314,10 @@ def test_create_training_file_after_updates_for_classifier(database):
     schemas"""
 
     bilava_schema = "devbilava"
-    output_folder = "tests/bilava/fake_project/parquets"
     data_schemas = ["dogs", "unlabeled"]
     labeled_schema = "dogs"
 
-    mapper = {"breeds": None, "breeds-terrier": "ter", "breeds-bulldog": "bul"}
+    mapper = {"breeds": None, "breeds-terrier": "ter.", "breeds-bulldog": "bul."}
 
     with database.cursor(row_factory=dict_row) as cursor:
         classifiers = bilava.fetch_affected_classifiers(cursor, bilava_schema)
@@ -355,6 +349,8 @@ def test_create_training_file_after_updates_for_classifier(database):
         label_levels = [len(el.split(".")) for el in label_levels]
         for level in label_levels:
             assert level == 1
+        assert "UNL" not in df_images.split_set.unique()
+        assert "TRAIN" in df_images.loc[df_images.label == "error"].split_set.unique()
 
         # Check child classifier bulldogs
         classifier = "breeds-bulldog"
@@ -367,6 +363,11 @@ def test_create_training_file_after_updates_for_classifier(database):
         assert names == ["img-1", "img-2", "img-5", "img-6", "img-8", "unl-2", "unl-4"]
         assert df_images is not None
         assert df_images.shape[0] == 7
+        label_levels = df_images.label.values
+        label_levels = [len(el.split(".")) for el in label_levels]
+        for level in label_levels:
+            assert level == 2
+        assert "UNL" not in df_images.split_set.unique()
 
         # Check child classifier terriers
         classifier = "breeds-terrier"
@@ -379,6 +380,11 @@ def test_create_training_file_after_updates_for_classifier(database):
         assert names == ["img-10", "img-7", "img-9", "unl-3", "unl-5"]
         assert df_images is not None
         assert df_images.shape[0] == 5
+        label_levels = df_images.label.values
+        label_levels = [len(el.split(".")) for el in label_levels]
+        for level in label_levels:
+            assert level == 2
+        assert "UNL" not in df_images.split_set.unique()
 
 
 def test_save_parquets_on_finish(database):

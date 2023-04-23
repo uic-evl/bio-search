@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Dict
 import logging
 import json
+from biosearch_core.data.figure import SubFigureStatus
 from biosearch_core.prediction.predictor import PredictManager
 from biosearch_core.db.model import params_from_env
 
@@ -17,7 +18,7 @@ def setup_logger(workspace: str):
         raise FileNotFoundError("workspace does not exist")
 
     logging.basicConfig(
-        filename=str(logger_dir / "predict_labes.log"),
+        filename=str(logger_dir / "predict_labels.log"),
         filemode="a",
         format="%(asctime)s - %(levelname)s - %(message)s",
         level=logging.INFO,
@@ -57,7 +58,7 @@ def main():
     setup_logger(project_dir)
     classifiers = load_classifiers_info(args.classifiers)
     manager = PredictManager(str(project_dir), conn_params, classifiers)
-    manager.predict()
+    manager.predict_and_update_db(status=SubFigureStatus.NOT_PREDICTED)
 
 
 if __name__ == "__main__":

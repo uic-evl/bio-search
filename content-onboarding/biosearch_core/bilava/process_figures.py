@@ -180,7 +180,7 @@ def fetch_from_db(
 
     df_schemas = []
     for schema in schemas:
-        label = "ground_truth" if schema == "training" else "label"
+        label = "ground_truth" if "training" in schema else "label"
         # pylint: disable=consider-using-f-string
         query = """SELECT id, name, uri, width, height, source, status, {label} as label
                   FROM {schema}.figures WHERE fig_type={fig_type}

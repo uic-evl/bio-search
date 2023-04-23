@@ -191,6 +191,7 @@ def split_dataframe_errors(
     """Split the dataframe into dataframes without errors, with errors marked
     as ground truth, and without errors marked as ground truth"""
     # fmt: off
+    print(input_df.shape)
     df_errors_wo_gt = input_df.loc[(input_df.label.str.contains("error") & (input_df.split_set == "UNL"))].reset_index(drop=True)
     df_errors_w_gt = input_df.loc[(input_df.label.str.contains("error") & (input_df.split_set != "UNL"))].reset_index(drop=True)
     df_no_errors = input_df.loc[~input_df.label.str.contains("error")].reset_index(drop=True)
@@ -215,7 +216,7 @@ def split_sets(
         df_set.loc[train_index, "split_set"] = "TRAIN"
 
     df_test = df_set[df_set.split_set == "TEST"].reset_index()
-    df_train = df_set[df_set.split_set == "TRAIN"].reset_index()
+    df_train = df_set[df_set.split_set == "TRAIN"].reset_index(drop=True)
     y_train = df_train.label
 
     # split for validation
@@ -244,9 +245,9 @@ def fill_split_set_for_errors_without_ground_truth(
 ) -> pd.DataFrame:
     """Fill the split_set based on a partition n_train/n_val/1-n_train+n_val"""
     df_len = len(input_df)
-    num_train = floor(df_len * n_train)
+    num_train = ceil(df_len * n_train)
     num_val = ceil(df_len * n_val)
-    input_df = input_df.reset_index()
+    input_df = input_df.reset_index(drop=True)
 
     # fmt: off
     input_df.loc[input_df.index < num_train, 'split_set'] = 'TRAIN'
@@ -261,27 +262,36 @@ def assign_splits_to_errors(
 ) -> pd.DataFrame:
     """Process the images with errors as labels. In case these images do not have
     a split_set for training the classifier, assign one and save it to db"""
+    # TODO: This actually assigns all the split sets to every dataframe, not only errors
     df_no_errors, df_err_w_gt, df_err_wo_gt = split_dataframe_errors(df_input)
-    try:
-        # try our best to stratify
-        df_err_wo_gt_updated = split_sets(df_err_wo_gt, test_size=0.1, val_size=0.1)
-    except ValueError:
-        # in case stratification fails, do simple divide
-        df_err_wo_gt_updated = fill_split_set_for_errors_without_ground_truth(
-            df_err_wo_gt
-        )
+
+    if len(df_err_wo_gt) > 0:
+        try:
+            # try our best to stratify
+            df_err_wo_gt_updated = split_sets(df_err_wo_gt, test_size=0.1, val_size=0.1)
+        except ValueError:
+            logging.info("stratified split failed, trying simple split")
+            # in case stratification fails, do simple divide
+            df_err_wo_gt_updated = fill_split_set_for_errors_without_ground_truth(
+                df_err_wo_gt
+            )
+    else:
+        df_err_wo_gt_updated = df_err_wo_gt
+
+    # for images without errors, set unlabeled data to train
+    df_no_errors.loc[df_no_errors.split_set == "UNL", "split_set"] = "TRAIN"
 
     # update split_set column in db
-    if len(df_err_wo_gt_updated) > 0:
-        query_params = [
-            (schema, sf["split_set"], sf["id"])
-            for sf in df_err_wo_gt_updated.iterrows()
-        ]
-        flattened_values = [item for sublist in query_params for item in sublist]
-        single_query = "UPDATE {}.figures SET split_set='{}' WHERE id={}; "
-        all_queries = single_query * len(query_params)
-        query = sql.SQL(all_queries.format(*flattened_values))
-        cursor.execute(query)
+    # if len(df_err_wo_gt_updated) > 0:
+    #     query_params = [
+    #         (schema, sf["split_set"], sf["id"])
+    #         for _, sf in df_err_wo_gt_updated.iterrows()
+    #     ]
+    #     flattened_values = [item for sublist in query_params for item in sublist]
+    #     single_query = "UPDATE {}.figures SET split_set='{}' WHERE id={}; "
+    #     all_queries = single_query * len(query_params)
+    #     query = sql.SQL(all_queries.format(*flattened_values))
+    #     cursor.execute(query)
 
     df_out = pd.concat([df_no_errors, df_err_w_gt, df_err_wo_gt_updated])
     if "index" in df_out.columns:
@@ -297,7 +307,7 @@ def create_df_from_labeled_sources(
     labeled_schema: str,
     bilava_schema: str,
     mapper: Dict[str, Optional[str]],
-) -> pd.DataFrame:
+) -> Optional[pd.DataFrame]:
     """Fetch the dataframe from the labeled data from the training schema and
     fetching the split_set from BI-LAVA"""
     gt_like = mapper[classifier]
@@ -310,9 +320,12 @@ def create_df_from_labeled_sources(
     """
     if gt_like is not None:
         query += f" AND f.ground_truth like '{gt_like}%'"
-    print(query)
+
     cursor.execute(query)
     images_without_split = cursor.fetchall()
+
+    if len(images_without_split) == 0:
+        return None
 
     # splits for updated and not updated images
     if gt_like:
@@ -340,40 +353,73 @@ def create_df_from_labeled_sources(
         image["split_set"] = id_2_split[image["img_path"]]  # id_2_split[image["id"]]
     df_images = pd.DataFrame.from_dict(images_without_split).reset_index()
 
-    # handle errors if classifier is higher-modality
-    if gt_like is None:
-        df_images = assign_splits_to_errors(cursor, df_images, labeled_schema)
+    # handle errors if classifier is higher-modality, and split sets
+    # if gt_like is None:
+    df_images = assign_splits_to_errors(cursor, df_images, labeled_schema)
     if "id" in df_images.columns:
         df_images = df_images.drop(columns=["id"])
 
     return df_images
 
 
-def create_df_from_unlabeled_sources(
-    cursor: Cursor,
-    classifier: str,
-    unlabeled_schema: str,
-    mapper: Dict[str, Optional[str]],
-) -> pd.DataFrame:
-    """Fetch the updated ground_trugth data in the unlabeled schema and assign
-    everything as training data"""
-    gt_like = mapper[classifier]
-    query = f"""
-                SELECT f.name as img, f.uri as img_path, f.width, f.height, 
-                      f.ground_truth as label, f.source, f.caption, 
-                      f.notes as original
-                FROM {unlabeled_schema}.figures f
-                WHERE f.ground_truth IS NOT NULL 
-            """
-    if gt_like is not None:
-        query += f" AND ground_truth like '{gt_like}%'"
-    cursor.execute(query)
-    results = cursor.fetchall()
-    local_df = pd.DataFrame.from_dict(results)
-    # TODO: change later to several splits
-    local_df["split_set"] = "TRAIN"
+# def create_df_from_unlabeled_sources(
+#     cursor: Cursor,
+#     classifier: str,
+#     unlabeled_schema: str,
+#     bilava_schema: str,
+#     mapper: Dict[str, Optional[str]],
+# ) -> pd.DataFrame:
+#     """Fetch the updated ground_trugth data in the unlabeled schema and assign
+#     everything as training data"""
+#     gt_like = mapper[classifier]
+#     query = f"""
+#                 SELECT f.name as img, f.uri as img_path, f.width, f.height,
+#                       f.ground_truth as label, f.source, f.caption,
+#                       f.notes as original
+#                 FROM {unlabeled_schema}.figures f
+#                 WHERE f.ground_truth IS NOT NULL and f.fig_type=1
+#             """
+#     if gt_like is not None:
+#         query += f" AND ground_truth like '{gt_like}%'"
+#     cursor.execute(query)
+#     results = cursor.fetchall()
 
-    return local_df
+#     # splits for updated and not updated images
+#     if gt_like:
+#         query_splits = f"""
+#             SELECT DISTINCT(uri, split_set) as out
+#             FROM {bilava_schema}.features
+#             WHERE schema='{unlabeled_schema}' AND
+#                 (
+#                     (upt_label is NULL AND label like '{gt_like}%')
+#                     OR
+#                     (upt_label like '{gt_like}%')
+#                 )
+#         """
+#     else:
+#         query_splits = f"""
+#             SELECT DISTINCT(uri, split_set) as out
+#             FROM {bilava_schema}.features
+#             WHERE schema='{unlabeled_schema}'
+#         """
+
+#     splits = cursor.execute(query_splits).fetchall()
+#     id_2_split = {el["out"][0]: el["out"][1] for el in splits}
+
+#     for image in results:
+#         image["split_set"] = id_2_split[image["img_path"]]
+#     local_df = pd.DataFrame.from_dict(results).reset_index()
+
+#     # TODO: change later to several splits
+#     # handle errors if classifier is higher-modality
+#     if gt_like is None:
+#         local_df = assign_splits_to_errors(cursor, local_df, unlabeled_schema)
+#     else:
+#         local_df["split_set"] = "TRAIN"
+#     if "id" in local_df.columns:
+#         local_df = local_df.drop(columns=["id"])
+
+#     return local_df
 
 
 def create_training_file(
@@ -388,11 +434,12 @@ def create_training_file(
     dfs = []
     # fmt: off
     for schema in schemas:
-        if schema == labeled_schema:
-            local_df = create_df_from_labeled_sources(cursor, classifier, schema, bilava_schema, mapper)
-        else:
-            local_df = create_df_from_unlabeled_sources(cursor, classifier, schema, mapper)
-        dfs.append(local_df)
+        # if schema == labeled_schema:
+        local_df = create_df_from_labeled_sources(cursor, classifier, schema, bilava_schema, mapper)
+        # else:
+        #     local_df = create_df_from_unlabeled_sources(cursor, classifier, schema, bilava_schema, mapper)
+        if local_df is not None:
+            dfs.append(local_df)
 
     df_images = pd.concat(dfs).reset_index(drop=True)
     # adapt the label to the depth of the classifier
