@@ -21,7 +21,7 @@ class PredictManager:
     """Manage the predictions on subfigures"""
 
     def __init__(
-        self, project_dir: str, conn_params: ConnectionParams, classifiers: Dict
+        self, base_img_path: str, conn_params: ConnectionParams, classifiers: Dict
     ):
         self.params = conn_params
         self.schema = conn_params.schema
@@ -31,7 +31,7 @@ class PredictManager:
             batch_size=128, num_workers=cpu_count(), device=device
         )
         self.classifiers = classifiers
-        self.base_img_path = Path(project_dir) / "to_predict"
+        self.base_img_path = Path(base_img_path)
 
     def fetch_subfigures_from_db(
         self,

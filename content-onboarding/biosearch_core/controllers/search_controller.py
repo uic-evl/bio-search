@@ -54,13 +54,14 @@ class SearchController:
                         }
                         subfigures = []
                         for subfigure in subfigs_by_fig[figure_id]:
-                            subfigures.append(
-                                {
-                                    "name": subfigure.subfigure_id,
-                                    "type": subfigure.prediction,
-                                    "bbox": subfigure.coordinates,
-                                }
-                            )
+                            if subfigure.prediction != "error":
+                                subfigures.append(
+                                    {
+                                        "name": subfigure.subfigure_id,
+                                        "type": subfigure.prediction,
+                                        "bbox": subfigure.coordinates,
+                                    }
+                                )
                         figure["subfigures"] = subfigures
                         page["figures"].append(figure)
                     pages.append(page)

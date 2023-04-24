@@ -41,6 +41,7 @@ def parse_args(args) -> Namespace:
     parser.add_argument("db", type=str, help="path to .env with db conn")
     parser.add_argument("-clfs", "--classifiers", type=str, help="json file with classifiers to use", required=True)
     parser.add_argument("-ds", "--data_schemas", nargs="+", help="schemas for for figures to predict", required=True)
+    parser.add_argument("-i", "--imgs_path", help="base path for images", required=True)
     parsed_args = parser.parse_args(args)
     # fmt: on
 
@@ -50,15 +51,22 @@ def parse_args(args) -> Namespace:
 def main():
     """main entry"""
     args = parse_args(argv[1:])
-    project_dir = Path(args.bilava_dir)
+    print(args)
+    base_img_path = args.imgs_path
     conn_params = params_from_env(args.db)
-    setup_logger(project_dir)
+    setup_logger(args.bilava_dir)
 
     classifiers = load_classifiers_info(args.classifiers)
 
     for data_schema in args.data_schemas:
         conn_params.schema = data_schema
-        manager = PredictManager(str(project_dir), conn_params, classifiers)
+        if "cord19" in data_schema:
+            imgs_path = str(Path(base_img_path) / "biosearch" / "cord19" / "to_predict")
+        else:
+            imgs_path = base_img_path
+
+        print(f"\nProcessing {data_schema}\n")
+        manager = PredictManager(imgs_path, conn_params, classifiers)
         manager.predict_and_update_db(status=None)  # update all images
 
 
