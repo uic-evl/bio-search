@@ -67,7 +67,8 @@ class SearchController:
                         # subfigures classified as errors
                         if len(figure["subfigures"]) > 0:
                             page["figures"].append(figure)
-                    pages.append(page)
+                    if len(page["figures"]) > 0:
+                        pages.append(page)
         return {
             "title": surrogate_info.title,
             "number_figures": surrogate_info.num_figures,
