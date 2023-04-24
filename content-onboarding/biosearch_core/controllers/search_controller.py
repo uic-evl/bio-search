@@ -63,7 +63,10 @@ class SearchController:
                                     }
                                 )
                         figure["subfigures"] = subfigures
-                        page["figures"].append(figure)
+                        # avoid figures without subfigures, which most likely are
+                        # subfigures classified as errors
+                        if len(figure["subfigures"]) > 0:
+                            page["figures"].append(figure)
                     pages.append(page)
         return {
             "title": surrogate_info.title,
