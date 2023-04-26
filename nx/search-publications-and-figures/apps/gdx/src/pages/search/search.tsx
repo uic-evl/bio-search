@@ -1,5 +1,5 @@
 import {useReducer} from 'react'
-import {Box, Flex, Spacer, Button, useToast} from '@chakra-ui/react'
+import {Box, Flex, Spacer, Button, useToast, Text} from '@chakra-ui/react'
 import {
   RowModalityLegend,
   SearchBar,
@@ -13,6 +13,7 @@ import {
 import {ReactComponent as Taxonomy} from '../../assets/taxonomy.svg'
 import {colorsMapper, namesMapper, ddlSearchOptions} from '../../utils/mapper'
 import {search, getPageFigureDetails} from '../../api'
+import {About} from './about'
 
 /* eslint-disable-next-line */
 export interface SearchProps {
@@ -74,7 +75,8 @@ const Search = ({logout}: SearchProps) => {
   return (
     <Box className="container" minH="100vh" w="full">
       <Box w="full" h="100px" p={4} pt={2} pb={0} zIndex={400}>
-        <Flex w="full">
+        <Flex w="full" alignItems={'center'}>
+          <Text fontWeight={'bold'}>GDX Search</Text>
           <RowModalityLegend
             modalities={baseModalities}
             colorsMapper={colorsMapper}
@@ -82,7 +84,12 @@ const Search = ({logout}: SearchProps) => {
             taxonomyImage={<Taxonomy />}
           />
           <Spacer />
-          <HelpQueries />
+          <HelpQueries
+            tutorialUrl={
+              'https://docs.google.com/document/d/1c0SFMi7o14HuoLZ0Q0-Jll5nfjDoy1gZbaQkG6KnLG8/edit?usp=sharing'
+            }
+          />
+          <About />
           <Button
             backgroundColor={undefined}
             size={'xs'}

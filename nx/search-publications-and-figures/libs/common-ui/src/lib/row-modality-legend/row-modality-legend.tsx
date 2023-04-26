@@ -31,7 +31,7 @@ export function RowModalityLegend({
 
   return (
     <>
-      <Flex direction="row" alignItems="center" pl={4} pr={4} mb={1}>
+      <Flex direction="row" alignItems="center" pl={4} pr={4}>
         <Text fontSize="sm" mr={1}>
           Modalities:
         </Text>

@@ -83,7 +83,7 @@ const Search = () => {
             taxonomyImage={<Taxonomy />}
           />
           <Spacer />
-          <HelpQueries />
+          <HelpQueries tutorialUrl="https://docs.google.com/document/d/19msOo9-Tl90aRvWWBfk4uCfiXGPSR5taNHYSghSzyMg/edit?usp=sharing" />
         </Flex>
         <SearchBar
           defaultStartYear={2000}
