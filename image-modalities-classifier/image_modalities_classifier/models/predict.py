@@ -31,11 +31,12 @@ class SingleModalityPredictor:
     """Instantiates a trained model to predict a modality for a single classifier"""
 
     def __init__(self, model_path: str, config: RunConfig):
-        self.model = ModalityModule.load_from_checkpoint(model_path)
-        self.mean = self.model.hparams["mean_dataset"]
-        self.std = self.model.hparams["mean_dataset"]
-        self.classes = self.model.hparams["classes"]
-        self.name = self.model.hparams["name"]
+        # checkpoint = torch.load(model_path)
+        self.module = ModalityModule.load_from_checkpoint(model_path)
+        self.mean = self.module.hparams["mean_dataset"]
+        self.std = self.module.hparams["std_dataset"]
+        self.classes = self.module.hparams["classes"]
+        self.name = self.module.hparams["name"]
         self.config = config
 
         transforms_manager = ModalityTransforms(self.name, self.mean, self.std)
@@ -43,6 +44,15 @@ class SingleModalityPredictor:
 
         self.decoder = LabelEncoder()
         self.decoder.fit(self.classes)
+        self.model = self.module.model
+
+        # self.model = EfficientNet(name="efficientnet-b1", num_classes=4)
+        # state_dict = {}
+        # for key in checkpoint["state_dict"].keys():
+        #     if "model.model" in key:
+        #         new_key = key[6:]
+        #         state_dict[new_key] = checkpoint["state_dict"][key]
+        # self.model.load_state_dict(state_dict)
 
     def _get_dataloader(
         self, data: DataFrame, base_img_dir: str, path_col: str
@@ -56,26 +66,24 @@ class SingleModalityPredictor:
             batch_size=self.config.batch_size,
             shuffle=False,
             num_workers=self.config.num_workers,
+            drop_last=False,
         )
         return loader
 
     def _predict(self, dataloader: DataLoader) -> ndarray:
         """Predict over dataloader and return a list of classes"""
-        self.model.eval()
         predictions = []
         with no_grad():
             for batch_imgs in tqdm(dataloader):
                 data = batch_imgs.to(self.config.device)
                 batch_outputs = self.model(data)
-                _, batch_predictions = torch_max(batch_outputs, dim=1)
-                batch_predictions = batch_predictions.cpu()
+                batch_predictions = batch_outputs.argmax(dim=-1).cpu()
                 predictions.append(batch_predictions)
             prediction_stack = hstack(predictions)
             return prediction_stack
 
     def _predict_with_probs(self, dataloader: DataLoader) -> ndarray:
         """Predict over dataloader and return a list of classes"""
-        self.model.eval()
         probabilities = []
         predictions = []
         with no_grad():
@@ -106,7 +114,7 @@ class SingleModalityPredictor:
     ) -> List[str]:
         """Predict from input dataframe"""
         loader = self._get_dataloader(data, base_img_dir, path_col=path_col)
-        self.model.to(self.config.device)
+        self.model.eval().to(self.config.device)
         predictions = self._predict(loader)
         if as_classes:
             return self._as_classes(predictions)
@@ -121,7 +129,7 @@ class SingleModalityPredictor:
     ) -> List[str]:
         """Predict from input dataframe and also return prediction probabilities"""
         loader = self._get_dataloader(data, base_img_dir, path_col=path_col)
-        self.model.to(self.config.device)
+        self.model.eval().to(self.config.device)
         predictions, probabilities = self._predict_with_probs(loader)
         if as_classes:
             return self._as_classes(predictions), probabilities

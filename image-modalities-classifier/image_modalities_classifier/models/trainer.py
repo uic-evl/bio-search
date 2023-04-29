@@ -20,8 +20,12 @@ from pathlib import Path
 from os import makedirs, listdir, cpu_count
 from typing import Tuple, List, Optional
 from tqdm import tqdm
+import logging
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
+
+from sklearn.metrics import f1_score
+import numpy as np
 
 import torch
 from torch.utils.data import DataLoader
@@ -266,12 +270,21 @@ class ModalityModelTrainer:
         cp_name = f"{self.model_name}_{self.classifier}_{self.version}"
         checkpoint_callback = ModelCheckpoint(
             dirpath=self.output_dir,
-            filename=cp_name,
+            filename="%s-{epoch}-{val_loss:.3f}" % (cp_name),
             monitor=metric_monitor,
             mode="min",
             save_top_k=1,
+            save_last=True,
         )
         checkpoint_callback.FILE_EXTENSION = self.extension
+
+        # last_checkpoint_callback = ModelCheckpoint(
+        #     dirpath=self.output_dir,
+        #     filename="last-{epoch}-{val_loss:.3f}",
+        #     monitor=metric_monitor,
+
+        # )
+        # last_checkpoint_callback.FILE_EXTENSION = self.extension
 
         num_classes = len(self.encoder.classes_)
         model = ModalityModule(
@@ -302,7 +315,11 @@ class ModalityModelTrainer:
 
         max_epochs = 100 if self.epochs == 0 else self.epochs
         callbacks = (
-            [lr_monitor, checkpoint_callback, early_stop_callback]
+            [
+                lr_monitor,
+                checkpoint_callback,
+                early_stop_callback,
+            ]
             if early_stop_callback
             else [lr_monitor, checkpoint_callback]
         )
@@ -323,7 +340,10 @@ class ModalityModelTrainer:
             precision=self.precision,
         )
         trainer.fit(model, datamodule)
-        trainer.test(ckpt_path="best", dataloaders=datamodule.test_dataloader())
+        trainer.test(
+            ckpt_path=checkpoint_callback.best_model_path,
+            dataloaders=datamodule.test_dataloader(),
+        )
 
         wandb.finish()
         self._append_logger_name(cp_name, wandb_logger.name)
