@@ -12,7 +12,7 @@ python = ">=3.10,<3.11"
 psycopg = {extras = ["binary"], version = "^3.1.8"}
 python-dotenv = "^0.21.1"
 tqdm = "^4.64.1"
-flask = "^2.2.2"
+flask = "^2.3.2"
 flask-cors = "^3.0.10"
 umap-learn="^0.5.3"
 cudf-cu11 = { version="^23.02", source="rapids" }
