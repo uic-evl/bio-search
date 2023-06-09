@@ -3,7 +3,7 @@
   "npmScope": "search-publications-and-figures",
   "tasksRunnerOptions": {
     "default": {
-      "runner": "nx/tasks-runners/default",
+      "runner": "nx-cloud",
       "options": {
         "cacheableOperations": [
           "build",
@@ -11,7 +11,8 @@
           "test",
           "e2e",
           "build-storybook"
-        ]
+        ],
+        "accessToken": "ZTZiN2Y0ODEtOWJhNC00MjU1LWFhYWQtMzk0OWY2NDdiNjBlfHJlYWQtd3JpdGU="
       }
     }
   },
@@ -53,7 +54,7 @@
     "sharedGlobals": ["{workspaceRoot}/babel.config.json"]
   },
   "generators": {
-    "@nrwl/react": {
+    "@nx/react": {
       "application": {
         "style": "css",
         "linter": "eslint",
