@@ -1,0 +1,23 @@
+.Axis__line {
+  stroke: #bdc3c7;
+}
+
+.Axis__label {
+  text-anchor: middle;
+  font-size: 0.9em;
+  letter-spacing: 0.01em;
+}
+
+.Axis__tick {
+  font-size: 0.8em;
+  transition: all 0.3s ease-out;
+}
+
+.AxisHorizontal .Axis__tick {
+  text-anchor: end;
+}
+
+.AxisVertical .Axis__tick {
+  /* dominant-baseline: middle; */
+  text-anchor: end;
+}

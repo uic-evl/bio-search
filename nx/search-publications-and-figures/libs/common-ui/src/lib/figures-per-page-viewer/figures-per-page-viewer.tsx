@@ -4,6 +4,7 @@ import useDimensions from 'react-cool-dimensions'
 import {Box, Flex} from '@chakra-ui/react'
 import PageThumbnailViewer from '../page-thumbnail-viewer/page-thumbnail-viewer'
 import FigureBboxCaptionCard from '../figure-bbox-caption-card/figure-bbox-caption-card'
+import {LuceneCaption} from '../types'
 
 /* eslint-disable-next-line */
 export interface FiguresPerPageViewerProps {
@@ -11,6 +12,7 @@ export interface FiguresPerPageViewerProps {
   colorsMapper: {[id: string]: string}
   figuresBaseUrl: string
   getPageUrl: (arg1: Document, arg2: Page) => string
+  captionHits: LuceneCaption[]
 }
 
 export function FiguresPerPageViewer({
@@ -18,6 +20,7 @@ export function FiguresPerPageViewer({
   colorsMapper,
   figuresBaseUrl,
   getPageUrl,
+  captionHits,
 }: FiguresPerPageViewerProps) {
   const [pageIdx, setPageIdx] = useState(0) // page idx in array, not page number
   const [figIdx, setFigIdx] = useState(0) // fig idx in array
@@ -74,6 +77,7 @@ export function FiguresPerPageViewer({
             colorsMapper={colorsMapper}
             baseUrlEndpoint={figuresBaseUrl}
             maxHeight={height}
+            captionHits={captionHits}
           />
         )}
       </Flex>

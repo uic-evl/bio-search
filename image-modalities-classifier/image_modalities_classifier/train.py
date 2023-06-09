@@ -1,13 +1,18 @@
 """ Entry script for training modality models """
 from sys import argv
 from os import listdir
+from datetime import datetime
 from argparse import ArgumentParser, Namespace
+import logging
 from pathlib import Path
 from typing import Optional, List
+from pytorch_lightning import seed_everything
 
-import logging
-
+import wandb
 from image_modalities_classifier.models.trainer import ModalityModelTrainer
+
+
+SEED = 443
 
 
 def find_latest_dataset(workspace: str, taxonomy: str, classifier: str) -> str:
@@ -42,6 +47,12 @@ def train(
     pseudo: bool,
     mean: Optional[List[float]],
     std: Optional[List[float]],
+    patience: Optional[int],
+    pretrained: bool = False,
+    batch_size: int = 32,
+    gpus: int = 1,
+    precision: int = 32,
+    strategy: str = None,
 ):
     """Train the model"""
     dataset_path = find_latest_dataset(workspace, taxonomy, classifier)
@@ -60,6 +71,14 @@ def train(
         use_pseudo=pseudo,
         mean=mean,
         std=std,
+        remove_small=False,
+        patience=patience,
+        pretrained=pretrained,
+        batch_size=batch_size,
+        seed=SEED,
+        gpus=gpus,
+        precision=precision,
+        strategy=strategy,
     )
     trainer.run()
 
@@ -103,16 +122,24 @@ def parse_args(args) -> Namespace:
     parser.add_argument("--num_workers", "-w", type=int, default=4)
     parser.add_argument("--taxonomy", "-t", type=str, default="cord19")
     parser.add_argument("--project", "-p", type=str, default="biocuration")
+    parser.add_argument("--batch_size", "-b", type=int, default=32)
     parser.add_argument("--epochs", "-e", type=int, default=1)
     parser.add_argument("--pseudo", dest="pseudo", action="store_true")
     parser.add_argument("--no-pseudo", dest="pseudo", action="store_false")
+    parser.add_argument("--patience", type=int, default=None)
+    parser.add_argument("--pretrained", dest="pretrained", action="store_true")
+    parser.add_argument("--no-pretrained", dest="pretrained", action="store_false")
     parser.add_argument(
         "--mean", "-m", type=float, nargs="+", default=None, help="Dataset mean"
     )
     parser.add_argument(
         "--std", "-s", type=float, nargs="+", default=None, help="Dataset std"
     )
-    parser.set_defaults(feature=False)
+    parser.add_argument("--gpus", type=int, default=1)
+    parser.add_argument("--precision", type=int, default=16)
+    parser.add_argument("--strategy", type=str, default=None)
+    parser.set_defaults(pseudo=False)
+    parser.set_defaults(pretrained=False)
 
     return parser.parse_args(args)
 
@@ -133,7 +160,18 @@ def main():
     verify_stats("mean", args.mean)
     verify_stats("std", args.std)
 
+    seed_everything(SEED)
+
     try:
+        # start wandb for logging stats
+        group = None
+        if args.strategy == "ddp":
+            # now = datetime.now().strftime("%m-%d-%H-%M-%S")
+            # now won't work because the threads calculate diff times
+            group = "ddp"
+        tags = [classifier_name, args.model]
+
+        wandb.init(project=args.project, group=group, tags=tags)
         train(
             args.workspace,
             args.taxonomy,
@@ -147,6 +185,12 @@ def main():
             args.pseudo,
             args.mean,
             args.std,
+            args.patience,
+            args.pretrained,
+            args.batch_size,
+            args.gpus,
+            args.precision,
+            args.strategy,
         )
     # pylint: disable=broad-except
     except Exception:

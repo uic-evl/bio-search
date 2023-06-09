@@ -21,10 +21,15 @@ async function client(endpoint, method, {data, params, token} = {}) {
       return {error: true, payload: null, message: error.message}
     }
     if (error.response.status === 400) {
+      const message =
+        'data' in error.response && 'description' in error.response.data
+          ? error.response.data.description
+          : 'unknown message'
+
       return {
         error: true,
         payload: null,
-        message: 'Cannot reach server endpoint',
+        message,
       }
     }
     if (error.response.status === 500) {

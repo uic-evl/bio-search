@@ -29,8 +29,13 @@ const Search = () => {
   )
 
   const getPageUrl = (document: Document, page: Page) => {
+    let folderName = document.pmcid
+    if (COLLECTION === 'gdx') {
+      folderName = document.otherid
+    }
+
     const paddedPage = page.page.toString().padStart(6, '0')
-    const pageUrl = `${PDFS_BASE_URL}/${document.pmcid}/${document.pmcid}-${paddedPage}.png`
+    const pageUrl = `${PDFS_BASE_URL}/${folderName}/${folderName}-${paddedPage}.png`
     return pageUrl
   }
 
@@ -78,11 +83,11 @@ const Search = () => {
             taxonomyImage={<Taxonomy />}
           />
           <Spacer />
-          <HelpQueries />
+          <HelpQueries tutorialUrl="https://docs.google.com/document/d/19msOo9-Tl90aRvWWBfk4uCfiXGPSR5taNHYSghSzyMg/edit?usp=sharing" />
         </Flex>
         <SearchBar
           defaultStartYear={2000}
-          defaultEndYear={2020}
+          defaultEndYear={2022}
           options={ddlSearchOptions}
           colorsMapper={colorsMapper}
           onSearch={handleSearch}
@@ -91,12 +96,13 @@ const Search = () => {
             {query: 'disease', label: 'disease', modalities: []},
             {
               query: 'title:kinase AND abstract:transcription',
-              label: 'kinase in title and transcription in abstract',
+              label: 'title:kinase AND abstract:transcription',
               modalities: [],
             },
             {
               query: 'full_text:auditory AND full_text:cortex',
-              label: 'auditory and cortex in full text with microscopy images',
+              label:
+                'full_text:auditory AND full_text:cortex with modalities: mic.flu',
               modalities: [
                 {label: 'fluorescence microscopy', value: 'mic.flu'},
               ],

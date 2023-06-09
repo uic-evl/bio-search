@@ -16,13 +16,14 @@ import {
 
 import {ExternalLinkIcon} from '@chakra-ui/icons'
 
-const Explanation = () => (
+interface ExplanationProps {
+  url: string
+}
+
+const Explanation = ({url}: ExplanationProps) => (
   <Box>
     <Box mb={2}>
-      <Link
-        href="https://docs.google.com/document/d/19msOo9-Tl90aRvWWBfk4uCfiXGPSR5taNHYSghSzyMg/edit?usp=sharing"
-        isExternal
-      >
+      <Link href={url} isExternal>
         Inteface tutorial
         <ExternalLinkIcon ml="3px" />
       </Link>
@@ -101,7 +102,11 @@ const Explanation = () => (
   </Box>
 )
 
-export function HelpQueries() {
+interface HelpQueriesProps {
+  tutorialUrl: string
+}
+
+export function HelpQueries({tutorialUrl}: HelpQueriesProps) {
   const {isOpen, onOpen, onClose} = useDisclosure()
   return (
     <>
@@ -115,7 +120,7 @@ export function HelpQueries() {
           <ModalHeader>Supported queries</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <Explanation />
+            <Explanation url={tutorialUrl} />
           </ModalBody>
         </ModalContent>
       </Modal>

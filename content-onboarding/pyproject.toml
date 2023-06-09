@@ -1,40 +1,46 @@
 [tool.poetry]
-name = "content-onboarding"
+name = "biosearch-core"
 version = "0.1.0"
 description = ""
 authors = ["Juan Trelles <juantrelles@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.9"
-pandas = "^1.5.3"
-pyarrow = "^10.0.1"
-Pillow = "^9.4.0"
+python = ">=3.10,<3.11"
+# pandas = "^1.5.3"
+# pyarrow = "^10.0.1"
+# Pillow = "^9.4.0"
 psycopg = {extras = ["binary"], version = "^3.1.8"}
 python-dotenv = "^0.21.1"
-image_modalities_classifier = { git = "https://github.com/uic-evl/bio-search.git", subdirectory="image-modalities-classifier" }
-
-# optional due to its dependency on CUDA (11.6)
-torch = { version="^1.13.1", source="torch", optional = true }
-torchvision = { version = "^0.14.1", source="torch", optional = true }
 tqdm = "^4.64.1"
+flask = "^2.2.2"
+flask-cors = "^3.0.10"
+umap-learn="^0.5.3"
+cudf-cu11 = { version="^23.02", source="rapids" }
+dask-cudf-cu11 = { version="^23.02", source="rapids" }
+cuml-cu11 = { version="^23.02", source="rapids" }
+torch="^1.13.1"
+torchvision="^0.14.1"
+image_modalities_classifier = { git = "https://github.com/uic-evl/bio-search.git", subdirectory="image-modalities-classifier", branch="search_engine_captions"} #, extras=["torch"] }
+rich = "^13.3.2"
 
 [[tool.poetry.source]]
-name = "torch"
-url = "https://download.pytorch.org/whl/cu116"
-default = false
-secondary = true
+name="rapids"
+url="https://pypi.nvidia.com"
+default=false
+secondary=false
 
 [tool.poetry.dev-dependencies]
-pytest = "^5.2"
+pytest = "^7.3.1"
 
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.20.2"
 black = "^22.12.0"
 pylint = "^2.15.10"
-
-[tool.poetry.extras]
-torch = ["torch", "torchvision"]
+pytest-postgresql = "^4.1.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+biosearch_core_export = 'biosearch_core.indexing.export:main'

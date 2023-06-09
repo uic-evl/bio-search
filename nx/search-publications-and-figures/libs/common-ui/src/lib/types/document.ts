@@ -6,6 +6,7 @@ export interface Document {
   pages: Page[]
   pmcid: string
   cord_uid?: string
+  otherid: string
   bboxes?: {[id: string]: {[id: string]: number[]}}
 }
 
@@ -22,6 +23,7 @@ export interface Subfigure {
 }
 
 export interface Figure {
+  id: number
   caption: string
   subfigures: Subfigure[]
   url: string

@@ -8,7 +8,7 @@ packages = [{include = "image_modalities_classifier"}]
 
 [tool.poetry.dependencies]
 # needed always: training + inference
-python = "^3.8.1"
+python = ">=3.10,<3.11"
 pandas = "1.5.3"
 scikit-learn = "1.2"
 scikit-image = "^0.19.3"
@@ -17,19 +17,25 @@ pytorch-lightning = "^1.9.0"
 # only needed for training
 iterative-stratification = "^0.1.7"
 matplotlib = "^3.6.3"
-wandb = "^0.13.9"
-pyarrow = "^10.0.1"
+pyarrow = "^10.0.0"
+tqdm = "^4.64.1"
+torch="^1.13.1"
+torchvision="^0.14.1"
+
+# made extra for compatibility with rapids on biosearch-core
+# wandb and rapids have incompatible protobuff requirements
+wandb = { version="^0.13.11", optional=true }
 
 # optional due to its dependency on CUDA (11.6)
-torch = { version="^1.13.1", source="torch", optional = true }
-torchvision = { version = "^0.14.1", source="torch", optional = true }
-tqdm = "^4.64.1"
+# torch = { version="^1.13.1", source="torch", optional = true }
+# torchvision = { version = "^0.14.1", source="torch", optional = true }
+# lightning-bolts = "^0.6.0.post1"
 
-[[tool.poetry.source]]
-name = "torch"
-url = "https://download.pytorch.org/whl/cu116"
-default = false
-secondary = true
+#[[tool.poetry.source]]
+#name = "torch"
+#url = "https://download.pytorch.org/whl/cu116"
+#default = false
+#secondary = true
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^5.2"
@@ -39,7 +45,8 @@ ipykernel = "^6.20.2"
 ipywidgets = "^8.0.4"
 
 [tool.poetry.extras]
-torch = ["torch", "torchvision"]
+#torch = ["torch", "torchvision"]
+wandb = ["wandb"]
 
 [build-system]
 requires = ["poetry-core"]
@@ -47,3 +54,4 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 train_image_modality_model = 'image_modalities_classifier.train:main'
+train_model = 'image_modalities_classifier.train:main'

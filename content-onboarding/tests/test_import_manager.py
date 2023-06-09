@@ -8,8 +8,8 @@ from os import makedirs
 from typing import Dict
 from pathlib import Path
 
-from content_onboarding.managers.import_manager import ImportManager, Cord19Loader
-from content_onboarding.db.model import FigureType, FigureStatus
+from biosearch_core.managers.import_manager import ImportManager, Cord19Loader
+from biosearch_core.db.model import FigureType, FigureStatus
 
 # Fake data ###################################################################
 

@@ -1,0 +1,57 @@
+{
+    "classifier": "higher-modality",
+    "classname": "",
+    "path": "fake",
+    "children": [
+        {
+            "classifier": "experimental",
+            "classname": "exp",
+            "path": "fake",
+            "children": [
+                {
+                    "classifier": "gel",
+                    "classname": "exp.gel",
+                    "path": "fake",
+                    "children": []
+                }
+            ]
+        },
+        {
+            "classifier": "graphics",
+            "classname": "gra",
+            "path": "fake",
+            "children": []
+        },
+        {
+            "classifier": "microscopy",
+            "classname": "mic",
+            "path": "fake",
+            "children": [
+                {
+                    "classifier": "electron",
+                    "classname": "mic.ele",
+                    "path": "fake",
+                    "children": []
+                }
+            ]
+        },
+        {
+            "classifier": "molecular",
+            "classname": "mol",
+            "path": "fake",
+            "children": []
+        },
+        {
+            "classifier": "radiology",
+            "classname": "rad",
+            "path": "fake",
+            "children": []
+        },
+        {
+            "classifier": "photography",
+            "classname": "pho",
+            "path": "fake",
+            "children": []
+        }
+    ]
+}

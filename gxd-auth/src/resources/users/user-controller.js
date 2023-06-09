@@ -9,7 +9,7 @@ export const registerUser = (req, res, next) => {
 
     return res.status(200).send({
       username: user.username,
-      password: '######',
+      token: user.password,
     })
   })(req, res, next)
 }

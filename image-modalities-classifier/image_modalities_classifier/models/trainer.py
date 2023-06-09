@@ -8,14 +8,24 @@ load the latest existing model and increments the version number. The versioning
 syntax is very simple <taxonomy_name>_<classifier>_<version>, where version
 is an integer.
 
+
+With multi-gpu:
+Use a group name for the DDP run and instantiate using the wandblogger.
+wand.init() is required so that we can call wandb.plot.confusionmatrix on the
+lightning module. It's started from train.py or sweep.py
+
 """
 
 from pathlib import Path
 from os import makedirs, listdir, cpu_count
-from typing import Tuple, List
+from typing import Tuple, List, Optional
 from tqdm import tqdm
+import logging
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
+
+from sklearn.metrics import f1_score
+import numpy as np
 
 import torch
 from torch.utils.data import DataLoader
@@ -30,7 +40,7 @@ from image_modalities_classifier.dataset.utils import remove_small_classes
 from image_modalities_classifier.dataset.image_dataset import ImageDataset
 from image_modalities_classifier.dataset.image_datamodule import ImageDataModule
 from image_modalities_classifier.dataset.transforms import ModalityTransforms
-from image_modalities_classifier.models.resnet import Resnet
+from image_modalities_classifier.models.modality_module import ModalityModule
 
 
 ENCODED_COL_NAME = "enc_label"
@@ -106,6 +116,10 @@ class ModalityModelTrainer:
         use_pseudo: bool = False,
         mean: List[float] = None,
         std: List[float] = None,
+        patience: Optional[int] = None,
+        pretrained: bool = False,
+        precision: int = 32,
+        strategy: Optional[str] = None,
     ):
         self.data_path = Path(dataset_filepath)
         self.base_img_dir = Path(base_img_dir)
@@ -116,10 +130,16 @@ class ModalityModelTrainer:
         self.model_name = model_name
         self.epochs = epochs
         self.learning_rate = learning_rate
+
         self.gpus = gpus
+        self.precision = precision
+        self.strategy = strategy
+
         self.batch_size = batch_size
         self.mean = torch.Tensor(mean) if mean is not None else torch.Tensor()
         self.std = torch.Tensor(std) if mean is not None else torch.Tensor()
+        self.patience = patience
+        self.pretrained = pretrained
 
         self.label_col = label_col
         self.artifacts_dir = output_dir
@@ -136,6 +156,8 @@ class ModalityModelTrainer:
         self.encoder = None
         self.output_dir: Path = None
         self.version = None
+
+        seed_everything(self.seed)
 
     def _prepare_data(self):
         print("preparing data")
@@ -179,7 +201,7 @@ class ModalityModelTrainer:
             return
 
         print("calculating dataset stats")
-        basic_transforms = ModalityTransforms.basic_transforms()
+        basic_transforms = ModalityTransforms.basic_transforms(self.model_name)
         train_df = self.data[self.data[self.partition_col] == "TRAIN"]
 
         train_dataset = ImageDataset(
@@ -192,9 +214,12 @@ class ModalityModelTrainer:
         mean, std = calc_ds_stats(train_dataset, batch_size=self.batch_size)
         self.mean = mean
         self.std = std
+        print("mean", self.mean)
+        print("std", self.std)
 
     def _create_data_module(self, train_mean, train_std):
         datamodule = ImageDataModule(
+            model_name=self.model_name,
             batch_size=self.batch_size,
             label_encoder=self.encoder,
             data_path=str(self.data_path),
@@ -209,7 +234,6 @@ class ModalityModelTrainer:
         )
         datamodule.prepare_data()
         datamodule.setup("fit")
-        datamodule.set_seed()
         return datamodule
 
     def _append_logger_name(self, cp_name: str, run_name: str):
@@ -222,43 +246,52 @@ class ModalityModelTrainer:
         Logging the data
         https://github.com/Lightning-AI/lightning/issues/14054
         """
-        seed_everything(self.seed)
         self._prepare_data()
         self._create_artifacts_folder()
         self._calculate_dataset_stats()
         datamodule = self._create_data_module(self.mean, self.std)
 
-        # start wandb for logging stats
-        run = wandb.init(project=self.project, tags=[self.classifier, self.model_name])
-        wandb_logger = WandbLogger(project=self.project)
+        wandb_logger = WandbLogger(project=self.project, config={})
 
         # Callbacks
         metric_monitor = "val_loss"
         lr_monitor = LearningRateMonitor(logging_interval="epoch")
-        early_stop_callback = EarlyStopping(
-            monitor=metric_monitor,
-            min_delta=0.0,
-            patience=5,
-            verbose=True,
-            mode="min",
-        )
+
+        early_stop_callback = None
+        if self.patience:
+            early_stop_callback = EarlyStopping(
+                monitor=metric_monitor,
+                min_delta=0.0,
+                patience=self.patience,
+                verbose=True,
+                mode="min",
+            )
 
         cp_name = f"{self.model_name}_{self.classifier}_{self.version}"
         checkpoint_callback = ModelCheckpoint(
             dirpath=self.output_dir,
-            filename=cp_name,
+            filename="%s-{epoch}-{val_loss:.3f}" % (cp_name),
             monitor=metric_monitor,
             mode="min",
             save_top_k=1,
+            save_last=True,
         )
         checkpoint_callback.FILE_EXTENSION = self.extension
 
+        # last_checkpoint_callback = ModelCheckpoint(
+        #     dirpath=self.output_dir,
+        #     filename="last-{epoch}-{val_loss:.3f}",
+        #     monitor=metric_monitor,
+
+        # )
+        # last_checkpoint_callback.FILE_EXTENSION = self.extension
+
         num_classes = len(self.encoder.classes_)
-        model = Resnet(
+        model = ModalityModule(
             self.encoder.classes_,
             num_classes,
             name=self.model_name,
-            pretrained=True,
+            pretrained=self.pretrained,
             fine_tuned_from="whole",
             lr=self.learning_rate,
             metric_monitor=metric_monitor,
@@ -266,6 +299,8 @@ class ModalityModelTrainer:
             class_weights=datamodule.class_weights,
             mean_dataset=list(self.mean.numpy()),
             std_dataset=list(self.std.numpy()),
+            patience=self.patience,
+            log_confusion_matrix=wandb.plot.confusion_matrix,
         )
         # if self.version > 1:
         #     # model = ResNetClass.load_from_checkpoint(self.output_dir/f'{self.classifier}_{self.version}.{self.extension}')
@@ -279,18 +314,37 @@ class ModalityModelTrainer:
         #     model.load_state_dict(checkpoint["state_dict"])
 
         max_epochs = 100 if self.epochs == 0 else self.epochs
-        callbacks = [lr_monitor, checkpoint_callback, early_stop_callback]
+        callbacks = (
+            [
+                lr_monitor,
+                checkpoint_callback,
+                early_stop_callback,
+            ]
+            if early_stop_callback
+            else [lr_monitor, checkpoint_callback]
+        )
+
+        strategy = self.strategy
+        if self.strategy is not None and self.strategy == "ddp":
+            strategy = "ddp_find_unused_parameters_false"
+
         trainer = Trainer(
             accelerator="gpu" if torch.cuda.is_available() else "cpu",
             devices=self.gpus,
             max_epochs=max_epochs,
             callbacks=callbacks,
-            deterministic=False,
+            deterministic=True,
             logger=wandb_logger,
             num_sanity_val_steps=0,
+            strategy=strategy,
+            precision=self.precision,
         )
         trainer.fit(model, datamodule)
+        trainer.test(
+            ckpt_path=checkpoint_callback.best_model_path,
+            dataloaders=datamodule.test_dataloader(),
+        )
 
         wandb.finish()
-        self._append_logger_name(cp_name, run.name)
+        self._append_logger_name(cp_name, wandb_logger.name)
         return f"{cp_name}{self.extension}"

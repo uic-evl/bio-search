@@ -1,5 +1,5 @@
 import {useState, useEffect} from 'react'
-import {LuceneDocument} from '../../types/lucene-document'
+import {LuceneDocument, LuceneCaption} from '../../types/lucene-document'
 import {Document, Page} from '../../types/document'
 import {Box, Flex, chakra, Button} from '@chakra-ui/react'
 import SimpleResultCard from '../../simple-result-card/simple-result-card'
@@ -7,7 +7,11 @@ import FiguresPerPageViewer from '../../figures-per-page-viewer/figures-per-page
 
 const SearchingFeedback = () => <Box mb={2}>Searching...</Box>
 const NumberResults = ({numberResults}: {numberResults: number}) => {
-  return <Box mb={2}>{numberResults} documents found</Box>
+  let message = `${numberResults} documents found`
+  if (numberResults === 2000) {
+    message = 'More than 2000 documents found, showing the first 2000'
+  }
+  return <Box mb={2}>{message}</Box>
 }
 
 /* eslint-disable-next-line */
@@ -143,6 +147,7 @@ const HorizontalResultCard = ({
             colorsMapper={colorsMapper}
             figuresBaseUrl={figuresBaseUrl}
             getPageUrl={getPageUrl}
+            captionHits={document.captions}
           />
         )}
       </Box>

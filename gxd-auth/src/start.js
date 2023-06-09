@@ -40,7 +40,9 @@ const startServer = ({port = process.env.PORT} = {}) => {
 
   return new Promise(resolve => {
     const server = app.listen(port, () => {
-      console.log(`starting server on port ${port}`)
+      console.log(
+        `starting server on port ${port} in ${process.env.NODE_ENV} mode`,
+      )
       const originalClose = server.close.bind(server)
       server.close = () => {
         return new Promise(resolveClose => {
