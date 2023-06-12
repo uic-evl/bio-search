@@ -9,7 +9,7 @@ import {
   Document,
   HelpQueries,
   Page,
-} from '@search-publications-and-figures/common-ui'
+} from '@biocuration-front-end/common-ui'
 import {ReactComponent as Taxonomy} from '../../assets/taxonomy.svg'
 import {colorsMapper, namesMapper, ddlSearchOptions} from '../../utils/mapper'
 import {search, getPageFigureDetails} from '../../api/index'

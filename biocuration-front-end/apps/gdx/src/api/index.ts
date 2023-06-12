@@ -1,11 +1,11 @@
-import {run} from '@search-publications-and-figures/requests-api'
+import {run} from '@biocuration-front-end/requests-api'
 import {
   Document,
   Page,
   Figure,
   Subfigure,
-} from '@search-publications-and-figures/common-ui'
-import {LuceneDocument} from '@search-publications-and-figures/common-ui'
+} from '@biocuration-front-end/common-ui'
+import {LuceneDocument} from '@biocuration-front-end/common-ui'
 import {colorsMapper} from '../utils/mapper'
 
 const SEARCH_API_ENDPOINT = process.env.NX_SEARCH_API

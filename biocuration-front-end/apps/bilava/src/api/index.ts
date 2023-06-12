@@ -1,4 +1,4 @@
-import {run} from '@search-publications-and-figures/requests-api'
+import {run} from '@biocuration-front-end/requests-api'
 import {Dataset, ImageExtras, ResponseError, UpdateResult} from '../types'
 
 const BILAVA_ENDPOINT = import.meta.env.VITE_API

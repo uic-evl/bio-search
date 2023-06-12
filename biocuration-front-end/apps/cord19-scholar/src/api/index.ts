@@ -1,8 +1,5 @@
-import {run} from '@search-publications-and-figures/requests-api'
-import {
-  Document,
-  LuceneDocument,
-} from '@search-publications-and-figures/common-ui'
+import {run} from '@biocuration-front-end/requests-api'
+import {Document, LuceneDocument} from '@biocuration-front-end/common-ui'
 
 const SEARCH_API_ENDPOINT = process.env.NX_SEARCH_API
 const FULL_TEXT = process.env.NX_FULL_TEXT

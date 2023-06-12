@@ -15,11 +15,11 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@search-publications-and-figures/annotations": [
+      "@biocuration-front-end/annotations": [
         "libs/annotations/src/index.ts"
       ],
-      "@search-publications-and-figures/requests-api": ["libs/requests-api/src/index.js"],
-      "@search-publications-and-figures/common-ui": [
+      "@biocuration-front-end/requests-api": ["libs/requests-api/src/index.js"],
+      "@biocuration-front-end/common-ui": [
         "libs/common-ui/src/index.ts"
       ]
     }

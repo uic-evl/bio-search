@@ -1,7 +1,4 @@
-import {
-  LoginPage,
-  LoginPageProps,
-} from '@search-publications-and-figures/common-ui'
+import {LoginPage, LoginPageProps} from '@biocuration-front-end/common-ui'
 
 export function UnauthenticatedApp({login, message, title}: LoginPageProps) {
   return <LoginPage login={login} message={message} title={title} />
