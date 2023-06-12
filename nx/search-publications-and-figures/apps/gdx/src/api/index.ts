@@ -1,4 +1,4 @@
-import {run} from '@search-publications-and-figures/api'
+import {run} from '@search-publications-and-figures/requests-api'
 import {
   Document,
   Page,

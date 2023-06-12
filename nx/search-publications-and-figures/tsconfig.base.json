@@ -18,7 +18,7 @@
       "@search-publications-and-figures/annotations": [
         "libs/annotations/src/index.ts"
       ],
-      "@search-publications-and-figures/api": ["libs/api/src/index.js"],
+      "@search-publications-and-figures/requests-api": ["libs/requests-api/src/index.js"],
       "@search-publications-and-figures/common-ui": [
         "libs/common-ui/src/index.ts"
       ]

@@ -18,7 +18,7 @@ npm run prod  // production mode
 _Register User_
 
 ```javascript
-/users/register POST
+/api/users/register POST
 // data
 {
   "username": "SOME_USERNAME",
@@ -31,7 +31,7 @@ _Register User_
 _Log in user_ generates a valid token for 7 days
 
 ```javascript
-/users/login POST
+/api/users/login POST
 // data
 {
   "username": "SOME_USERNAME",
@@ -49,7 +49,7 @@ server. For the local user version, it reads the username and password from the
 environmental variables **curry** and **mayo**.
 
 ```javascript
-/users/me GET
+/api/users/me GET
 // data
 {
   "username": "SOME_USERNAME",

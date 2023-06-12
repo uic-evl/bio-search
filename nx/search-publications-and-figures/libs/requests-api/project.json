@@ -1,21 +1,21 @@
 {
-  "name": "api",
+  "name": "requests-api",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "libs/api/src",
+  "sourceRoot": "libs/requests-api/src",
   "projectType": "library",
   "targets": {
     "lint": {
       "executor": "@nx/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["libs/api/**/*.js"]
+        "lintFilePatterns": ["libs/requests-api/**/*.js"]
       }
     },
     "test": {
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
-        "jestConfig": "libs/api/jest.config.js",
+        "jestConfig": "libs/requests-api/jest.config.js",
         "passWithNoTests": true
       }
     }
