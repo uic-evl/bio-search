@@ -76,7 +76,7 @@ const Search = ({logout}: SearchProps) => {
     <Box className="container" minH="100vh" w="full">
       <Box w="full" h="100px" p={4} pt={2} pb={0} zIndex={400}>
         <Flex w="full" alignItems={'center'}>
-          <Text fontWeight={'bold'}>GDX Search</Text>
+          <Text fontWeight={'bold'}>GXD Search</Text>
           <RowModalityLegend
             modalities={baseModalities}
             colorsMapper={colorsMapper}

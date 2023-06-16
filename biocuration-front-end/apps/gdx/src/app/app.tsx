@@ -49,7 +49,7 @@ export function App() {
         <UnauthenticatedApp
           login={loginUser}
           message={authMessage}
-          title="GDX Search"
+          title="GXD Search"
         />
       )}
     </ChakraProvider>

@@ -33,7 +33,7 @@ export const About = () => {
             </Text>
             <Text>
               This specific project instantiation supports searching biomedical
-              documents in the GDX-2000 collection based on text AND images. It
+              documents in the GXD-2000 collection based on text AND images. It
               retrieves documents that contain both the desired text and desired
               image modalities (such as “cell” and “microscopy”) and presents
               the document information along with the relevant images in those
