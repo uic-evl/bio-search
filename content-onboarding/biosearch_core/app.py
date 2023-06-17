@@ -65,7 +65,7 @@ def search():
     max_docs = int(args["max_docs"]) if "max_docs" in args else 20
     modalities = args["modalities"] if "modalities" in args else None
 
-    index_dir = INDEXDIR if dataset == "gdx" else CORD19_INDEX_DIR
+    index_dir = INDEXDIR if dataset == "gxd" else CORD19_INDEX_DIR
     controller = LuceneController(index_dir)
     return controller.search(
         terms, start_date, end_date, max_docs, modalities, full_text
