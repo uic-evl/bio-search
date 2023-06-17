@@ -56,7 +56,7 @@ def search():
     dataset = args["ds"]
     if dataset is None:
         raise ValueError("parameter dataset cannot be null")
-    if dataset not in ["gdx", "cord19"]:
+    if dataset not in ["gxd", "cord19"]:
         raise ValueError(f"parameter dataset {dataset} is invalid")
     terms = args["q"] if "q" in args else None
     full_text = True if args["ft"] == "true" else False

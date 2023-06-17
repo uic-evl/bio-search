@@ -30,7 +30,7 @@ const Search = () => {
 
   const getPageUrl = (document: Document, page: Page) => {
     let folderName = document.pmcid
-    if (COLLECTION === 'gdx') {
+    if (COLLECTION === 'gxd') {
       folderName = document.otherid
     }
 

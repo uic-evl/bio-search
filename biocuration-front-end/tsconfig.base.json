@@ -15,13 +15,9 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@biocuration-front-end/annotations": [
-        "libs/annotations/src/index.ts"
-      ],
-      "@biocuration-front-end/requests-api": ["libs/requests-api/src/index.js"],
-      "@biocuration-front-end/common-ui": [
-        "libs/common-ui/src/index.ts"
-      ]
+      "@biocuration-front-end/annotations": ["libs/annotations/src/index.ts"],
+      "@biocuration-front-end/common-ui": ["libs/common-ui/src/index.ts"],
+      "@biocuration-front-end/requests-api": ["libs/requests-api/src/index.js"]
     }
   },
   "exclude": ["node_modules", "tmp"]

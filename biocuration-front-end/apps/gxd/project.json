@@ -1,7 +1,7 @@
 {
-  "name": "gdx",
+  "name": "gxd",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "apps/gdx/src",
+  "sourceRoot": "apps/gxd/src",
   "projectType": "application",
   "targets": {
     "build": {
@@ -10,14 +10,14 @@
       "defaultConfiguration": "production",
       "options": {
         "compiler": "babel",
-        "outputPath": "dist/apps/gdx",
-        "index": "apps/gdx/src/index.html",
+        "outputPath": "dist/apps/gxd",
+        "index": "apps/gxd/src/index.html",
         "baseHref": "/",
-        "main": "apps/gdx/src/main.tsx",
-        "polyfills": "apps/gdx/src/polyfills.ts",
-        "tsConfig": "apps/gdx/tsconfig.app.json",
-        "assets": ["apps/gdx/src/favicon.ico", "apps/gdx/src/assets"],
-        "styles": ["apps/gdx/src/styles.css"],
+        "main": "apps/gxd/src/main.tsx",
+        "polyfills": "apps/gxd/src/polyfills.ts",
+        "tsConfig": "apps/gxd/tsconfig.app.json",
+        "assets": ["apps/gxd/src/favicon.ico", "apps/gxd/src/assets"],
+        "styles": ["apps/gxd/src/styles.css"],
         "scripts": [],
         "webpackConfig": "@nx/react/plugins/webpack"
       },
@@ -27,13 +27,13 @@
           "optimization": false,
           "sourceMap": true,
           "vendorChunk": true,
-          "deployUrl": "gdx/"
+          "deployUrl": "gxd/"
         },
         "production": {
           "fileReplacements": [
             {
-              "replace": "apps/gdx/src/environments/environment.ts",
-              "with": "apps/gdx/src/environments/environment.prod.ts"
+              "replace": "apps/gxd/src/environments/environment.ts",
+              "with": "apps/gxd/src/environments/environment.prod.ts"
             }
           ],
           "optimization": true,
@@ -42,7 +42,7 @@
           "namedChunks": false,
           "extractLicenses": true,
           "vendorChunk": false,
-          "deployUrl": "gdx/"
+          "deployUrl": "gxd/"
         }
       }
     },
@@ -50,15 +50,15 @@
       "executor": "@nx/webpack:dev-server",
       "defaultConfiguration": "development",
       "options": {
-        "buildTarget": "gdx:build",
+        "buildTarget": "gxd:build",
         "hmr": true
       },
       "configurations": {
         "development": {
-          "buildTarget": "gdx:build:development"
+          "buildTarget": "gxd:build:development"
         },
         "production": {
-          "buildTarget": "gdx:build:production",
+          "buildTarget": "gxd:build:production",
           "hmr": false
         }
       }
@@ -67,14 +67,14 @@
       "executor": "@nx/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["apps/gdx/**/*.{ts,tsx,js,jsx}"]
+        "lintFilePatterns": ["apps/gxd/**/*.{ts,tsx,js,jsx}"]
       }
     },
     "test": {
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
-        "jestConfig": "apps/gdx/jest.config.ts",
+        "jestConfig": "apps/gxd/jest.config.ts",
         "passWithNoTests": true
       }
     }

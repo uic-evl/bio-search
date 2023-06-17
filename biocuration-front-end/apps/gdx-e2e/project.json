@@ -8,12 +8,12 @@
       "executor": "@nx/cypress:cypress",
       "options": {
         "cypressConfig": "apps/gdx-e2e/cypress.config.ts",
-        "devServerTarget": "gdx:serve:development",
+        "devServerTarget": "gxd:serve:development",
         "testingType": "e2e"
       },
       "configurations": {
         "production": {
-          "devServerTarget": "gdx:serve:production"
+          "devServerTarget": "gxd:serve:production"
         }
       }
     },
@@ -26,5 +26,5 @@
     }
   },
   "tags": [],
-  "implicitDependencies": ["gdx"]
+  "implicitDependencies": ["gxd"]
 }
