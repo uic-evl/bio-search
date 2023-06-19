@@ -15,8 +15,8 @@ CORS(app)
 # environmental variables
 INDEXDIR = getenv("INDEX_PATH")
 CORD19_INDEX_DIR = getenv("CORD_INDEX_PATH")
-DATADIR = getenv("DATA_PATH")
-BBOXESDIR = getenv("BBOXES_PATH")
+# DATADIR = getenv("DATA_PATH")
+# BBOXESDIR = getenv("BBOXES_PATH")
 ROOT = getenv("FLASK_ROOT")
 SCHEMA = getenv("SCHEMA")
 
