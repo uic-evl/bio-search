@@ -53,6 +53,7 @@ environmental variables **curry** and **mayo**.
 // data
 {
   "username": "SOME_USERNAME",
+  "password": "SOME_PASSWORD"
 }
 // bearer token
 Add to the Auth header the json web token generated from login
