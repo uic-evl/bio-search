@@ -2,6 +2,32 @@
 
 Library to import PMC documents from CORD19 into the image+text search system.
 
+## 2. Search API
+
+The front-end interface requires two API services: search over the indexes and
+retrieve document information. We expose those services as a Flask web server
+in `biosearch_core/app.py`. Because the search over indexes uses PyLucene and
+PyLucene is not pip installable, we use a Docker container to deploy this component.
+The Dockerfile is avaiable at: `dockerfiles/search-api`.
+
+### 2.1. Environmental variables
+
+- INDEX_PATH: Path to the Lucene indexes, usually mounted to /mnt so this path will be /mnt/indexes or similar
+- FLASK_ROOT: URL endpoint. For instances, '' for local deployments using hostname:port, and name-based when using a proxy (e.g., server/search-api)
+- DBNAME: database name
+- DBUSER: database user
+- DBPASSWORD: database password
+- DBPORT: database port
+- DBHOST: database host
+- SCHEMA: database content schema (e.g., gxd)
+
+### 2.2. Deployment
+
+```bash
+docker build --t IMAGE_NAME .
+docker run --rm -p LOCAL_PORT:5000 -v PARENT_TO_INDEX_FOLDER_PATH:/mnt IMAGE_NAME:VERSION
+```
+
 ## Pipeline
 
 At high level, every PDF document is stored in a folder with all other artifacts.

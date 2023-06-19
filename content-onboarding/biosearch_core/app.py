@@ -78,3 +78,7 @@ def fetch_taxonomy(taxonomy):
     """TODO: do i need this?"""
     taxonomy = escape(taxonomy)
     return {}
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0")
