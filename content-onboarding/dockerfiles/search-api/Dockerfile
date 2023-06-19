@@ -15,13 +15,14 @@ RUN apt update \
   && rm -rf /var/lib/apt/lists/* \
   && chmod +x /entrypoint.sh
 
-COPY .env /workspace/bio-search/content-onboarding
-WORKDIR /workspace/bio-search/content-onboarding/biosearch_core
-#RUN tmux new-session -s username -d \
-# ENV FLASK_APP=biosearch_core/app.py
+COPY .env /workspace/bio-search/content-onboarding/
+WORKDIR /workspace/bio-search/content-onboarding/
+ENV FLASK_APP=biosearch_core/app.py
+CMD ["flask", "run", "--host=0.0.0.0"]
 
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "wsgi_search:app"]
+# CMD ["gunicorn", "--bind", "0.0.0.0:5000", "biosearch_core.wsgi_search:app"]
 # ENTRYPOINT ["/entrypoint.sh"]
 
-# docker run -it --rm -p PORT:5000 -v INDEXDIR:/mnt IMAGE_NAME bash
+# https://stackoverflow.com/questions/19688314/how-do-you-attach-and-detach-from-dockers-process
+# docker run -ti -d --rm -p PORT:5000 -v INDEXDIR:/mnt IMAGE_NAME bash
 # http://127.0.0.1:PORT/FLASK_ROOT/search/?highlight=true&ft=false&q=disease&max_docs=2000&ds=gxd

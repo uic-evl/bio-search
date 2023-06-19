@@ -23,10 +23,27 @@ The Dockerfile is avaiable at: `dockerfiles/search-api`.
 
 ### 2.2. Deployment
 
+Deploy the Flask application in a Docker container:
+
+1. Create a `.env` file with the environmental variables in the folder with the Dockerfile.
+2. Build the image
+3. Run the container, the app starts when the container runs.
+
 ```bash
 docker build --t IMAGE_NAME .
-docker run --rm -p LOCAL_PORT:5000 -v PARENT_TO_INDEX_FOLDER_PATH:/mnt IMAGE_NAME:VERSION
+docker run -ti -d --rm -p LOCAL_PORT:5000 -v PARENT_TO_INDEX_FOLDER_PATH:/mnt IMAGE_NAME:VERSION
 ```
+
+<details>
+  <summary>Why interactive dettach</summary>
+  Without `-ti -d`, running the docker container starts Flask and then you cannot
+  detach from the window using control P + Q. More details https://stackoverflow.com/questions/19688314/how-do-you-attach-and-detach-from-dockers-process.   
+</details>
+
+### TODO:
+
+The application can use a web server like gunicorn, but we would need to update
+how to send the environmental variables.
 
 ## Pipeline
 
