@@ -44,7 +44,7 @@
           "namedChunks": false,
           "extractLicenses": true,
           "vendorChunk": false,
-          "deployUrl": "cord19/"
+          "deployUrl": "scholar/"
         }
       }
     },
