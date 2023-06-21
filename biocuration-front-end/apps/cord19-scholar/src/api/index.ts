@@ -6,7 +6,6 @@ const FULL_TEXT = process.env.NX_FULL_TEXT
 
 export const search = async (
   keywords: string,
-  collection: string,
   startDate: string | null,
   endDate: string | null,
   maxDocs: number,
@@ -14,7 +13,6 @@ export const search = async (
 ): Promise<LuceneDocument[]> => {
   const termsQuery = keywords || '*'
   let queryString = `?highlight=true&ft=${FULL_TEXT}&q=${termsQuery}&max_docs=${maxDocs}`
-  // let queryString = `?highlight=true&ft=true&q=${termsQuery}&max_docs=${maxDocs}`
   if (startDate) {
     queryString += `&from=${startDate}`
     if (endDate) {
@@ -25,7 +23,6 @@ export const search = async (
     const joinedMods = modalities.join(';')
     queryString += `&modalities=${joinedMods}`
   }
-  queryString += `&ds=${collection}`
 
   const url = `${SEARCH_API_ENDPOINT}/search/${queryString}`
   const payload = await run(url, 'get', {

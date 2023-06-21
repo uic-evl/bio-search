@@ -116,14 +116,14 @@ const HorizontalResultCard = ({
       //   }))
       //   .sort((a, b) => b.count - a.count)
       //   .map(el => el.modality)
-
       const details = await getPageFigureData(
         document.id.toString(),
         preferredModalities,
       )
       setDocFigureInfo(details)
     }
-    load()
+
+    if (docFigureInfo === null) load()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [document.id])
 

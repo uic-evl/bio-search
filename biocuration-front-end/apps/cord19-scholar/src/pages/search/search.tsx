@@ -62,13 +62,12 @@ const Search = () => {
     const sleep = (ms: number) => new Promise(r => setTimeout(r, ms))
     const results = await search(
       keywords,
-      COLLECTION,
       startDate,
       endDate,
       maxDocs,
       modalities,
     )
-    await sleep(10)
+    await sleep(2)
     dispatch({type: 'END_SEARCH', payload: results})
   }
 

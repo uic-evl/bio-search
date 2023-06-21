@@ -186,7 +186,7 @@ export function SearchBar({
           <chakra.p mr={2}>Try these queries:</chakra.p>
           {sampleQueries.map(el => (
             <SampleQuery
-              key={`sample-${el}`}
+              key={`sample-${el.query}`}
               query={el}
               onSearch={onSearch}
               setKeyword={setKeyword}
