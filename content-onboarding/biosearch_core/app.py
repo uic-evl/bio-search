@@ -57,10 +57,17 @@ def search():
     end_date = args["to"] if "to" in args else None
     max_docs = int(args["max_docs"]) if "max_docs" in args else 20
     modalities = args["modalities"] if "modalities" in args else None
+    highlight_captions = True if "hc" in args and args["hc"] == "true" else False
 
     controller = LuceneController(INDEXDIR)
     return controller.search(
-        terms, start_date, end_date, max_docs, modalities, full_text
+        terms,
+        start_date,
+        end_date,
+        max_docs,
+        modalities,
+        full_text,
+        highlight_captions,
     )
 
 

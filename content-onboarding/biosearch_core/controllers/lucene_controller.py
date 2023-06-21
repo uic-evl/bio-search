@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import List, Optional
 from json import dumps
 from collections import Counter
+import time
 
 import lucene  # pylint: disable=import-error
 from java.nio.file import Paths  # pylint: disable=import-error
@@ -61,6 +62,7 @@ class Reader:
         max_docs=10,
         highlight=False,
         full_text=False,
+        highlight_captions=False,
     ) -> List[SearchResult]:
         """search index by fields"""
         index_dir = SimpleFSDirectory(Paths.get(self.store_path))
@@ -124,7 +126,10 @@ class Reader:
             boolean_query = query_builder.build()
             self._last_query = hl_query
 
+            debug_t = time.time()
             hits = searcher.search(boolean_query, max_docs).scoreDocs
+            print("query time: ", time.time() - debug_t)
+
             results = []
             for hit in hits:
                 hit_doc = searcher.doc(hit.doc)
@@ -143,7 +148,9 @@ class Reader:
                     abstract = hl_abstract or abstract
                     full_text = hl_ft or ""
 
-                captions = self.get_highlighted_captions(hit_doc)
+                captions = []
+                if highlight_captions:
+                    captions = self.get_highlighted_captions(hit_doc)
 
                 result = SearchResult(
                     id=hit_doc.get("doc_id"),
@@ -238,6 +245,7 @@ class LuceneController:
         max_docs: int,
         modalities: Optional[str],
         full_text: bool,
+        highlight_captions: bool,
     ):
         """Search on the index_dir with filters"""
         vm_env = lucene.getVMEnv() or lucene.initVM(vmargs=["-Djava.awt.headless=true"])
@@ -253,6 +261,7 @@ class LuceneController:
             only_with_images=False,
             highlight=True,
             full_text=full_text,
+            highlight_captions=highlight_captions,
         )
         for result in results:
             result.modalities_count = Counter(result.modalities)
