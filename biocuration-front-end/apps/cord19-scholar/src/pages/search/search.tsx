@@ -13,6 +13,7 @@ import {
 import {ReactComponent as Taxonomy} from '../../assets/taxonomy.svg'
 import {colorsMapper, namesMapper, ddlSearchOptions} from '../../utils/mapper'
 import {search, getPageFigureDetails} from '../../api/index'
+import {About} from './about'
 
 const COLLECTION = process.env.NX_COLLECTION
 const IMAGES_BASE_URL = process.env.NX_FIGURES_ENDPOINT
@@ -82,6 +83,7 @@ const Search = () => {
             taxonomyImage={<Taxonomy />}
           />
           <Spacer />
+          <About />
           <HelpQueries tutorialUrl="https://docs.google.com/document/d/19msOo9-Tl90aRvWWBfk4uCfiXGPSR5taNHYSghSzyMg/edit?usp=sharing" />
         </Flex>
         <SearchBar
