@@ -11,8 +11,9 @@ declare global {
       HTTPS: string
       SECRET: string
       MAYO: string
-      CURRYSOUP: string
+      CURRYSAUCE: string
       NODE_ENV: string
+      EXPPATH?: string
     }
   }
 }

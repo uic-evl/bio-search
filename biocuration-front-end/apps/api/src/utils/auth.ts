@@ -38,7 +38,7 @@ export const loginLocalStrategy = new LocalStrategy(
   loginStrategyOpts,
   async (username: string, password: string, done: any) => {
     try {
-      const isUsernameCorrect = username === process.env.CURRYSOUP
+      const isUsernameCorrect = username === process.env.CURRYSAUCE
       const isPasswordCorrect = await bcrypt.compare(password, process.env.MAYO)
       if (isUsernameCorrect && isPasswordCorrect) {
         return done(null, {username, password})
@@ -60,7 +60,7 @@ export const jwtStrategy = new JwtStrategy(
   jwtStrategyOpts,
   async (jwtPayload: JwtPayload, done: any) => {
     try {
-      if (process.env.CURRYSOUP === jwtPayload.sub)
+      if (process.env.CURRYSAUCE === jwtPayload.sub)
         done(null, {
           username: jwtPayload.sub,
         })
