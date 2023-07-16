@@ -1,6 +1,7 @@
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom'
 import Search from '../search/search'
 import {IndividualRelevancePage} from '../experiments/individual-relevance'
+import {SearchRelevanceExperiment} from '../experiments/search-relevance'
 
 interface User {
   username: string
@@ -20,7 +21,11 @@ export function AuthenticatedApp({user, logout}: AuthenticatedAppProps) {
         <Route
           path="/individual"
           element={<IndividualRelevancePage token={user.token} />}
-        ></Route>
+        />
+        <Route
+          path="/search-relevance"
+          element={<SearchRelevanceExperiment logout={logout} />}
+        />
         <Route path="/" element={<Search logout={logout} />}></Route>
       </Routes>
     </Router>

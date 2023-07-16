@@ -9,6 +9,7 @@ export interface SimpleResultCardProps {
   selected: boolean
   colorMapper: {[id: string]: string}
   namesMapper: {[id: string]: string}
+  showModalities?: boolean
 }
 
 interface TitleProps {
@@ -44,6 +45,7 @@ export function SimpleResultCard({
   selected,
   colorMapper,
   namesMapper,
+  showModalities = true,
 }: SimpleResultCardProps) {
   const year = (publishDate: string) => publishDate.substring(0, 4)
   const authors = (authorsStr: string) => {
@@ -105,16 +107,18 @@ export function SimpleResultCard({
           }}
         ></Text>
       ) : null}
-      <Box>
-        <Badge mr={1} background="black" color="white">
-          {`#FIGS: ${document.num_figures}`}
-        </Badge>
-        <ModalityCountBadges
-          countMapper={document.modalities_count}
-          colorMapper={colorMapper}
-          namesMapper={namesMapper}
-        />
-      </Box>
+      {showModalities === undefined || showModalities ? (
+        <Box>
+          <Badge mr={1} background="black" color="white">
+            {`#FIGS: ${document.num_figures}`}
+          </Badge>
+          <ModalityCountBadges
+            countMapper={document.modalities_count}
+            colorMapper={colorMapper}
+            namesMapper={namesMapper}
+          />
+        </Box>
+      ) : null}
     </Box>
   )
 }

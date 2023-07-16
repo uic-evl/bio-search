@@ -351,6 +351,7 @@ const TextResult = ({document}: ResultProps) => {
         colorMapper={colorsMapper}
         namesMapper={namesMapper}
         selected={false}
+        showModalities={false}
       />
     </Box>
   )
