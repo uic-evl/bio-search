@@ -1,12 +1,6 @@
 import {run} from '@biocuration-front-end/requests-api'
-import {
-  Document,
-  Page,
-  Figure,
-  Subfigure,
-} from '@biocuration-front-end/common-ui'
+import {Document} from '@biocuration-front-end/common-ui'
 import {LuceneDocument} from '@biocuration-front-end/common-ui'
-import {colorsMapper} from '../utils/mapper'
 
 const SEARCH_API_ENDPOINT = process.env.NX_SEARCH_API
 const APP_API_ENDPOINT = process.env.NX_APP_API
@@ -99,6 +93,13 @@ export const getPageFigureDetails = async (
       const a = page1.priority ? page1.priority : 0
       return b - a
     })
+  } else {
+    // sort by page number
+    payload.pages = payload.pages.sort((page1, page2) => {
+      const b = page2.page
+      const a = page1.page
+      return a - b
+    })
   }
 
   return payload
@@ -106,6 +107,7 @@ export const getPageFigureDetails = async (
 
 export const login = async (username: string, password: string) => {
   const url = `${APP_API_ENDPOINT}/users/login`
+  console.log(url)
   try {
     const payload = await run(url, 'post', {
       data: {username, password},
@@ -153,5 +155,27 @@ export const me = async (authToken: string): Promise<Promise<User | null>> => {
     return {username, token}
   } catch (error) {
     return null
+  }
+}
+
+export const logExperimenterResult = async (
+  authToken: string,
+  uid: string,
+  condition: string,
+  docId: string,
+  decision: boolean,
+  completionTime: number,
+) => {
+  const url = `${APP_API_ENDPOINT}/experimenter/individual`
+  try {
+    await run(url, 'post', {
+      token: authToken,
+      data: {uid, condition, docId, decision, completionTime},
+      params: undefined,
+    })
+
+    return true
+  } catch (error) {
+    return false
   }
 }

@@ -1,6 +1,33 @@
+## Serve
+
 ```
-nx run cord19-scholar:serve
+nx run cord19-scholar:serve:(development|production)
+nx run gdx:serve:(development|production)
+nx run bilava:serve:(development|production)
 ```
+
+## Build
+
+Place the .env file inside the corresponding app folder, then:
+
+```bash
+nx run cord19-scholar:build:production
+nx run gdx:build:production
+nx run bilava:build:production
+```
+
+### CORD19 environmental variables
+
+```vim
+NX_SEARCH_API=
+NX_PDFS_ENDPOINT=
+NX_FIGURES_ENDPOINT=
+NX_COLLECTION=cord19
+```
+
+### GXD environmental variables
+
+### BI-LAVA environmental variables
 
 can only build js lib with buildable false
 https://github.com/nrwl/nx/issues/10990

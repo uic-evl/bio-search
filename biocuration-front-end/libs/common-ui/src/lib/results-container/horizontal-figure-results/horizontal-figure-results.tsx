@@ -92,7 +92,7 @@ export interface HorizontalResultCardProps {
   getPageUrl: (arg1: Document, arg2: Page) => string
 }
 
-const HorizontalResultCard = ({
+export const HorizontalResultCard = ({
   document,
   colorsMapper,
   namesMapper,
