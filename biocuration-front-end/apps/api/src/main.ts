@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
 import passport from 'passport'
@@ -30,7 +31,7 @@ passport.use('login', loginLocalStrategy)
 passport.use('jwt', jwtStrategy)
 
 const router = getRouter(passport)
-app.use('/api', router)
+app.use('/gxd-auth', router)
 app.use(errorHandler)
 
 let credentials = null
@@ -40,10 +41,12 @@ if (process.env.HTTPS === 'true') {
   const certificate = fs.readFileSync(process.env.CRT, 'utf8')
   credentials = {key: privateKey, cert: certificate}
   httpsServer = https.createServer(credentials, app)
+  console.log('setting up https')
 }
 
 const expressServer = httpsServer ? httpsServer : app
 const port = process.env.PORT
+
 expressServer.listen(port, () => {
   console.log(`starting server on port ${port} in ${process.env.NODE_ENV} mode`)
 })
