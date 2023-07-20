@@ -1,5 +1,13 @@
 import {useMemo, useReducer, useState} from 'react'
-import {Box, Flex, Spacer, Button, useToast, Text} from '@chakra-ui/react'
+import {
+  Box,
+  Flex,
+  Spacer,
+  Button,
+  useToast,
+  Text,
+  Stack,
+} from '@chakra-ui/react'
 import {
   RowModalityLegend,
   searchReducer,
@@ -15,10 +23,15 @@ import {colorsMapper, namesMapper, ddlSearchOptions} from '../../utils/mapper'
 import {search, getPageFigureDetails} from '../../api'
 import {About} from '../search/about'
 import {useLocation} from 'react-router-dom'
+import {v4 as uuidv4} from 'uuid'
 
 /* eslint-disable-next-line */
 export interface SearchProps {
+  condition: string
+  status: string
+  setStatus: React.Dispatch<React.SetStateAction<string>>
   logout: () => void
+  total: number
 }
 
 const useQuery = () => {
@@ -30,7 +43,163 @@ const COLLECTION = process.env.NX_COLLECTION
 const IMAGES_BASE_URL = process.env.NX_FIGURES_ENDPOINT
 const PDFS_BASE_URL = process.env.NX_PDFS_ENDPOINT
 
-const SearchRelevanceExperiment = ({logout}: SearchProps) => {
+interface SearchRelevancePageProps {
+  authToken: string
+  logout: () => void
+}
+
+const CONDITIONS = ['text', 'image']
+
+export const SearchRelevancePage = ({
+  authToken,
+  logout,
+}: SearchRelevancePageProps) => {
+  const [condition, setCondition] = useState<string>(
+    CONDITIONS[Math.floor(Math.random() * CONDITIONS.length)],
+  )
+  const [status, setStatus] = useState<string>('introduction')
+  const queryParams = useQuery()
+  const total =
+    queryParams.get('n') !== null ? parseInt(queryParams.get('n') || '') : 5
+  const uid = useMemo<string>(() => uuidv4(), [])
+
+  return (
+    <Box w="100wv" h="100hv">
+      {status === 'introduction' ? (
+        <Introduction total={total} setStatus={setStatus} />
+      ) : null}
+      {status === 'intermediate' ? (
+        <Intermediate
+          setStatus={setStatus}
+          condition={condition}
+          setCondition={setCondition}
+        />
+      ) : null}
+      {status === 'end' ? <End /> : null}
+      {status === 'condition1' || status === 'condition2' ? (
+        <SearchRelevanceExperiment
+          condition={condition}
+          status={status}
+          setStatus={setStatus}
+          logout={logout}
+          total={total}
+        />
+      ) : null}
+    </Box>
+  )
+}
+
+interface IntroductionProps {
+  setStatus: React.Dispatch<React.SetStateAction<string>>
+  total: number
+}
+const Introduction = ({total, setStatus}: IntroductionProps) => {
+  return (
+    <>
+      <Flex
+        w="full"
+        h="90%"
+        backgroundColor={'gray.300'}
+        alignItems={'center'}
+        justifyContent={'left'}
+        p={2}
+      >
+        <Text fontWeight={'bold'} fontSize={'3xl'} ml={4}>
+          Task 2: Find relevant documents
+        </Text>
+      </Flex>
+      <Flex
+        alignItems={'center'}
+        justifyContent={'center'}
+        flexDirection={'column'}
+        p={10}
+      >
+        <Stack>
+          <Text fontSize={'2xl'} fontWeight={'bold'}>
+            Instructions
+          </Text>
+          <Text fontSize={'xl'}>
+            This task consists of two steps, one step per presentation
+            condition: text-only information or text + image information. On
+            each steps you need to find {total} relevant documents using the
+            available search features:
+          </Text>
+          <Text fontSize={'xl'} as="li">
+            Click on the checkbox to the left of a search result to it as
+            relevant.
+          </Text>
+          <Text fontSize={'xl'} as="li">
+            Once you mark {total} results as relevants, the{' '}
+            <Button colorScheme="blue">Finish Task</Button> will be enabled.
+            Click on the button to go to the next step in the experiment.
+          </Text>
+          <Text pt={4} pb={4} fontSize={'xl'}>
+            Press <Button>Start</Button> to begin with this experiment.
+          </Text>
+          <Button onClick={() => setStatus('condition1')}>Start</Button>
+        </Stack>
+      </Flex>
+    </>
+  )
+}
+
+interface IntermediateProps {
+  condition: string
+  setCondition: React.Dispatch<React.SetStateAction<string>>
+  setStatus: React.Dispatch<React.SetStateAction<string>>
+}
+
+const Intermediate = ({
+  condition,
+  setCondition,
+  setStatus,
+}: IntermediateProps) => {
+  const handleStart = () => {
+    const newCondition = condition === 'text' ? 'image' : 'text'
+    setCondition(newCondition)
+    setStatus('condition2')
+  }
+
+  return (
+    <Flex
+      alignItems={'center'}
+      justifyContent={'center'}
+      flexDirection={'column'}
+      p={10}
+    >
+      <Stack fontSize={'2xl'}>
+        <Text pt={4} pb={4}>
+          That is the end of the first step. Now, you will perform the same task
+          using the second condition. Press <Button>Start</Button> when you are
+          ready.
+        </Text>
+        <Button onClick={handleStart}>Start</Button>
+      </Stack>
+    </Flex>
+  )
+}
+
+const End = () => (
+  <Flex
+    alignItems={'center'}
+    justifyContent={'center'}
+    w="full"
+    h="90vh"
+    flexDir={'column'}
+    fontSize={'2xl'}
+  >
+    <Text>Awesome, you have successfully finished the first task.</Text>
+    <Text>Please go to the activity document and close this page.</Text>
+  </Flex>
+)
+
+const SearchRelevanceExperiment = ({
+  condition,
+  total,
+  status,
+  setStatus,
+  logout,
+}: SearchProps) => {
   const [{documents, isLoading, filterModalities}, dispatch] = useReducer(
     searchReducer,
     initSearchState,
@@ -40,10 +209,6 @@ const SearchRelevanceExperiment = ({logout}: SearchProps) => {
   const baseModalities = Object.keys(colorsMapper).filter(
     el => !el.includes('.'),
   )
-  const queryParams = useQuery()
-  const condition = queryParams.get('c') || 'image'
-  const targetNumber =
-    queryParams.get('n') !== null ? parseInt(queryParams.get('n') || '') : 5
 
   const getPageUrl = (document: Document, page: Page) => {
     const paddedPage = page.page.toString().padStart(6, '0')
@@ -83,6 +248,14 @@ const SearchRelevanceExperiment = ({logout}: SearchProps) => {
     dispatch({type: 'END_SEARCH', payload: results})
   }
 
+  const handleFinishTask = () => {
+    if (status === 'condition1') {
+      setStatus('intermediate')
+    } else {
+      setStatus('end')
+    }
+  }
+
   return (
     <Box className="container" minH="100vh" w="full">
       <Flex
@@ -93,14 +266,15 @@ const SearchRelevanceExperiment = ({logout}: SearchProps) => {
         backgroundColor={'yellow.300'}
         p="2"
       >
-        <Text>Task 2: Find {targetNumber} relevant documents </Text>
+        <Text>Task 2: Find {total} relevant documents </Text>
         <Spacer />
         <Text mr={2}>
-          {relevantIds.length} / {targetNumber}
+          {relevantIds.length} / {total}
         </Text>
         <Button
-          disabled={relevantIds.length < targetNumber}
+          disabled={relevantIds.length < total}
           colorScheme="green"
+          onClick={handleFinishTask}
         >
           Finish Task
         </Button>
@@ -124,15 +298,6 @@ const SearchRelevanceExperiment = ({logout}: SearchProps) => {
             }
           />
           <About />
-          {/* <Button
-            backgroundColor={undefined}
-            size={'xs'}
-            variant="outline"
-            onClick={logout}
-            ml={1}
-          >
-            logout
-          </Button> */}
         </Flex>
         <SearchBar
           defaultStartYear={2012}
@@ -172,5 +337,3 @@ const SearchRelevanceExperiment = ({logout}: SearchProps) => {
     </Box>
   )
 }
-
-export {SearchRelevanceExperiment}
