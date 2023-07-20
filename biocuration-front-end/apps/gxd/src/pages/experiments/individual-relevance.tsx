@@ -75,8 +75,8 @@ const IndividualRelevancePage = ({token}: PageProps) => {
         justifyContent={'left'}
         p={2}
       >
-        <Text fontWeight={'bold'} fontSize={'3xl'}>
-          Experiment: Is this a relevant search result?
+        <Text fontWeight={'bold'} fontSize={'3xl'} ml={4}>
+          Task 1: Is this a relevant search result?
         </Text>
         <Spacer />
         {status === 'experiment' ? (
@@ -132,51 +132,35 @@ const Introduction = ({total, setStatus}: IntroductionProps) => {
     >
       <Stack>
         <Text fontSize={'2xl'} fontWeight={'bold'}>
-          About This Project
-        </Text>
-        <Text fontSize={'xl'}>
-          This NIH National Library of Medicine (NLM)-sponsored project is being
-          developed by a group of researchers at the University of Delaware and
-          University of Illinois Chicago, led by MPIs Prof. Shatkay and Prof.
-          Marai, in collaboration with several biocuration groups at U Delaware,
-          Caltech, and Jackson Labs. In this experiment, we aim to evaluate the
-          effect of presenting images and image-based information when
-          displaying results of a document search, in addition to common text
-          information. Text information includes title, authors, and relevant
-          sentences from the abstract that match a query keyword. Image
-          information include the document figures while image-based information
-          includes the type of image modalities found in the figures. In
-          addition, this condition includes the figure captions.
-        </Text>
-        <Text></Text>
-
-        <Text fontSize={'2xl'} fontWeight={'bold'}>
-          About This Experiment
-        </Text>
-        <Text fontSize={'xl'}>
-          In this experiment, the interface will present {total} query results,
-          on at the time, per condition: text-only information and text + image
-          information. You are asked to indicate whether the query result is
-          relevant or not to the research interests of the Gene Expression
-          Database. Our dataset is a subset of 2000 documents from the GXD
-          collection filtered by the query keyword 'gene'.
-        </Text>
-        <Text fontSize={'2xl'} fontWeight={'bold'}>
           Instructions
         </Text>
-        <Text fontSize={'xl'} as="li">
-          Click on the red button to indicate that the result is not relevant
+        <Text fontSize={'xl'}>
+          This task consists of two steps, one step per presentation condition:
+          text-only information or text + image information. On each steps you
+          need to indicate the relevance of a search result for {total} query
+          results. Per each document:
         </Text>
         <Text fontSize={'xl'} as="li">
-          Clicking on the green button indicates that the result is relevant.
+          Click on the button{' '}
+          <Button colorScheme="red" w="120px">
+            Not Relevant
+          </Button>{' '}
+          to indicate that the result is not relevant
+        </Text>
+        <Text fontSize={'xl'} as="li">
+          Click on the button{' '}
+          <Button colorScheme="green" w="120px">
+            Relevant
+          </Button>{' '}
+          to indicate that the document is relevant
         </Text>
         <Text fontSize={'xl'}>
-          Clicking any button advances to the next image.
+          Clicking any button advances to the query result. Remember to not
+          refresh this page until you finish the task.
         </Text>
 
         <Text pt={4} pb={4} fontSize={'xl'}>
-          Press 'Start' to begin with this experiment. Thank you for your
-          cooperation.
+          Press <Button>Start</Button> to begin with this experiment.
         </Text>
         <Button onClick={handleStart}>Start</Button>
       </Stack>
@@ -215,8 +199,10 @@ const Intermediate = ({
     >
       <Stack fontSize={'2xl'}>
         <Text pt={4} pb={4}>
-          After you press 'Start', you will see {total} query results showing
-          the second condition.
+          That is the end of the first step. Now, we will present {total}{' '}
+          different query results using the remaining condition. Again, indicate
+          whether the query result is relevant or not relevant. Press{' '}
+          <Button>Start</Button> when you are ready.
         </Text>
         <Button onClick={handleStart}>Start</Button>
       </Stack>
@@ -225,8 +211,16 @@ const Intermediate = ({
 }
 
 const End = () => (
-  <Flex alignItems={'center'} justifyContent={'center'} w="full" h="90vh">
-    Thank you
+  <Flex
+    alignItems={'center'}
+    justifyContent={'center'}
+    w="full"
+    h="90vh"
+    flexDir={'column'}
+    fontSize={'2xl'}
+  >
+    <Text>Awesome, you have successfully finished the first task.</Text>
+    <Text>Please go to the activity document and close this page.</Text>
   </Flex>
 )
 

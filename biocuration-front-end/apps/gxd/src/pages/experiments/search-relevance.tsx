@@ -2,13 +2,13 @@ import {useMemo, useReducer, useState} from 'react'
 import {Box, Flex, Spacer, Button, useToast, Text} from '@chakra-ui/react'
 import {
   RowModalityLegend,
-  SearchBar,
   searchReducer,
   initSearchState,
   HelpQueries,
   Document,
   Page,
 } from '@biocuration-front-end/common-ui'
+import {SearchBar} from './search-bar'
 import {HorizontalFigureResults} from './result-cards'
 import {ReactComponent as Taxonomy} from '../../assets/taxonomy.svg'
 import {colorsMapper, namesMapper, ddlSearchOptions} from '../../utils/mapper'
@@ -43,7 +43,7 @@ const SearchRelevanceExperiment = ({logout}: SearchProps) => {
   const queryParams = useQuery()
   const condition = queryParams.get('c') || 'image'
   const targetNumber =
-    queryParams.get('n') !== null ? parseInt(queryParams.get('n') || '') : 10
+    queryParams.get('n') !== null ? parseInt(queryParams.get('n') || '') : 5
 
   const getPageUrl = (document: Document, page: Page) => {
     const paddedPage = page.page.toString().padStart(6, '0')
@@ -93,9 +93,7 @@ const SearchRelevanceExperiment = ({logout}: SearchProps) => {
         backgroundColor={'yellow.300'}
         p="2"
       >
-        <Text>
-          Use the search interface to find {targetNumber} relevant documents{' '}
-        </Text>
+        <Text>Task 2: Find {targetNumber} relevant documents </Text>
         <Spacer />
         <Text mr={2}>
           {relevantIds.length} / {targetNumber}
@@ -110,12 +108,15 @@ const SearchRelevanceExperiment = ({logout}: SearchProps) => {
       <Box w="full" h="100px" p={4} pt={2} pb={0} zIndex={400}>
         <Flex w="full" alignItems={'center'}>
           <Text fontWeight={'bold'}>GXD Search</Text>
-          <RowModalityLegend
-            modalities={baseModalities}
-            colorsMapper={colorsMapper}
-            namesMapper={namesMapper}
-            taxonomyImage={<Taxonomy />}
-          />
+          {condition === 'image' ? (
+            <RowModalityLegend
+              modalities={baseModalities}
+              colorsMapper={colorsMapper}
+              namesMapper={namesMapper}
+              taxonomyImage={<Taxonomy />}
+            />
+          ) : null}
+
           <Spacer />
           <HelpQueries
             tutorialUrl={
@@ -123,7 +124,7 @@ const SearchRelevanceExperiment = ({logout}: SearchProps) => {
             }
           />
           <About />
-          <Button
+          {/* <Button
             backgroundColor={undefined}
             size={'xs'}
             variant="outline"
@@ -131,7 +132,7 @@ const SearchRelevanceExperiment = ({logout}: SearchProps) => {
             ml={1}
           >
             logout
-          </Button>
+          </Button> */}
         </Flex>
         <SearchBar
           defaultStartYear={2012}
@@ -149,6 +150,7 @@ const SearchRelevanceExperiment = ({logout}: SearchProps) => {
             },
           ]}
           isLoading={isLoading}
+          condition={condition}
         />
 
         <Box w="full" mt={2}>
