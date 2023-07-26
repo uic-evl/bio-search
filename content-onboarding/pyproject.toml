@@ -49,3 +49,4 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 biosearch_core_export = 'biosearch_core.indexing.export:main'
+scholar_index = 'biosearch_core.indexing.index'

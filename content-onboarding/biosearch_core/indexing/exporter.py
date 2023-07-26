@@ -52,13 +52,18 @@ class IndexManager:
 
     def _add_modality_parents(
         self, modalities: Optional[List[str]]
-    ) -> Optional[List[str]]:
+    ) -> Optional[str]:
         if not modalities:
             return None
-        # TODO: check this method for more than one hierarchy, only works for two levels
-        parents = [x.split(".")[0] for x in modalities if "." in x]
-        modalities += parents
-        return ";".join(modalities)
+        output = []
+        for modality in modalities:
+            split_modalities = modality.split(".")
+            for i in range(len(split_modalities)):
+                if i == 0:
+                    output.append(split_modalities[0])
+                else:
+                    output.append(".".join(split_modalities[:i+1]))
+        return ";".join(output)
 
     def fetch_docs_to_index(self) -> List[LuceneDocument]:
         """Fetch data from db and return list of data to index"""

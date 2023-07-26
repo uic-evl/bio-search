@@ -43,7 +43,7 @@ def main():
     """main entry"""
     args = parse_args(argv[1:])
     setup_logger(str(Path(args.projects_dir) / args.project))
-
+    
     conn_params = params_from_env(args.db)
     manager = IndexManager(args.project, conn_params)
     manager.to_parquet(args.output_file)
