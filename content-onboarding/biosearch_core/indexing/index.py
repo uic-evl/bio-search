@@ -7,11 +7,13 @@
   python index.py --input_path XXXX.parquet --output_path YYYY
 """
 
+import lucene
+print("loading java")
+lucene.initVM(vmargs=["-Djava.awt.headless=true"])
 
 from sys import argv
 from argparse import ArgumentParser, Namespace
 import time
-import lucene
 from pandas import read_parquet
 from rich.console import Console
 from biosearch_core.indexing.index_writer import Indexer
@@ -31,7 +33,7 @@ def parse_args(args) -> Namespace:
 
 
 def main():
-    """Parse args and index"""
+    """Parse args and index"""    
     args = parse_args(argv[1:])
 
     with console.status("[bold green] indexing data..."):
@@ -53,5 +55,4 @@ def main():
 
 
 if __name__ == "__main__":
-    lucene.initVM(vmargs=["-Djava.awt.headless=true"])
     main()

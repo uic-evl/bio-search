@@ -6,9 +6,9 @@ authors = ["Juan Trelles <juantrelles@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.11"
-# pandas = "^1.5.3"
-# pyarrow = "^10.0.1"
-# Pillow = "^9.4.0"
+pandas = "^1.5.3"
+pyarrow = "^10.0.1"
+Pillow = "^9.4.0"
 psycopg = {extras = ["binary"], version = "^3.1.8"}
 python-dotenv = "^0.21.1"
 tqdm = "^4.64.1"
@@ -49,4 +49,3 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 biosearch_core_export = 'biosearch_core.indexing.export:main'
-scholar_index = 'biosearch_core.indexing.index'
