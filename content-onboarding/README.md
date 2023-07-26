@@ -72,3 +72,5 @@ projects_dir/
     xpdf/       # stores PDF content as images
     logs/
 ```
+
+dev
