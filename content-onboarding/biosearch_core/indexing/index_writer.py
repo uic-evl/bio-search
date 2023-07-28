@@ -16,8 +16,7 @@ from org.apache.lucene.document import (
     StringField,
 )
 
-from retrieval.CordReader import CordReader
-
+from biosearch_core.indexing.CordReader import CordReader
 
 def date2long(date):
     """convert cord19 datetime format to long int for lucene"""
