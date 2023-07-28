@@ -13,8 +13,8 @@ import time
 import lucene
 from pandas import read_parquet
 from rich.console import Console
-from index_writer import Indexer
-from CordReader import CordReader
+from src.index_writer import Indexer
+from src.CordReader import CordReader
 
 console = Console()
 
