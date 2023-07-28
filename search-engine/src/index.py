@@ -7,7 +7,7 @@
   python index.py --input_path XXXX.parquet --output_path YYYY
 """
 
-from sys import argv
+import sys, os
 from argparse import ArgumentParser, Namespace
 import time
 import lucene
@@ -30,24 +30,33 @@ def parse_args(args) -> Namespace:
 
 def main():
     """entry point"""
-    args = parse_args(argv[1:])
+    args = parse_args(sys.argv[1:])
 
     with console.status("[bold green] indexing data..."):
-        fulltext_provider = None
-        if args.cord19_base_path != "":
-            console.log("Found text provider")
-            fulltext_provider = CordReader(args.cord19_base_path)
+      try:      
+          fulltext_provider = None
+          if args.cord19_base_path != "":
+              console.log("Found text provider")
+              fulltext_provider = CordReader(args.cord19_base_path)
 
-        console.log("Reading parquet")
-        dataframe = read_parquet(args.input_path)
-        dataframe.reset_index()
-        console.log(f"Indexing {dataframe.shape[0]} documents")
+          console.log("Reading parquet")
+          dataframe = read_parquet(args.input_path, engine="pyarrow")
+          dataframe.reset_index()
+          console.log(f"Indexing {dataframe.shape[0]} documents")
 
-        start_time = time.time()
-        indexer = Indexer(args.output_path, create_mode=True)
-        indexer.index_from_dataframe(dataframe, fulltext_provider, split_term=";")
-        end_time = time.time()
-        console.log(f"Finished after {end_time - start_time}")
+          start_time = time.time()
+          indexer = Indexer(args.output_path, create_mode=True)
+          indexer.index_from_dataframe(dataframe, fulltext_provider, split_term=";")
+          end_time = time.time()
+          console.log(f"[bold green] Finished after {end_time - start_time}")
+          sys.exit(os.EX_OK)
+      except FileNotFoundError:
+          console.log("[bold red] Input parquet file not found")
+          sys.exit(1)
+      except Exception as e:
+          print(e)
+          sys.exit(1)
+
 
 
 if __name__ == "__main__":
