@@ -3,13 +3,12 @@
   test_data.csv. All fields in the CSV except for the modalities come from
   some samples of the CORD-19 metadata file.
 """
-from re import S
 from shutil import rmtree
 import pytest
 import lucene
 import pandas as pd
 
-from src.retrieval.index_writer import Indexer
+from src.index_writer import Indexer
 from src.retrieval.index_reader import Reader, strdate2long
 
 
@@ -31,7 +30,7 @@ def temp_index_path():
     data_filepath = './tests/test_data.csv'
     dataframe = pd.read_csv(data_filepath)
     indexer = Indexer(index_path, create_mode=True)
-    indexer.index_from_dataframe(dataframe, split_term=";")
+    indexer.index_from_dataframe(dataframe, None, split_term=";")
     yield index_path
     rmtree(index_path)
 

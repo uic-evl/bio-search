@@ -1,40 +1,56 @@
-""" 
-  Main script to batch index a set of documents
-  python index.py --input_path XXXX --output_path YYYY
+""" Index parquet file to create Lucene indexes
+  Indexing full-text:
+    For CORD19 files, provide the metadata.csv file to fetch the location of the 
+    full text. If your data has to be retrieved from another source, implement a
+    reader like CordReader and pass the data location as a param.
+
+  python index.py --input_path XXXX.parquet --output_path YYYY
 """
 
-import argparse
+from sys import argv
+from argparse import ArgumentParser, Namespace
 import time
 import lucene
 from pandas import read_parquet
-from retrieval.index_writer import Indexer
-from retrieval.CordReader import CordReader
+from rich.console import Console
+from index_writer import Indexer
+from CordReader import CordReader
 
-def main():
-    """Parse args and index"""
-    parser = argparse.ArgumentParser(description="Get indexing params")
+console = Console()
+
+def parse_args(args) -> Namespace:
+    """Parse args from command line"""
+    parser = ArgumentParser(prog="export indexes to parquet")
     parser.add_argument("input_path", type=str, help="path to parquet file to index")
     parser.add_argument("output_path", type=str, help="path to index storage")
     parser.add_argument('-c', '--cord19_base_path', type=str, default="")
-    args = parser.parse_args()
+    parsed_args = parser.parse_args(args)
 
-    ft_provider = None
-    if args.cord19_base_path != "":
-      print("loading full text provider")
-      ft_provider = CordReader(args.cord19_base_path)
+    return parsed_args
 
+def main():
+    """entry point"""
+    args = parse_args(argv[1:])
 
-    dataframe = read_parquet(args.input_path)
-    dataframe.reset_index()
-    print(f"Indexing {dataframe.shape[0]} documents")
+    with console.status("[bold green] indexing data..."):
+        fulltext_provider = None
+        if args.cord19_base_path != "":
+            console.log("Found text provider")
+            fulltext_provider = CordReader(args.cord19_base_path)
 
-    start_time = time.time()
-    indexer = Indexer(args.output_path, create_mode=True)
-    indexer.index_from_dataframe(dataframe, ft_provider, split_term=";")
-    end_time = time.time()
-    print(f"Finished after {end_time - start_time}")
+        console.log("Reading parquet")
+        dataframe = read_parquet(args.input_path)
+        dataframe.reset_index()
+        console.log(f"Indexing {dataframe.shape[0]} documents")
+
+        start_time = time.time()
+        indexer = Indexer(args.output_path, create_mode=True)
+        indexer.index_from_dataframe(dataframe, fulltext_provider, split_term=";")
+        end_time = time.time()
+        console.log(f"Finished after {end_time - start_time}")
 
 
 if __name__ == "__main__":
-    lucene.initVM(vmargs=["-Djava.awt.headless=true"])
+    vm_env = lucene.getVMEnv() or lucene.initVM(vmargs=["-Djava.awt.headless=true"])
+    vm_env.attachCurrentThread()
     main()

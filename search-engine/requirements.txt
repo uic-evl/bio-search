@@ -2,12 +2,11 @@ pandas
 numpy
 pytest-cov
 pytest
-Flask
 python-dotenv
 flask-cors
 pyarrow
 matplotlib
-psycopg[binary]
 ipykernel
 black
 pylint
+rich
