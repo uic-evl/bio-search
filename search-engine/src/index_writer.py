@@ -17,7 +17,7 @@ from org.apache.lucene.document import (
     StringField,
 )
 
-from CordReader import CordReader
+from src.CordReader import CordReader
 
 
 def date2long(date):
