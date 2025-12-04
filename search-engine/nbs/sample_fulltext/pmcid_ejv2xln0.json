@@ -1,0 +1,13 @@
+{
+  "paper_id": "pmcid_ejv2xln0",
+  "title": "Sample Paper for CordReader Test",
+  "body_text": [
+    {
+      "text": "This is the first paragraph of the sample paper."
+    },
+    {
+      "text": "Here is the second paragraph that mentions COVID-19 and other keywords."
+    }
+  ],
+  "back_matter": []
+}

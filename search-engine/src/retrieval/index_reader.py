@@ -1,4 +1,5 @@
-""" Search the indexes """
+"""Search the indexes"""
+
 from datetime import datetime
 from re import S
 from typing import List
@@ -11,7 +12,7 @@ from org.apache.lucene.analysis.standard import StandardAnalyzer
 from org.apache.lucene.document import LongPoint
 from org.apache.lucene.index import DirectoryReader
 from org.apache.lucene.search import IndexSearcher, BooleanClause, BooleanQuery
-from org.apache.lucene.store import SimpleFSDirectory
+from org.apache.lucene.store import NIOFSDirectory
 from org.apache.lucene.queryparser.classic import QueryParser
 from org.apache.lucene.search.highlight import (
     SimpleHTMLFormatter,
@@ -49,7 +50,7 @@ class Reader:
         ft=False,
     ) -> List[SearchResult]:
         """search index by fields"""
-        index_dir = SimpleFSDirectory(Paths.get(self.store_path))
+        index_dir = NIOFSDirectory(Paths.get(self.store_path))
         dir_reader = DirectoryReader.open(index_dir)
         searcher = IndexSearcher(dir_reader)
 
@@ -113,7 +114,7 @@ class Reader:
             hits = searcher.search(boolean_query, max_docs).scoreDocs
             results = []
             for hit in hits:
-                hit_doc = searcher.doc(hit.doc)
+                hit_doc = searcher.storedFields().document(hit.doc)
 
                 modalities = [x.stringValue() for x in hit_doc.getFields("modality")]
 
@@ -121,6 +122,7 @@ class Reader:
                 url = hit_doc.get("url")
                 abstract = hit_doc.get("abstract")
                 num_figures = int(hit_doc.get("num_figures"))
+                full_text = ""
                 if highlight:
                     hl_title, hl_abstract, hl_ft = self.get_highlight(hit_doc, ft)
                     title = hl_title or title
