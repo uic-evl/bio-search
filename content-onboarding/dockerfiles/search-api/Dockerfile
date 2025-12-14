@@ -1,18 +1,20 @@
 FROM coady/pylucene:10
 
+ARG BRANCH=fix/lucene10
+
 WORKDIR /workspace
 COPY ./entrypoint.sh /entrypoint.sh
 RUN apt update \  
   && apt install -y git tmux curl vim \
   # install the basic libraries needed to run the Flask app using the Python version used for PyLucene
-  && pip install git+https://github.com/uic-evl/bio-search.git@main#subdirectory=content-onboarding \
-  && git clone https://github.com/uic-evl/bio-search.git \
+  && pip install git+https://github.com/uic-evl/bio-search.git@${BRANCH}#subdirectory=content-onboarding \
+  && git clone -b ${BRANCH} https://github.com/uic-evl/bio-search.git \
   && pip install gunicorn \
   && apt clean && apt autoclean \
   && rm -rf /var/lib/apt/lists/* \
   && chmod +x /entrypoint.sh
 
-COPY .env /workspace/bio-search/content-onboarding/
+# COPY .env /workspace/bio-search/content-onboarding/
 WORKDIR /workspace/bio-search/content-onboarding/
 ENV FLASK_APP=biosearch_core/app.py
 CMD ["flask", "run", "--host=0.0.0.0"]

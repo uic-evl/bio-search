@@ -1667,6 +1667,7 @@ description = ""
 optional = false
 python-versions = ">=3.10,<3.14"
 groups = ["ml"]
+markers = "python_version < \"3.12\""
 files = []
 develop = false
 
@@ -1691,6 +1692,40 @@ type = "git"
 url = "https://github.com/uic-evl/bio-search.git"
 reference = "fix/lucene10"
 resolved_reference = "41825e80b0fa95257b265b91b9914577e8eb90f5"
+subdirectory = "image-modalities-classifier"
+
+[[package]]
+name = "image-modalities-classifier"
+version = "0.1.0"
+description = ""
+optional = false
+python-versions = ">=3.10,<3.15"
+groups = ["ml"]
+markers = "python_version >= \"3.12\""
+files = []
+develop = false
+
+[package.dependencies]
+iterative-stratification = "^0.1.7"
+matplotlib = "^3.9"
+pandas = "^2.0"
+pyarrow = "^22.0.0"
+pytorch-lightning = "^1.9.0"
+requests = "^2.31.0"
+scikit-image = "^0.25.2"
+scikit-learn = "^1.7"
+torch = "^2.9.1"
+torchvision = "^0.24.1"
+tqdm = "^4.64.1"
+
+[package.extras]
+wandb = ["wandb (>=0.13.11,<0.14.0)"]
+
+[package.source]
+type = "git"
+url = "https://github.com/uic-evl/bio-search.git"
+reference = "fix/lucene10"
+resolved_reference = "a3b6be01e6c994dfb43c58068cfb0729e3916da9"
 subdirectory = "image-modalities-classifier"
 
 [[package]]
@@ -2840,7 +2875,7 @@ description = "Python package for creating and manipulating graphs and networks"
 optional = false
 python-versions = ">=3.10"
 groups = ["ml"]
-markers = "python_version == \"3.10\""
+markers = "python_version == \"3.10\" or python_version >= \"3.12\""
 files = [
     {file = "networkx-3.4.2-py3-none-any.whl", hash = "sha256:df5d4365b724cf81b8c6a7312509d0c22386097011ad1abe274afd5e9d3bbc5f"},
     {file = "networkx-3.4.2.tar.gz", hash = "sha256:307c3669428c5362aab27c8a1260aa8f47c4e91d3891f48be0141738d8d053e1"},
@@ -2861,7 +2896,7 @@ description = "Python package for creating and manipulating graphs and networks"
 optional = false
 python-versions = "!=3.14.1,>=3.11"
 groups = ["ml"]
-markers = "python_version >= \"3.11\""
+markers = "python_version == \"3.11\""
 files = [
     {file = "networkx-3.6.1-py3-none-any.whl", hash = "sha256:d47fbf302e7d9cbbb9e2555a0d267983d2aa476bac30e90dfbe5669bd57f3762"},
     {file = "networkx-3.6.1.tar.gz", hash = "sha256:26b7c357accc0c8cde558ad486283728b65b6a95d85ee1cd66bafab4c8168509"},
@@ -5642,5 +5677,5 @@ type = ["pytest-mypy"]
 
 [metadata]
 lock-version = "2.1"
-python-versions = ">=3.10,<3.14"
-content-hash = "072b1e893ac2ef5dc91dd5436657fee85988b9433db3b0d76c59f9814b7f92ab"
+python-versions = ">=3.10,<3.15"
+content-hash = "0d29311d900c4bb0b3fe222a8d57e3daedb75826c17b7b80d1f7dbc79f8f4de0"
