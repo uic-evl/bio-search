@@ -1,6 +1,6 @@
-pandas==1.5.3
-scikit-learn==1.2
+pandas==^2.0
+scikit-learn==^1.7
 fastparquet==2023.1.0
 scikit-image
 pytorch-lightning==1.9.0
-wandb==0.13.9
+wandb==0.13.11

@@ -1,4 +1,4 @@
-FROM coady/pylucene:8
+FROM coady/pylucene:10
 
 WORKDIR /workspace
 RUN apt update \  

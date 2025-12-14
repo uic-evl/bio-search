@@ -1,4 +1,4 @@
-FROM coady/pylucene:8
+FROM coady/pylucene:10
 # coady/pylucene:8 runs on Python 3.10.4, which is the most similar version 
 # required by our Poetry project.
 # TODO: To use pylucene:9, the poetry project needs to support Python 3.11

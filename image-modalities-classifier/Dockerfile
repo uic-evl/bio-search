@@ -1,4 +1,4 @@
-FROM nvcr.io/nvidia/pytorch:22.12-py3
+FROM nvcr.io/nvidia/pytorch:25.11-py3
 COPY requirements.txt /workspace
 #COPY dist/image_modalities_classifier-0.1.0-py3-none-any.whl /workspace
 WORKDIR /workspace
