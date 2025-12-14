@@ -13,5 +13,6 @@ __pycache__/
 nosetests.xml
 coverage.xml
 
+.env
 *.env
 .flaskenv

@@ -135,5 +135,8 @@
     "vite-plugin-eslint": "^1.8.1",
     "vite-tsconfig-paths": "4.2.0",
     "vitest": "0.31.4"
+  },
+  "volta": {
+    "node": "16.14.0"
   }
 }
