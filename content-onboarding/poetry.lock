@@ -312,6 +312,7 @@ description = "Extensible memoizing collections and decorators"
 optional = false
 python-versions = ">=3.9"
 groups = ["ml"]
+markers = "sys_platform == \"linux\""
 files = [
     {file = "cachetools-6.2.3-py3-none-any.whl", hash = "sha256:3fde34f7033979efb1e79b07ae529c2c40808bdd23b0b731405a48439254fba5"},
     {file = "cachetools-6.2.3.tar.gz", hash = "sha256:64e0a4ddf275041dd01f5b873efa87c91ea49022b844b8c5d1ad3407c0f42f1f"},
@@ -561,6 +562,7 @@ files = [
     {file = "click-8.3.1-py3-none-any.whl", hash = "sha256:981153a64e25f12d547d3426c367a4857371575ee7ad18df2a6183ab0545b2a6"},
     {file = "click-8.3.1.tar.gz", hash = "sha256:12ff4785d337a1bb490bb7e9c2b1ee5da3112e94a8622f26a6c77f5d2fc6842a"},
 ]
+markers = {ml = "sys_platform == \"linux\""}
 
 [package.dependencies]
 colorama = {version = "*", markers = "platform_system == \"Windows\""}
@@ -572,6 +574,7 @@ description = "Pickler class to extend the standard pickle.Pickler functionality
 optional = false
 python-versions = ">=3.8"
 groups = ["ml"]
+markers = "sys_platform == \"linux\""
 files = [
     {file = "cloudpickle-3.1.2-py3-none-any.whl", hash = "sha256:9acb47f6afd73f60dc1df93bb801b472f05ff42fa6c84167d25cb206be1fbf4a"},
     {file = "cloudpickle-3.1.2.tar.gz", hash = "sha256:7fda9eb655c9c230dab534f1983763de5835249750e85fbcef43aaa30a9a2414"},
@@ -783,6 +786,7 @@ description = "Python bindings for CUDA"
 optional = false
 python-versions = "*"
 groups = ["ml"]
+markers = "sys_platform == \"linux\""
 files = [
     {file = "cuda_bindings-12.9.4-cp310-cp310-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:a022c96b8bd847e8dc0675523431149a4c3e872f440e3002213dbb9e08f0331a"},
     {file = "cuda_bindings-12.9.4-cp310-cp310-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:4d3c842c2a4303b2a580fe955018e31aea30278be19795ae05226235268032e5"},
@@ -824,6 +828,7 @@ description = "cuda.core: (experimental) pythonic CUDA module"
 optional = false
 python-versions = ">=3.9"
 groups = ["ml"]
+markers = "sys_platform == \"linux\""
 files = [
     {file = "cuda_core-0.3.2-cp310-cp310-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:7a2a1f7e96e68c0bbc710592e78ca09c951afc10238c739482e265da1e6ea102"},
     {file = "cuda_core-0.3.2-cp310-cp310-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:1058402b41320516d5022a1cdfc7063909bf620e91126f851d859302b77d02d1"},
@@ -860,6 +865,7 @@ description = "Pathfinder for CUDA components"
 optional = false
 python-versions = ">=3.10"
 groups = ["ml"]
+markers = "sys_platform == \"linux\""
 files = [
     {file = "cuda_pathfinder-1.3.3-py3-none-any.whl", hash = "sha256:9984b664e404f7c134954a771be8775dfd6180ea1e1aef4a5a37d4be05d9bbb1"},
 ]
@@ -871,6 +877,7 @@ description = "CUDA Python: Performance meets Productivity"
 optional = false
 python-versions = "*"
 groups = ["ml"]
+markers = "sys_platform == \"linux\""
 files = [
     {file = "cuda_python-12.9.4-py3-none-any.whl", hash = "sha256:d2cacea882a69863f1e7d27ee71d75f0684f4c76910aff839067e4f89c902279"},
 ]
@@ -888,6 +895,7 @@ description = "CUDA Toolkit meta-package"
 optional = false
 python-versions = "*"
 groups = ["ml"]
+markers = "sys_platform == \"linux\""
 files = [
     {file = "cuda_toolkit-12.8.1-py2.py3-none-any.whl", hash = "sha256:adc7906af4ecbf9a352f9dca5734eceb21daec281ccfcf5675e1d2f724fc2cba"},
 ]
@@ -932,6 +940,7 @@ description = "cuDF - GPU Dataframe"
 optional = false
 python-versions = ">=3.10"
 groups = ["ml"]
+markers = "sys_platform == \"linux\""
 files = [
     {file = "cudf_cu12-25.12.0-cp310-cp310-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:fa29602069656fc405ea579427b2b2bc772e4433c9f1ceab15811b8393b314e7"},
     {file = "cudf_cu12-25.12.0-cp310-cp310-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:33fc04a7a5fb281cb47ee6640691a1b5c8fa68175f2896b6886fd188023e372f"},
@@ -982,6 +991,7 @@ description = "cuML - RAPIDS ML Algorithms"
 optional = false
 python-versions = ">=3.10"
 groups = ["ml"]
+markers = "sys_platform == \"linux\""
 files = [
     {file = "cuml_cu12-25.12.0-cp310-cp310-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:a256b00b406c98dbe19595ba9271e466f88211b79384d5fda7aae85ce713ad5d"},
     {file = "cuml_cu12-25.12.0-cp310-cp310-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:6c6d28046f4fd943f53b94744eb358302d5b4dbb6a8ccc6ab76e694b12d229d4"},
@@ -1028,6 +1038,7 @@ description = "CuPy: NumPy & SciPy for GPU"
 optional = false
 python-versions = ">=3.9"
 groups = ["ml"]
+markers = "sys_platform == \"linux\""
 files = [
     {file = "cupy_cuda12x-13.6.0-cp310-cp310-manylinux2014_aarch64.whl", hash = "sha256:9e37f60f27ff9625dfdccc4688a09852707ec613e32ea9404f425dd22a386d14"},
     {file = "cupy_cuda12x-13.6.0-cp310-cp310-manylinux2014_x86_64.whl", hash = "sha256:e78409ea72f5ac7d6b6f3d33d99426a94005254fa57e10617f430f9fd7c3a0a1"},
@@ -1077,6 +1088,7 @@ description = "Parallel PyData with Task Scheduling"
 optional = false
 python-versions = ">=3.10"
 groups = ["ml"]
+markers = "sys_platform == \"linux\""
 files = [
     {file = "dask-2025.9.1-py3-none-any.whl", hash = "sha256:2a8a7dc933caaea2f47745a65a6ec93d9e616e12aab53b4f03ee161d31939110"},
     {file = "dask-2025.9.1.tar.gz", hash = "sha256:718df73e1fd3d7e2b8546e0f04ce08e1ed7f9aa3da1eecd0c1f44c8b6d52f7e0"},
@@ -1107,6 +1119,7 @@ description = "Utilities for Dask and cuDF interactions"
 optional = false
 python-versions = ">=3.10"
 groups = ["ml"]
+markers = "sys_platform == \"linux\""
 files = [
     {file = "dask_cudf_cu12-25.12.0-py3-none-any.whl", hash = "sha256:5a637613ee72edf0817da5077c53b2f5dfe465944ecf1b5d3e0f30a0a34ec46a"},
 ]
@@ -1203,6 +1216,7 @@ description = "Distributed scheduler for Dask"
 optional = false
 python-versions = ">=3.10"
 groups = ["ml"]
+markers = "sys_platform == \"linux\""
 files = [
     {file = "distributed-2025.9.1-py3-none-any.whl", hash = "sha256:9453a2216cb9c686be12ad66b9c8698df3c3917565367de5797993a5f83f30ba"},
     {file = "distributed-2025.9.1.tar.gz", hash = "sha256:285e0de86fd5e1b941f283f5fd661884645a6a28b06d2a2fdb18079b823aca58"},
@@ -1266,6 +1280,7 @@ description = "Fast, re-entrant optimistic lock implemented in Cython"
 optional = false
 python-versions = "*"
 groups = ["ml"]
+markers = "sys_platform == \"linux\""
 files = [
     {file = "fastrlock-0.8.3-cp27-cp27m-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:bbbe31cb60ec32672969651bf68333680dacaebe1a1ec7952b8f5e6e23a70aa5"},
     {file = "fastrlock-0.8.3-cp27-cp27m-manylinux_2_5_x86_64.manylinux1_x86_64.whl", hash = "sha256:45055702fe9bff719cdc62caa849aa7dbe9e3968306025f639ec62ef03c65e88"},
@@ -1725,7 +1740,7 @@ wandb = ["wandb (>=0.13.11,<0.14.0)"]
 type = "git"
 url = "https://github.com/uic-evl/bio-search.git"
 reference = "fix/lucene10"
-resolved_reference = "a3b6be01e6c994dfb43c58068cfb0729e3916da9"
+resolved_reference = "d188a501b7d11372b69201c1158edd3746ba3c53"
 subdirectory = "image-modalities-classifier"
 
 [[package]]
@@ -1769,7 +1784,7 @@ description = "Read metadata from Python packages"
 optional = false
 python-versions = ">=3.9"
 groups = ["ml"]
-markers = "python_version < \"3.12\""
+markers = "python_version < \"3.12\" and sys_platform == \"linux\""
 files = [
     {file = "importlib_metadata-8.7.0-py3-none-any.whl", hash = "sha256:e5dd1551894c77868a30651cef00984d50e1002d06942a7101d34870c5f02afd"},
     {file = "importlib_metadata-8.7.0.tar.gz", hash = "sha256:d13b81ad223b890aa16c5471f2ac3056cf76c5f10f82d6f9292f0b415f389000"},
@@ -2199,6 +2214,7 @@ description = "cuDF - GPU Dataframe (C++)"
 optional = false
 python-versions = ">=3.10"
 groups = ["ml"]
+markers = "sys_platform == \"linux\""
 files = [
     {file = "libcudf_cu12-25.12.0-py3-none-manylinux_2_28_aarch64.whl", hash = "sha256:2ce038852a3695b777fb44595d89acbac4d0872cbf856be2ab1a185a87552478"},
     {file = "libcudf_cu12-25.12.0-py3-none-manylinux_2_28_x86_64.whl", hash = "sha256:5cf9f7f13c37a2dc2c1fa57c1aa50e5ceda6813cb47803719b16dddb5fb3e622"},
@@ -2216,6 +2232,7 @@ description = "cuML - RAPIDS ML Algorithms (C++)"
 optional = false
 python-versions = ">=3.10"
 groups = ["ml"]
+markers = "sys_platform == \"linux\""
 files = [
     {file = "libcuml_cu12-25.12.0-py3-none-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:5361a50475ca709be4f874e5049b804d6c37356664b7c87b53f6b716cb74f6ca"},
     {file = "libcuml_cu12-25.12.0-py3-none-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:41f356963ac6cbff88d92cf9ede2de33323b788ad9c97937b8d9394f49309817"},
@@ -2233,6 +2250,7 @@ description = "KvikIO - GPUDirect Storage (C++)"
 optional = false
 python-versions = "*"
 groups = ["ml"]
+markers = "sys_platform == \"linux\""
 files = [
     {file = "libkvikio_cu12-25.12.0-py3-none-manylinux_2_28_aarch64.whl", hash = "sha256:7f53442e02c6c5ea3c009ee065bb8934958073b7e557cafe77101ac534c328d9"},
     {file = "libkvikio_cu12-25.12.0-py3-none-manylinux_2_28_x86_64.whl", hash = "sha256:06555daf9fec5f5ef7051524e107a50a8c3b527cdff9bb2e02debc1451238b05"},
@@ -2245,6 +2263,7 @@ description = "RAFT: Reusable Algorithms Functions and other Tools (C++)"
 optional = false
 python-versions = ">=3.10"
 groups = ["ml"]
+markers = "sys_platform == \"linux\""
 files = [
     {file = "libraft_cu12-25.12.0-py3-none-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:a773542b1755e416677d1bab25b1c07029cc4abe1f11a4e689ecfa3bbe384b27"},
     {file = "libraft_cu12-25.12.0-py3-none-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:157b2010bbc054a7fa43fc5571ad7d2444ca7be6bdef55e5d51f1992fa8dc9aa"},
@@ -2263,6 +2282,7 @@ description = "rmm - RAPIDS Memory Manager"
 optional = false
 python-versions = "*"
 groups = ["ml"]
+markers = "sys_platform == \"linux\""
 files = [
     {file = "librmm_cu12-25.12.0-py3-none-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:e109520f018932e4bc82ccb5c3169f0ff20aa38ce83c200bfc6efcbf2f6b4e44"},
     {file = "librmm_cu12-25.12.0-py3-none-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:efb769b3c4c81840831edf2e152a281e92e7958da33fcf4b9689023c184f7e74"},
@@ -2331,6 +2351,7 @@ description = "File-based locks for Python on Linux and Windows"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 groups = ["ml"]
+markers = "sys_platform == \"linux\""
 files = [
     {file = "locket-1.0.0-py2.py3-none-any.whl", hash = "sha256:b6c819a722f7b6bd955b80781788e4a66a55628b858d347536b7e81325a3a5e3"},
     {file = "locket-1.0.0.tar.gz", hash = "sha256:5c0d4c052a8bbbf750e056a8e65ccd309086f4f0f18a2eac306a8dfa4112a632"},
@@ -2620,6 +2641,7 @@ description = "MessagePack serializer"
 optional = false
 python-versions = ">=3.9"
 groups = ["ml"]
+markers = "sys_platform == \"linux\""
 files = [
     {file = "msgpack-1.1.2-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:0051fffef5a37ca2cd16978ae4f0aef92f164df86823871b5162812bebecd8e2"},
     {file = "msgpack-1.1.2-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:a605409040f2da88676e9c9e5853b3449ba8011973616189ea5ee55ddbc5bc87"},
@@ -2955,6 +2977,7 @@ description = "CUDA target for Numba"
 optional = false
 python-versions = ">=3.9"
 groups = ["ml"]
+markers = "sys_platform == \"linux\""
 files = [
     {file = "numba_cuda-0.19.1-py3-none-any.whl", hash = "sha256:2a0a144506993538615f697a888dd04de47eff9f521603cfa92a159161ab3941"},
     {file = "numba_cuda-0.19.1.tar.gz", hash = "sha256:181600ca8cbdc5984c3b4198880f71029b116dfde0397bceef666ff830a72c90"},
@@ -3050,7 +3073,7 @@ description = "CUBLAS native runtime libraries"
 optional = false
 python-versions = ">=3"
 groups = ["ml"]
-markers = "sys_platform == \"win32\" or sys_platform == \"linux\" or platform_system == \"Linux\" and platform_machine == \"x86_64\""
+markers = "sys_platform == \"linux\" or platform_system == \"Linux\" and platform_machine == \"x86_64\""
 files = [
     {file = "nvidia_cublas_cu12-12.8.4.1-py3-none-manylinux_2_27_aarch64.whl", hash = "sha256:b86f6dd8935884615a0683b663891d43781b819ac4f2ba2b0c9604676af346d0"},
     {file = "nvidia_cublas_cu12-12.8.4.1-py3-none-manylinux_2_27_x86_64.whl", hash = "sha256:8ac4e771d5a348c551b2a426eda6193c19aa630236b418086020df5ba9667142"},
@@ -3064,6 +3087,7 @@ description = "CUDA CCCL"
 optional = false
 python-versions = ">=3"
 groups = ["ml"]
+markers = "sys_platform == \"linux\""
 files = [
     {file = "nvidia_cuda_cccl_cu12-12.9.27-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:d7898b38aa68beaa234d48f0868273702342a196d6e2e9d0ef058dca2390ebea"},
     {file = "nvidia_cuda_cccl_cu12-12.9.27-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:37869e17ce2e1ecec6eddf1927cca0f8c34e64fd848d40453df559091e2d7117"},
@@ -3091,6 +3115,7 @@ description = "CUDA nvcc"
 optional = false
 python-versions = ">=3"
 groups = ["ml"]
+markers = "sys_platform == \"linux\""
 files = [
     {file = "nvidia_cuda_nvcc_cu12-12.8.93-py3-none-manylinux2010_x86_64.manylinux_2_12_x86_64.whl", hash = "sha256:2d6dc36fb7cb5ac9c0b8825bc13d193c35487a315664007287d0126531238011"},
     {file = "nvidia_cuda_nvcc_cu12-12.8.93-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:2b35ada240938d19398119ca596faaf626ba5e729511be9715842a29d112926d"},
@@ -3104,6 +3129,7 @@ description = "NVRTC native runtime libraries"
 optional = false
 python-versions = ">=3"
 groups = ["ml"]
+markers = "sys_platform == \"linux\" or platform_system == \"Linux\" and platform_machine == \"x86_64\""
 files = [
     {file = "nvidia_cuda_nvrtc_cu12-12.8.93-py3-none-manylinux2010_x86_64.manylinux_2_12_x86_64.whl", hash = "sha256:a7756528852ef889772a84c6cd89d41dfa74667e24cca16bb31f8f061e3e9994"},
     {file = "nvidia_cuda_nvrtc_cu12-12.8.93-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:fc1fec1e1637854b4c0a65fb9a8346b51dd9ee69e61ebaccc82058441f15bce8"},
@@ -3117,6 +3143,7 @@ description = "CUDA Runtime native Libraries"
 optional = false
 python-versions = ">=3"
 groups = ["ml"]
+markers = "sys_platform == \"linux\" or platform_system == \"Linux\" and platform_machine == \"x86_64\""
 files = [
     {file = "nvidia_cuda_runtime_cu12-12.8.90-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:52bf7bbee900262ffefe5e9d5a2a69a30d97e2bc5bb6cc866688caa976966e3d"},
     {file = "nvidia_cuda_runtime_cu12-12.8.90-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:adade8dcbd0edf427b7204d480d6066d33902cab2a4707dcfc48a2d0fd44ab90"},
@@ -3147,7 +3174,7 @@ description = "CUFFT native runtime libraries"
 optional = false
 python-versions = ">=3"
 groups = ["ml"]
-markers = "sys_platform == \"win32\" or sys_platform == \"linux\" or platform_system == \"Linux\" and platform_machine == \"x86_64\""
+markers = "sys_platform == \"linux\" or platform_system == \"Linux\" and platform_machine == \"x86_64\""
 files = [
     {file = "nvidia_cufft_cu12-11.3.3.83-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:848ef7224d6305cdb2a4df928759dca7b1201874787083b6e7550dd6765ce69a"},
     {file = "nvidia_cufft_cu12-11.3.3.83-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:4d2dd21ec0b88cf61b62e6b43564355e5222e4a3fb394cac0db101f2dd0d4f74"},
@@ -3177,7 +3204,7 @@ description = "CURAND native runtime libraries"
 optional = false
 python-versions = ">=3"
 groups = ["ml"]
-markers = "sys_platform == \"win32\" or sys_platform == \"linux\" or platform_system == \"Linux\" and platform_machine == \"x86_64\""
+markers = "sys_platform == \"linux\" or platform_system == \"Linux\" and platform_machine == \"x86_64\""
 files = [
     {file = "nvidia_curand_cu12-10.3.9.90-py3-none-manylinux_2_27_aarch64.whl", hash = "sha256:dfab99248034673b779bc6decafdc3404a8a6f502462201f2f31f11354204acd"},
     {file = "nvidia_curand_cu12-10.3.9.90-py3-none-manylinux_2_27_x86_64.whl", hash = "sha256:b32331d4f4df5d6eefa0554c565b626c7216f87a06a4f56fab27c3b68a830ec9"},
@@ -3191,7 +3218,7 @@ description = "CUDA solver native runtime libraries"
 optional = false
 python-versions = ">=3"
 groups = ["ml"]
-markers = "sys_platform == \"win32\" or sys_platform == \"linux\" or platform_system == \"Linux\" and platform_machine == \"x86_64\""
+markers = "sys_platform == \"linux\" or platform_system == \"Linux\" and platform_machine == \"x86_64\""
 files = [
     {file = "nvidia_cusolver_cu12-11.7.3.90-py3-none-manylinux_2_27_aarch64.whl", hash = "sha256:db9ed69dbef9715071232caa9b69c52ac7de3a95773c2db65bdba85916e4e5c0"},
     {file = "nvidia_cusolver_cu12-11.7.3.90-py3-none-manylinux_2_27_x86_64.whl", hash = "sha256:4376c11ad263152bd50ea295c05370360776f8c3427b30991df774f9fb26c450"},
@@ -3210,7 +3237,7 @@ description = "CUSPARSE native runtime libraries"
 optional = false
 python-versions = ">=3"
 groups = ["ml"]
-markers = "sys_platform == \"win32\" or sys_platform == \"linux\" or platform_system == \"Linux\" and platform_machine == \"x86_64\""
+markers = "sys_platform == \"linux\" or platform_system == \"Linux\" and platform_machine == \"x86_64\""
 files = [
     {file = "nvidia_cusparse_cu12-12.5.8.93-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:9b6c161cb130be1a07a27ea6923df8141f3c295852f4b260c65f18f3e0a091dc"},
     {file = "nvidia_cusparse_cu12-12.5.8.93-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:1ec05d76bbbd8b61b06a80e1eaf8cf4959c3d4ce8e711b65ebd0443bb0ebb13b"},
@@ -3241,6 +3268,7 @@ description = "Python Bindings for the NVIDIA Management Library"
 optional = false
 python-versions = "*"
 groups = ["ml"]
+markers = "sys_platform == \"linux\""
 files = [
     {file = "nvidia_ml_py-13.590.44-py3-none-any.whl", hash = "sha256:18feb54eca7d0e3cdc8d1a040a771eda72d9ec3148e5443087970dbfd7377ecc"},
     {file = "nvidia_ml_py-13.590.44.tar.gz", hash = "sha256:b358c7614b0fdeea4b95f046f1c90123bfe25d148ab93bb1c00248b834703373"},
@@ -3253,6 +3281,7 @@ description = "NVIDIA Collective Communication Library (NCCL) Runtime"
 optional = false
 python-versions = ">=3"
 groups = ["ml"]
+markers = "sys_platform == \"linux\" or platform_system == \"Linux\" and platform_machine == \"x86_64\""
 files = [
     {file = "nvidia_nccl_cu12-2.27.5-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:31432ad4d1fb1004eb0c56203dc9bc2178a1ba69d1d9e02d64a6938ab5e40e7a"},
     {file = "nvidia_nccl_cu12-2.27.5-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:ad730cf15cb5d25fe849c6e6ca9eb5b76db16a80f13f425ac68d8e2e55624457"},
@@ -3265,6 +3294,7 @@ description = "Nvidia JIT LTO Library"
 optional = false
 python-versions = ">=3"
 groups = ["ml"]
+markers = "sys_platform == \"linux\" or platform_system == \"Linux\" and platform_machine == \"x86_64\""
 files = [
     {file = "nvidia_nvjitlink_cu12-12.8.93-py3-none-manylinux2010_x86_64.manylinux_2_12_x86_64.whl", hash = "sha256:81ff63371a7ebd6e6451970684f916be2eab07321b73c9d244dc2b4da7f73b88"},
     {file = "nvidia_nvjitlink_cu12-12.8.93-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:adccd7161ace7261e01bb91e44e88da350895c270d23f744f0820c818b7229e7"},
@@ -3305,6 +3335,7 @@ description = "Python NVTX - Python code annotation library"
 optional = false
 python-versions = "*"
 groups = ["ml"]
+markers = "sys_platform == \"linux\""
 files = [
     {file = "nvtx-0.2.14-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:b70b2415ab97edf19514be226d5058898922c6b6bb1d7fdd5ef92d1e086f3e0f"},
     {file = "nvtx-0.2.14-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:23ab874f9c70e5433f39e40ca318ffcfc14fb43ed6798e6be5a30f74e4ca831f"},
@@ -3475,6 +3506,7 @@ description = "Appendable key-value storage"
 optional = false
 python-versions = ">=3.9"
 groups = ["ml"]
+markers = "sys_platform == \"linux\""
 files = [
     {file = "partd-1.4.2-py3-none-any.whl", hash = "sha256:978e4ac767ec4ba5b86c6eaa52e5a2a3bc748a2ca839e8cc798f1cc6ce6efb0f"},
     {file = "partd-1.4.2.tar.gz", hash = "sha256:d022c33afbdc8405c226621b015e8067888173d85f7f5ecebb3cafed9a20f02c"},
@@ -3833,6 +3865,7 @@ files = [
     {file = "psutil-7.1.3-cp37-abi3-win_arm64.whl", hash = "sha256:bd0d69cee829226a761e92f28140bec9a5ee9d5b4fb4b0cc589068dbfff559b1"},
     {file = "psutil-7.1.3.tar.gz", hash = "sha256:6c86281738d77335af7aec228328e944b30930899ea760ecf33a4dba66be5e74"},
 ]
+markers = {ml = "sys_platform == \"linux\""}
 
 [package.extras]
 dev = ["abi3audit", "black", "check-manifest", "colorama ; os_name == \"nt\"", "coverage", "packaging", "pylint", "pyperf", "pypinfo", "pyreadline ; os_name == \"nt\"", "pytest", "pytest-cov", "pytest-instafail", "pytest-subtests", "pytest-xdist", "pywin32 ; os_name == \"nt\" and platform_python_implementation != \"PyPy\"", "requests", "rstcheck", "ruff", "setuptools", "sphinx", "sphinx_rtd_theme", "toml-sort", "twine", "validate-pyproject[all]", "virtualenv", "vulture", "wheel", "wheel ; os_name == \"nt\" and platform_python_implementation != \"PyPy\"", "wmi ; os_name == \"nt\" and platform_python_implementation != \"PyPy\""]
@@ -4052,6 +4085,7 @@ description = "pylibcudf - Python bindings for libcudf"
 optional = false
 python-versions = ">=3.10"
 groups = ["ml"]
+markers = "sys_platform == \"linux\""
 files = [
     {file = "pylibcudf_cu12-25.12.0-cp310-cp310-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:f9a38a398838b50035f4f9f5453b3926e73f3f58d8ee2d1d2da61a6487dbb3aa"},
     {file = "pylibcudf_cu12-25.12.0-cp310-cp310-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:a567a71a36719544cd51c210bb8b707f6e06cc7bdbda01cf10237b732165f822"},
@@ -4083,6 +4117,7 @@ description = "RAFT: Reusable Algorithms Functions and other Tools"
 optional = false
 python-versions = ">=3.10"
 groups = ["ml"]
+markers = "sys_platform == \"linux\""
 files = [
     {file = "pylibraft_cu12-25.12.0-cp310-cp310-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:995830361bc6d8c26138fcb60b3d2abb9fff44e459fe7371b6c39cd9f8308395"},
     {file = "pylibraft_cu12-25.12.0-cp310-cp310-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:53aefb51c1667004e7030ace7740e78938bd7f2d5c3c9983229efe258b14b925"},
@@ -4498,6 +4533,7 @@ description = "Dask and Distributed version pinning for RAPIDS"
 optional = false
 python-versions = "*"
 groups = ["ml"]
+markers = "sys_platform == \"linux\""
 files = [
     {file = "rapids_dask_dependency-25.12.0-py3-none-any.whl", hash = "sha256:d8efc4a2211d17079f907cf605460ad1bfd5ec2568ddefca605c91427465b5b3"},
 ]
@@ -4516,6 +4552,7 @@ description = "Logging framework for RAPIDS built around spdlog"
 optional = false
 python-versions = ">=3.10"
 groups = ["ml"]
+markers = "sys_platform == \"linux\""
 files = [
     {file = "rapids_logger-0.2.3-py3-none-manylinux_2_26_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:119a0391a6965b773dc0e48c35e3872585e69418aedbc8b618ac2bf63ae12e28"},
     {file = "rapids_logger-0.2.3-py3-none-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:7fe67ef4049c5d8ba6154746325dcf7cc0f327f0efa8f2611fc8f64e67510f60"},
@@ -4570,6 +4607,7 @@ description = "rmm - RAPIDS Memory Manager"
 optional = false
 python-versions = ">=3.10"
 groups = ["ml"]
+markers = "sys_platform == \"linux\""
 files = [
     {file = "rmm_cu12-25.12.0-cp310-cp310-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:c9fa1d3d4e667768517a682ea49b9502cd4e10a1c02813bd8446e51c84ac1f0f"},
     {file = "rmm_cu12-25.12.0-cp310-cp310-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:aab069949e791800435e9c1ba63192919beeb0912dc7903dc9112127a01380ba"},
@@ -4944,6 +4982,7 @@ description = "Sorted Containers -- Sorted List, Sorted Dict, Sorted Set"
 optional = false
 python-versions = "*"
 groups = ["ml"]
+markers = "sys_platform == \"linux\""
 files = [
     {file = "sortedcontainers-2.4.0-py2.py3-none-any.whl", hash = "sha256:a163dcaede0f1c021485e957a39245190e74249897e2ae4b2aa38595db237ee0"},
     {file = "sortedcontainers-2.4.0.tar.gz", hash = "sha256:25caa5a06cc30b6b83d11423433f65d1f9d76c4c6a0c90e3379eaa43b9bfdb88"},
@@ -4994,6 +5033,7 @@ description = "Traceback serialization library."
 optional = false
 python-versions = ">=3.9"
 groups = ["ml"]
+markers = "sys_platform == \"linux\""
 files = [
     {file = "tblib-3.2.2-py3-none-any.whl", hash = "sha256:26bdccf339bcce6a88b2b5432c988b266ebbe63a4e593f6b578b1d2e723d2b76"},
     {file = "tblib-3.2.2.tar.gz", hash = "sha256:e9a652692d91bf4f743d4a15bc174c0b76afc750fe8c7b6d195cc1c1d6d2ccec"},
@@ -5131,6 +5171,7 @@ description = "List processing tools and functional utilities"
 optional = false
 python-versions = ">=3.9"
 groups = ["ml"]
+markers = "sys_platform == \"linux\""
 files = [
     {file = "toolz-1.1.0-py3-none-any.whl", hash = "sha256:15ccc861ac51c53696de0a5d6d4607f99c210739caf987b5d2054f3efed429d8"},
     {file = "toolz-1.1.0.tar.gz", hash = "sha256:27a5c770d068c110d9ed9323f24f1543e83b2f300a687b7891c1a6d56b697b5b"},
@@ -5303,6 +5344,7 @@ files = [
     {file = "tornado-6.5.3-cp39-abi3-win_arm64.whl", hash = "sha256:278c54d262911365075dd45e0b6314308c74badd6ff9a54490e7daccdd5ed0ea"},
     {file = "tornado-6.5.3.tar.gz", hash = "sha256:16abdeb0211796ffc73765bc0a20119712d68afeeaf93d1a3f2edf6b3aee8d5a"},
 ]
+markers = {ml = "sys_platform == \"linux\""}
 
 [[package]]
 name = "tqdm"
@@ -5349,6 +5391,7 @@ description = "Treelite: Universal model exchange format for decision tree fores
 optional = false
 python-versions = ">=3.8"
 groups = ["ml"]
+markers = "sys_platform == \"linux\""
 files = [
     {file = "treelite-4.6.1-py3-none-macosx_10_15_x86_64.macosx_11_0_x86_64.macosx_12_0_x86_64.whl", hash = "sha256:af0998a0cfd76bfb9c57e63f8f98d28e92ac029d2a86bea07c15f722dcc00322"},
     {file = "treelite-4.6.1-py3-none-macosx_12_0_arm64.whl", hash = "sha256:e308a26f0044f4aa34557b50b9343f275930cb2c60bb102a98faf5378f414367"},
@@ -5649,6 +5692,7 @@ description = "Mutable mapping tools"
 optional = false
 python-versions = ">=3.8"
 groups = ["ml"]
+markers = "sys_platform == \"linux\""
 files = [
     {file = "zict-3.0.0-py2.py3-none-any.whl", hash = "sha256:5796e36bd0e0cc8cf0fbc1ace6a68912611c1dbd74750a3f3026b9b9d6a327ae"},
     {file = "zict-3.0.0.tar.gz", hash = "sha256:e321e263b6a97aafc0790c3cfb3c04656b7066e6738c37fffcca95d803c9fba5"},
@@ -5661,7 +5705,7 @@ description = "Backport of pathlib-compatible object wrapper for zip files"
 optional = false
 python-versions = ">=3.9"
 groups = ["ml"]
-markers = "python_version < \"3.12\""
+markers = "python_version < \"3.12\" and sys_platform == \"linux\""
 files = [
     {file = "zipp-3.23.0-py3-none-any.whl", hash = "sha256:071652d6115ed432f5ce1d34c336c0adfd6a884660d1e9712a256d3d3bd4b14e"},
     {file = "zipp-3.23.0.tar.gz", hash = "sha256:a07157588a12518c9d4034df3fbbee09c814741a33ff63c05fa29d26a2404166"},
@@ -5678,4 +5722,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.15"
-content-hash = "0d29311d900c4bb0b3fe222a8d57e3daedb75826c17b7b80d1f7dbc79f8f4de0"
+content-hash = "4a5ca57929609347c67bb8bfea1e8baa2b806c373d68eea33a31a0bf5badf85a"
