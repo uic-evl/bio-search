@@ -21,9 +21,9 @@ optional = true
 
 [tool.poetry.group.ml.dependencies]
 umap-learn = "^0.5.3"
-cudf-cu12 = { version = "^25.12", source = "rapids" }
-dask-cudf-cu12 = { version = "^25.12", source = "rapids" }
-cuml-cu12 = { version = "^25.12", source = "rapids" }
+cudf-cu12 = { version = "^25.12", source = "rapids", markers = "sys_platform == 'linux'" }
+dask-cudf-cu12 = { version = "^25.12", source = "rapids", markers = "sys_platform == 'linux'" }
+cuml-cu12 = { version = "^25.12", source = "rapids", markers = "sys_platform == 'linux'" }
 torch = "^2.9.1"
 torchvision = "^0.24.1"
 image_modalities_classifier = { git = "https://github.com/uic-evl/bio-search.git", subdirectory = "image-modalities-classifier", branch = "fix/lucene10" }
