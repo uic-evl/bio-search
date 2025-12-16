@@ -1,4 +1,4 @@
-""" Controller to transforms query requests into Lucene searches"""
+"""Controller to transforms query requests into Lucene searches"""
 
 from datetime import datetime
 from typing import List, Optional
@@ -23,7 +23,7 @@ from org.apache.lucene.index import DirectoryReader
 from org.apache.lucene.search import IndexSearcher, BooleanClause, BooleanQuery
 
 # pylint: disable=import-error
-from org.apache.lucene.store import SimpleFSDirectory
+from org.apache.lucene.store import NIOFSDirectory
 
 # pylint: disable=import-error
 from org.apache.lucene.queryparser.classic import QueryParser
@@ -65,7 +65,7 @@ class Reader:
         highlight_captions=False,
     ) -> List[SearchResult]:
         """search index by fields"""
-        index_dir = SimpleFSDirectory(Paths.get(self.store_path))
+        index_dir = NIOFSDirectory(Paths.get(self.store_path))
         dir_reader = DirectoryReader.open(index_dir)
         searcher = IndexSearcher(dir_reader)
 
@@ -132,7 +132,7 @@ class Reader:
 
             results = []
             for hit in hits:
-                hit_doc = searcher.doc(hit.doc)
+                hit_doc = searcher.storedFields().document(hit.doc)
 
                 modalities = [x.stringValue() for x in hit_doc.getFields("modality")]
 
