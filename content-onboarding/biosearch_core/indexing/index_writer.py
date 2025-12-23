@@ -59,7 +59,7 @@ class Indexer:
             "journal": StringField.TYPE_STORED,
             "authors": TextField.TYPE_STORED,
             "url": StringField.TYPE_STORED,
-            "pmcid": StringField.TYPE_STORED,
+            "pmcid": TextField.TYPE_STORED,
             "modalities": StringField.TYPE_STORED,
             "num_figures": StringField.TYPE_STORED,
             "captions": StringField.TYPE_STORED,
