@@ -36,6 +36,10 @@ from org.apache.lucene.search.highlight import (
     SimpleSpanFragmenter,
 )
 
+from org.apache.lucene.index import Term
+from org.apache.lucene.search import TermQuery
+
+
 from biosearch_core.data.search_result import SearchResult, SearchResultEncoder
 from biosearch_core.indexing.lucene import LuceneCaption
 
@@ -87,7 +91,10 @@ class Reader:
             # making abstract the default field
             parser = QueryParser("abstract", StandardAnalyzer())
             if terms:
-                if ":" in terms:
+                if terms.lower().startswith("pmcid:"):
+                    pmcid_value = terms.split(":", 1)[1]
+                    text_query = TermQuery(Term("pmcid", pmcid_value))
+                elif ":" in terms:
                     # allow passing the whole construct
                     text_query = parser.parse(terms)
                 else:
