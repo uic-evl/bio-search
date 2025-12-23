@@ -46,7 +46,8 @@ class CordReader:
         if self.id2ftpointer is None:
             self.create_id2full_text_mapping()
             self._load_full_text_mapping()
-        ft_pointer = self.id2ftpointer[pmcid]
+        # ft_pointer = self.id2ftpointer[pmcid]
+        ft_pointer = self.id2ftpointer.get(pmcid, "")
         if ft_pointer == "":
             return ""  # no file
         ft_path = self.base_path / ft_pointer
