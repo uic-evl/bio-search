@@ -54,10 +54,12 @@ def main():
             end_time = time.time()
             console.log(f"[bold green] Finished after {end_time - start_time}")
             sys.exit(os.EX_OK)
-        except FileNotFoundError:
-            console.log("[bold red] Input parquet file not found")
-            sys.exit(1)
+        # except FileNotFoundError:
+        #     console.log("[bold red] Input parquet file not found")
+        #     sys.exit(1)
         except Exception as e:
+            import traceback
+            traceback.print_exc(file=sys.stdout)
             print(e)
             sys.exit(1)
 
