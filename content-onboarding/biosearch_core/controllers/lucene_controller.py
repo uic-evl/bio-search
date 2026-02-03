@@ -92,8 +92,18 @@ class Reader:
             parser = QueryParser("abstract", StandardAnalyzer())
             if terms:
                 if terms.lower().startswith("pmcid:"):
-                    pmcid_value = terms.split(":", 1)[1]
-                    text_query = TermQuery(Term("pmcid", pmcid_value))
+                    raw = terms.split(":", 1)[1]
+
+                    # support comma or space separated
+                    ids = [x.strip() for x in raw.replace(",", " ").split() if x.strip()]
+
+                    if len(ids) == 1:
+                        text_query = TermQuery(Term("pmcid", ids[0]))
+                    else:
+                        bq = BooleanQuery.Builder()
+                        for pid in ids:
+                            bq.add(TermQuery(Term("pmcid", pid)), BooleanClause.Occur.SHOULD)
+                        text_query = bq.build()
                 elif ":" in terms:
                     # allow passing the whole construct
                     text_query = parser.parse(terms)
