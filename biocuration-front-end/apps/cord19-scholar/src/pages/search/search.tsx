@@ -101,6 +101,11 @@ const Search = () => {
               modalities: [],
             },
             {
+              query: 'pmcid:PMC2629125,PMC8790389',
+              label: 'pmcid:PMC2629125,PMC8790389',
+              modalities: [],
+            },
+            {
               query: 'title:kinase AND abstract:transcription',
               label: 'title:kinase AND abstract:transcription',
               modalities: [],
