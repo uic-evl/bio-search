@@ -92,7 +92,7 @@ class Reader:
             parser = QueryParser("abstract", StandardAnalyzer())
             if terms:
                 if terms.lower().startswith("pmcid:"):
-                    raw = terms.split(":", 1)[1]
+                    raw = terms.split(":", 1)[1].strip().upper()
 
                     # support comma or space separated
                     ids = [x.strip() for x in raw.replace(",", " ").split() if x.strip()]
