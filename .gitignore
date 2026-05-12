@@ -19,3 +19,4 @@ coverage.xml
 biocuration-front-end/apps/cord19-scholar/.env.deploy
 /content-onboarding/index-data
 /content-onboarding/indexes10
+biocuration-front-end/apps/gxd/.env.deploy
