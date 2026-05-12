@@ -110,6 +110,16 @@ const Search = ({logout}: SearchProps) => {
           sampleQueries={[
             {query: 'disease', label: 'disease', modalities: []},
             {
+              query: 'pmcid:PMC2629125',
+              label: 'pmcid:PMC2629125',
+              modalities: [],
+            },
+            {
+              query: 'pmcid:PMC2629125,PMC8790389',
+              label: 'pmcid:PMC2629125,PMC8790389',
+              modalities: [],
+            },
+            {
               query: 'title:kinase AND abstract:transcription',
               label: 'title:kinase AND abstract:transcription',
               modalities: [],
