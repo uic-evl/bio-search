@@ -17,3 +17,5 @@ coverage.xml
 *.env
 .flaskenv
 biocuration-front-end/apps/cord19-scholar/.env.deploy
+/content-onboarding/index-data
+/content-onboarding/indexes10
